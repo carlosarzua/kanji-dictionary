@@ -5,78 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Radical</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .container {
-            width: 80%;
-            margin: 0 auto;
-        }
-
-        .layout-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .title-cell {
-            text-align: center;
-            padding: 20px;
-        }
-
-        .explanation-cell {
-            width: 60%;
-            padding: 20px;
-        }
-
-        .result-cell {
-            width: 40%;
-            padding: 20px;
-            vertical-align: top;
-            background-color: #f9f9f9;
-        }
-
-        .highlighted-kanji {
-            font-weight: bold;
-            font-size: 1.5em;
-            color: #007bff;
-        }
-
-        #kanjiInput {
-            padding: 10px;
-            margin-top: 20px;
-            width: 100%;
-        }
-
-        #result {
-            margin-top: 10px;
-            font-size: 1.2em;
-            color: #333;
-        }
-    </style>
 </head>
 <body>
-    <!-- Table structure with three cells as requested -->
     <div class="container">
-        <table class="layout-table">
-            <tr>
-                <td colspan="2" class="title-cell">
-                    <h1>Radical</h1>
-                    <h2>Kanji Made Radically Easy</h2>
-                </td>
-            </tr>
-            <tr>
-                <td class="explanation-cell">
-                    <p>Radicals are the building blocks of kanji. Some radicals show the meaning, while others indicate the on’yomi reading, used when two kanji are together. For example, 泊まる means "to stay" and is read とまる. With another kanji, it's read ハク, because it contains the phonetic radical 白. Similarly, 伯, 迫, and 拍 are read ハク but have different meanings based on their radicals.</p>
-                </td>
-                <td class="result-cell">
-                    <p id="phonetic-info">
-                        <span class="highlighted-kanji">工</span> <br>
-                        contains the phonetic radical <span class="highlighted-kanji">工</span>, <br>
-                        which is read <span class="highlighted-kanji">コウ</span>.
-                    </p>
-                </td>
-            </tr>
-        </table>
+        <!-- Title and Subtitle -->
+        <h1>Radical</h1>
+        <h2>Kanji Made Radically Easy</h2>
+
+        <!-- Input and Button -->
         <input type="text" id="kanjiInput" maxlength="1" placeholder="Type a kanji">
         <button onclick="searchKanji()">Search</button>
+
+        <!-- Result Cell -->
+        <div class="result-cell" id="phonetic-info">
+            <p>The character <span class="highlighted-kanji">紅</span></p>
+            <p>contains the phonetic radical <span class="highlighted-kanji">工</span></p>
+            <p>which is read <span class="highlighted-kanji">コウ</span>.</p>
+        </div>
+
+        <!-- Explanation Section -->
+        <div class="explanation">
+            <p>
+                Radicals are the building blocks of kanji. Some radicals show the meaning, while others indicate the <strong>on’yomi</strong> reading, used when two kanji are together. For example, 泊まる means "to stay" and is read とまる. When 泊 is next to another kanji, it's read ハク, because it contains the phonetic radical 白. Similarly, 伯, 迫, and 拍 are read ハク but have different meanings based on their radicals.
+            </p>
+        </div>
     </div>
 
     <script>
@@ -96,23 +48,25 @@
 
         function searchKanji() {
             const inputKanji = document.getElementById('kanjiInput').value;
-            let resultText = "Kanji not found in the dictionary.";
+            let resultHTML = `<p>The character <span class="highlighted-kanji">${inputKanji}</span></p>`;
             let phoneticRadicalFound = false;
 
             for (const radical in phoneticRadicalWithKanji) {
                 if (phoneticRadicalWithKanji[radical].includes(inputKanji)) {
-                    resultText = `<span class="highlighted-kanji">${inputKanji}</span> contains the phonetic radical <span class="highlighted-kanji">${radical}</span>, which is read <span class="highlighted-kanji">${phoneticRadicals[radical]}</span>.`;
+                    resultHTML += `<p>contains the phonetic radical <span class="highlighted-kanji">${radical}</span></p>`;
+                    resultHTML += `<p>which is read <span class="highlighted-kanji">${phoneticRadicals[radical]}</span>.</p>`;
                     phoneticRadicalFound = true;
                     break;
                 }
             }
 
             if (!phoneticRadicalFound) {
-                resultText = `<span class="highlighted-kanji">${inputKanji}</span> has no phonetic radical (or it hasn’t been added to this dictionary).`;
+                resultHTML = `<p>The character <span class="highlighted-kanji">${inputKanji}</span></p>`;
+                resultHTML += `<p>has no phonetic radical (or it hasn’t been added to this dictionary).</p>`;
             }
 
-            // Update the content of the phonetic-info paragraph
-            document.getElementById('phonetic-info').innerHTML = resultText;
+            // Update the content of the phonetic-info div
+            document.getElementById('phonetic-info').innerHTML = resultHTML;
         }
     </script>
 </body>
