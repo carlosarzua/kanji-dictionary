@@ -3,47 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radical</title> <!-- Title updated -->
-    <!-- Link to the CSS file -->
+    <title>Radical</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- The Kanji Dictionary HTML content -->
+    <!-- Table structure with three cells as requested -->
     <div class="container">
-        <h1>Radical</h1> <!-- Title -->
-        <h2>Kanji Made Radically Easy</h2> <!-- Subtitle -->
-        <p>Type a kanji character to find its phonetic radical:</p>
-        <input type="text" id="kanjiInput" maxlength="1">
+        <table class="layout-table">
+            <tr>
+                <td colspan="2" class="title-cell">
+                    <h1>Radical</h1>
+                    <h2>Kanji Made Radically Easy</h2>
+                </td>
+            </tr>
+            <tr>
+                <td class="explanation-cell">
+                    <p>Radicals are the building blocks of kanji. Some radicals show the meaning, while others indicate the on’yomi reading, used when two kanji are together. For example, 泊まる means "to stay" and is read とまる. With another kanji, it's read ハク, because it contains the phonetic radical 白. Similarly, 伯, 迫, and 拍 are read ハク but have different meanings based on their radicals.</p>
+                </td>
+                <td class="result-cell">
+                    <p id="phonetic-info">
+                        <span class="highlighted-kanji">工</span> <br>
+                        contains the phonetic radical <span class="highlighted-kanji">工</span>, <br>
+                        which is read <span class="highlighted-kanji">コウ</span>.
+                    </p>
+                </td>
+            </tr>
+        </table>
+        <input type="text" id="kanjiInput" maxlength="1" placeholder="Type a kanji">
         <button onclick="searchKanji()">Search</button>
-
         <p id="result"></p>
     </div>
 
-    <!-- JavaScript code for the search functionality -->
     <script>
         const phoneticRadicalWithKanji = {
             '工': ['工', '攻', '紅', '貢'],
-            '正': ['正', '性', '星']
+            '正': ['正', '性', '星'],
+            '白': ['白', '伯', '拍', '迫', '泊'],
+            // Add more phonetic radicals here...
         };
 
         const phoneticRadicals = {
             '工': 'コウ',
-            '正': 'セイ'
+            '正': 'セイ or ショウ', // Added exception for 正
+            '白': 'ハク',
+            // Add more readings here...
         };
 
         function searchKanji() {
             const inputKanji = document.getElementById('kanjiInput').value;
             let resultText = "Kanji not found in the dictionary.";
+            let phoneticRadicalFound = false;
 
             for (const radical in phoneticRadicalWithKanji) {
                 if (phoneticRadicalWithKanji[radical].includes(inputKanji)) {
                     resultText = `${inputKanji} contains the phonetic radical ${radical}, which is read ${phoneticRadicals[radical]}.`;
+                    phoneticRadicalFound = true;
                     break;
                 }
             }
 
-            if (resultText === "Kanji not found in the dictionary.") {
-                resultText = `${inputKanji} has no phonetic radical (or it hasn’t been yet added to this dictionary).`;
+            if (!phoneticRadicalFound) {
+                resultText = `${inputKanji} has no phonetic radical (or it hasn’t been added to this dictionary).`;
             }
 
             document.getElementById('result').innerText = resultText;
