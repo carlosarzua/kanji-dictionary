@@ -43,6 +43,7 @@ table.layout-table {
     width: 40%;
     padding: 20px;
     vertical-align: top;
+    text-align: center;
     background-color: #f9f9f9; /* light gray */
     color: #333; /* Set text color to dark gray or black */
 }
