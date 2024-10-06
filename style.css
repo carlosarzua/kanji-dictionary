@@ -10,16 +10,23 @@ body {
     align-items: center;
     height: 100vh;
     text-align: center;
+    flex-direction: column; /* Ensure vertical alignment */
 }
 
 /* Header */
 h1 {
     color: #00b4d8; /* Cool blue */
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
 }
 
-/* Input box */
+h2 {
+    color: #90e0ef; /* Lighter blue for subtitle */
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Input box and Button should be aligned vertically */
 input[type="text"] {
     background-color: #1a1a1a;
     color: #ffffff;
@@ -29,13 +36,9 @@ input[type="text"] {
     border-radius: 5px;
     outline: none;
     transition: border-color 0.3s ease;
+    margin-bottom: 10px; /* Add margin between input and button */
 }
 
-input[type="text"]:focus {
-    border-color: #0096c7; /* Slightly darker blue on focus */
-}
-
-/* Button */
 button {
     background-color: #00b4d8;
     color: #ffffff;
@@ -44,7 +47,7 @@ button {
     font-size: 1.2rem;
     border-radius: 5px;
     cursor: pointer;
-    margin-left: 10px;
+    margin-bottom: 20px; /* Add margin below the button */
     transition: background-color 0.3s ease;
 }
 
@@ -65,11 +68,14 @@ button:hover {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
-    width: 100%;
     max-width: 500px;
+    width: 100%;
+    display: flex;
+    flex-direction: column; /* Vertical stacking of elements */
+    align-items: center; /* Center content */
 }
 
-/* Minimal transition effect for the input and button */
+/* Transition for input and button */
 input[type="text"], button {
     transition: all 0.2s ease-in-out;
 }
