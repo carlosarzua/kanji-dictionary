@@ -3,132 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phonetic Radical Finder</title>
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        td {
-            padding: 10px;
-            border: 1px solid #ddd;
-        }
-        .header {
-            background-color: #f4f4f4;
-            text-align: center;
-            font-size: 1.5em;
-            font-weight: bold;
-        }
-        .subtitle {
-            text-align: center;
-            font-style: italic;
-        }
-        .info {
-            background-color: #ffffff;
-            color: #007bff;
-            font-weight: bold;
-        }
-        .radical-info {
-            text-align: left;
-            background-color: #f0f8ff;
-        }
-        .explanation {
-            text-align: justify;
-        }
-        .highlight {
-            background-color: white;
-            color: #007bff;
-            padding: 2px 5px;
-            border-radius: 3px;
-        }
-    </style>
+    <title>Radical</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <table>
-        <!-- Row 1: Header and Subtitle -->
-        <tr>
-            <td colspan="3" class="header">Radical</td>
-        </tr>
-        <tr>
-            <td colspan="3" class="subtitle">Kanji Made Radically Easy</td>
-        </tr>
+    <!-- Table structure with three cells as requested -->
+    <div class="container">
+        <table class="layout-table">
+            <tr>
+                <td colspan="2" class="title-cell">
+                    <h1>Radical</h1>
+                    <h2>Kanji Made Radically Easy</h2>
+                </td>
+            </tr>
+            <tr>
+                <td class="explanation-cell">
+                    <p>Radicals are the building blocks of kanji. Some radicals show the meaning, while others indicate the on’yomi reading, used when two kanji are together. For example, 泊まる means "to stay" and is read とまる. With another kanji, it's read ハク, because it contains the phonetic radical 白. Similarly, 伯, 迫, and 拍 are read ハク but have different meanings based on their radicals.</p>
+                </td>
+                <td class="result-cell">
+                    <p id="phonetic-info">
+                        <span class="highlighted-kanji">工</span> <br>
+                        contains the phonetic radical <span class="highlighted-kanji">工</span>, <br>
+                        which is read <span class="highlighted-kanji">コウ</span>.
+                    </p>
+                </td>
+            </tr>
+        </table>
+        <input type="text" id="kanjiInput" maxlength="1" placeholder="Type a kanji">
+        <button onclick="searchKanji()">Search</button>
+        <p id="result"></p>
+    </div>
 
-        <!-- Row 2: Explanation and Phonetic Radical Information -->
-        <tr>
-            <td class="explanation">
-                Radicals are the building blocks of kanji. Some radicals indicate meaning, like 木 ('tree') in 森 ('forest'). However, other radicals, known as phonetic radicals, give the on’yomi reading when two kanji are together. For example, 白 ('white') in 泊 is not about color but provides the reading ハク, used in other kanji like 伯, 拍, and 迫.
-            </td>
-            <td class="radical-info">
-                <span class="highlight">工</span><br>
-                contains the phonetic radical <span class="highlight">工</span><br>
-                , which is read コウ
-            </td>
-        </tr>
+    <script>
+        const phoneticRadicalWithKanji = {
+            '工': ['工', '攻', '紅', '貢'],
+            '正': ['正', '性', '星'],
+            '白': ['白', '伯', '拍', '迫', '泊'],
+            // Add more phonetic radicals here...
+        };
 
-        <!-- Row 3: Phonetic Radicals List -->
-        <tr>
-            <td colspan="3">
-                <h2>Phonetic Radicals and Their Readings</h2>
-                <table>
-                    <tr>
-                        <th>Radical</th>
-                        <th>Reading</th>
-                        <th>Characters</th>
-                    </tr>
-                    <tr>
-                        <td>化</td>
-                        <td>カ</td>
-                        <td>化 花 貨 靴</td>
-                    </tr>
-                    <tr>
-                        <td>可</td>
-                        <td>カ</td>
-                        <td>可 何 河 荷 歌</td>
-                    </tr>
-                    <tr>
-                        <td>各</td>
-                        <td>カク</td>
-                        <td>各 客 格 閣</td>
-                    </tr>
-                    <tr>
-                        <td>干</td>
-                        <td>カン</td>
-                        <td>干 刊 汗 肝 幹</td>
-                    </tr>
-                    <tr>
-                        <td>官</td>
-                        <td>カン</td>
-                        <td>官 館 棺 管</td>
-                    </tr>
-                    <tr>
-                        <td>己</td>
-                        <td>キ</td>
-                        <td>紀 記 起 忌</td>
-                    </tr>
-                    <tr>
-                        <td>其</td>
-                        <td>キ</td>
-                        <td>期 基 旗 棋</td>
-                    </tr>
-                    <tr>
-                        <td>義</td>
-                        <td>ギ</td>
-                        <td>義 議 儀 犠</td>
-                    </tr>
-                    <tr>
-                        <td>及</td>
-                        <td>キュウ</td>
-                        <td>及 級 吸 扱</td>
-                    </tr>
-                    <tr>
-                        <td>圣</td>
-                        <td>ケイ</td>
-                        <td>軽 経 径 茎</td>
-                    </tr>
-                    <!-- Continue with the rest of the radicals... -->
-                </table>
-            </td>
-        </tr>
-    </table>
+        const phoneticRadicals = {
+            '工': 'コウ',
+            '正': 'セイ or ショウ', // Added exception for 正
+            '白': 'ハク',
+            // Add more readings here...
+        };
+
+        function searchKanji() {
+            const inputKanji = document.getElementById('kanjiInput').value;
+            let resultText = "Kanji not found in the dictionary.";
+            let phoneticRadicalFound = false;
+
+            for (const radical in phoneticRadicalWithKanji) {
+                if (phoneticRadicalWithKanji[radical].includes(inputKanji)) {
+                    resultText = `${inputKanji} contains the phonetic radical ${radical}, which is read ${phoneticRadicals[radical]}.`;
+                    phoneticRadicalFound = true;
+                    break;
+                }
+            }
+
+            if (!phoneticRadicalFound) {
+                resultText = `${inputKanji} has no phonetic radical (or it hasn’t been added to this dictionary).`;
+            }
+
+            document.getElementById('result').innerText = resultText;
+        }
+    </script>
 </body>
 </html>
