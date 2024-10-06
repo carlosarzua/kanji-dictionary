@@ -101,3 +101,25 @@ button:hover {
 .explanation strong {
     color: #00b4d8;
 }
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    flex: 1;
+}
+
+footer {
+    /* Your footer styles here */
+    background-color: #f8f8f8; /* Example style */
+    padding: 10px;
+    text-align: center;
+}
+
