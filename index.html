@@ -3,31 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radical</title>
+    <title>Radical Dictionary</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <!-- Title and Subtitle -->
         <h1>Radical</h1>
         <h2>Kanji Made Radically Easy</h2>
 
-        <!-- Input and Button -->
-        <input type="text" id="kanjiInput" maxlength="1" placeholder="Type a kanji">
-        <button onclick="searchKanji()">Search</button>
-
-        <!-- Result Cell -->
-        <div class="result-cell" id="phonetic-info">
-            <p>The character <span class="highlighted-kanji">紅</span></p>
-            <p>contains the phonetic radical <span class="highlighted-kanji">工</span></p>
-            <p>which is read <span class="highlighted-kanji">コウ</span>.</p>
+        <div class="search-container">
+            <input type="text" id="kanjiInput" maxlength="1" placeholder="Type a kanji">
+            <button onclick="searchKanji()">
+                <img src="search-icon.png" alt="Search Icon" class="search-icon">
+            </button>
         </div>
 
-        <!-- Explanation Section -->
+        <div class="result-container">
+            <p id="character-result">The character 工</p>
+            <p id="radical-result">contains the phonetic radical 工</p>
+            <p id="reading-result">which is read コウ</p>
+        </div>
+
         <div class="explanation">
-            <p>
-                Radicals are the building blocks of kanji. Some radicals show the meaning, while others indicate the <strong>on’yomi</strong> reading, used when two kanji are together. For example, 泊まる means "to stay" and is read とまる. When 泊 is next to another kanji, it's read ハク, because it contains the phonetic radical 白. Similarly, 伯, 迫, and 拍 are read ハク but have different meanings based on their radicals.
-            </p>
+            <p>Radicals are the building blocks of kanji. Some radicals show the meaning, while others indicate the on’yomi reading, used when two kanji are together. For example, 泊まる means "to stay" and is read とまる. When 泊 is next another kanji, it's read ハク, because it contains the phonetic radical 白. Similarly, 伯, 迫, and 拍 are read ハク but have different meanings based on their meaning radicals.</p>
         </div>
     </div>
 
@@ -36,37 +34,32 @@
             '工': ['工', '攻', '紅', '貢'],
             '正': ['正', '性', '星'],
             '白': ['白', '伯', '拍', '迫', '泊'],
-            // Add more phonetic radicals here...
         };
 
         const phoneticRadicals = {
             '工': 'コウ',
-            '正': 'セイ or ショウ', // Added exception for 正
+            '正': 'セイ or ショウ',
             '白': 'ハク',
-            // Add more readings here...
         };
 
         function searchKanji() {
             const inputKanji = document.getElementById('kanjiInput').value;
-            let resultHTML = `<p>The character <span class="highlighted-kanji">${inputKanji}</span></p>`;
-            let phoneticRadicalFound = false;
+            let characterResult = "Character not found";
+            let radicalResult = "No phonetic radical found";
+            let readingResult = "No reading available";
 
             for (const radical in phoneticRadicalWithKanji) {
                 if (phoneticRadicalWithKanji[radical].includes(inputKanji)) {
-                    resultHTML += `<p>contains the phonetic radical <span class="highlighted-kanji">${radical}</span></p>`;
-                    resultHTML += `<p>which is read <span class="highlighted-kanji">${phoneticRadicals[radical]}</span>.</p>`;
-                    phoneticRadicalFound = true;
+                    characterResult = `The character ${inputKanji}`;
+                    radicalResult = `contains the phonetic radical ${radical}`;
+                    readingResult = `which is read ${phoneticRadicals[radical]}`;
                     break;
                 }
             }
 
-            if (!phoneticRadicalFound) {
-                resultHTML = `<p>The character <span class="highlighted-kanji">${inputKanji}</span></p>`;
-                resultHTML += `<p>has no phonetic radical (or it hasn’t been added to this dictionary).</p>`;
-            }
-
-            // Update the content of the phonetic-info div
-            document.getElementById('phonetic-info').innerHTML = resultHTML;
+            document.getElementById('character-result').innerText = characterResult;
+            document.getElementById('radical-result').innerText = radicalResult;
+            document.getElementById('reading-result').innerText = readingResult;
         }
     </script>
 </body>
