@@ -8,22 +8,24 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Radical.</h1>
-            <h2>Kanji Made Radically Easy.</h2>
-        </header>
+        <!-- Title and Subtitle -->
+        <h1>Radical.</h1>
+        <h2>Kanji Made Radically Easy.</h2>
 
-        <form class="search-container" onsubmit="searchKanji(); return false;">
-            <input type="text" id="kanjiInput" maxlength="1" placeholder="Type a kanji" required>
-            <button type="submit">Search</button>
-        </form>
+        <!-- Input and Button -->
+        <div class="search-container">
+            <input type="text" id="kanjiInput" maxlength="1" placeholder="Type a kanji">
+            <button onclick="searchKanji()">Search</button>
+        </div>
 
+        <!-- Result Cell -->
         <div class="result-cell" id="phonetic-info">
             <p>The character <span class="highlighted-kanji">紅</span></p>
             <p>contains the phonetic radical <span class="highlighted-kanji">工</span></p>
             <p>which is read <span class="highlighted-kanji">コウ</span>.</p>
         </div>
 
+        <!-- Explanation Section -->
         <div class="explanation">
             <p>
                 Radicals are the building blocks of kanji. Some radicals show the meaning, while others indicate the <strong>on’yomi</strong> reading, used when two kanji are together. For example, 泊まる means "to stay" and is read とまる. When 泊 is next to another kanji, it's read ハク, because it contains the phonetic radical 白. Similarly, 伯, 迫, and 拍 are read ハク but have different meanings based on their meaning radicals. None of them have to do with 'white'.
