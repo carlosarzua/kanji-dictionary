@@ -12,61 +12,29 @@ body {
     text-align: center;
 }
 
-/* Table Layout */
-table.layout-table {
+/* Container */
+.container {
     width: 80%;
-    border-collapse: collapse;
+    margin: 0 auto;
+    text-align: center;
+    padding: 20px;
 }
 
-/* Title Cell - spans two columns */
-.title-cell {
-    background-color: #121212;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
+/* Title and Subtitle */
+h1 {
     color: #00b4d8;
 }
 
-/* Explanation Cell */
-.explanation-cell {
-    text-align: left;
-    padding: 20px;
-    background-color: #1a1a1a;
-    border-radius: 10px;
-    width: 50%;
-    color: #ffffff;
-    font-size: 1.1rem;
+h2 {
+    color: #90e0ef;
 }
 
-/* Result Cell */
-.result-cell {
-    width: 40%;
-    padding: 20px;
-    vertical-align: top;
-    text-align: center;
-    background-color: #1a1a1a;
-    color: #ffffff; /* Set text color to dark gray or black */
-}
-
-/* Highlighted Kanji */
-.highlighted-kanji {
-    background-color: #ffffff;
-    color: #00b4d8;
-    padding: 5px;
-    border-radius: 5px;
-    font-size: 1.5rem;
-}
-
-/* Input box and Button */
-input[type="text"] {
-    background-color: #1a1a1a;
-    color: #ffffff;
-    border: 2px solid #00b4d8;
+/* Input and Button */
+#kanjiInput {
     padding: 10px;
+    margin-top: 20px;
+    width: 100%;
     font-size: 1.2rem;
-    border-radius: 5px;
-    outline: none;
-    margin-bottom: 10px;
 }
 
 button {
@@ -77,29 +45,51 @@ button {
     font-size: 1.2rem;
     border-radius: 5px;
     cursor: pointer;
-    margin-bottom: 20px;
+    margin-top: 10px;
 }
 
 button:hover {
     background-color: #0077b6; /* Darker blue on hover */
 }
 
-/* Result text */
-#result {
+/* Result Section */
+.result-cell {
     margin-top: 20px;
-    font-size: 1.5rem;
-    color: #90e0ef; /* Lighter blue for the result */
-}
-
-/* Container */
-.container {
-    background-color: #121212;
+    background-color: #ffffff;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
-    max-width: 800px;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    color: #000000;
+    text-align: center;
+}
+
+.result-cell p {
+    font-size: 1.5rem;
+}
+
+/* Highlighted Kanji */
+.highlighted-kanji {
+    background-color: #00b4d8;
+    color: #ffffff;
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 2rem;
+}
+
+/* Explanation Section */
+.explanation {
+    margin-top: 20px;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: left;
+}
+
+.explanation p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.explanation strong {
+    color: #00b4d8;
 }
