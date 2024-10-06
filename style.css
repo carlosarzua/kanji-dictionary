@@ -1,38 +1,32 @@
 /* Global Styles */
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #f4f4f4; /* Light gray background for minimalism */
-    color: #333; /* Dark text for readability */
+    background-color: #000000; /* Black background */
+    color: #ffffff; /* White text */
     margin: 0;
     padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
+    text-align: center;
 }
 
 /* Container */
 .container {
-    background-color: #ffffff;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
-    max-width: 600px;
-    width: 100%;
+    width: 80%;
+    margin: 0 auto;
     text-align: center;
+    padding: 20px;
 }
 
 /* Title and Subtitle */
 h1 {
-    font-size: 2.5rem;
-    color: #0077b6; /* A soft blue */
-    margin-bottom: 10px;
+    color: #00b4d8;
 }
 
 h2 {
-    font-size: 1.2rem;
-    color: #555; /* Subtle gray */
-    margin-bottom: 30px;
+    color: #90e0ef;
 }
 
 /* Search Container */
@@ -40,58 +34,70 @@ h2 {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 20px;
+    margin-top: 20px;
 }
 
 #kanjiInput {
     padding: 10px;
-    width: 80%;
+    width: 50%; /* Shorter width */
     font-size: 1.2rem;
-    border: 2px solid #0077b6;
     border-radius: 5px;
-    outline: none;
-    margin-right: 10px;
+    border: 1px solid #0077b6;
 }
 
 button {
-    background-color: #0077b6;
+    background-color: #00b4d8;
+    color: #ffffff;
     border: none;
+    padding: 10px 20px;
+    font-size: 1.2rem;
     border-radius: 5px;
     cursor: pointer;
-    padding: 10px;
-    transition: background-color 0.3s ease;
+    margin-left: 10px;
 }
 
 button:hover {
-    background-color: #005f99; /* Darker blue on hover */
+    background-color: #0077b6; /* Darker blue on hover */
 }
 
-.search-icon {
-    width: 24px;
-    height: 24px;
-}
-
-/* Result Container */
-.result-container {
-    background-color: #e0f7fa; /* Light blue background */
+/* Result Section */
+.result-cell {
+    margin-top: 20px;
+    background-color: #333333; /* Slightly darker background */
     padding: 20px;
+    border-radius: 10px;
+    color: #ffffff;
+    text-align: center;
+}
+
+.result-cell p {
+    font-size: 1.5rem;
+}
+
+/* Highlighted Kanji */
+.highlighted-kanji {
+    background-color: #00b4d8;
+    color: #ffffff;
+    padding: 5px;
     border-radius: 5px;
-    margin-bottom: 30px;
+    font-size: 2rem;
 }
 
-.result-container p {
-    font-size: 1.2rem;
-    color: #0077b6;
-    margin: 5px 0;
-}
-
-/* Explanation */
+/* Explanation Section */
 .explanation {
-    font-size: 0.9rem;
-    line-height: 1.6;
-    color: #555;
+    margin-top: 20px;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: left;
 }
 
 .explanation p {
-    margin-top: 0;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.explanation strong {
+    color: #00b4d8;
 }
