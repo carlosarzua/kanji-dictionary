@@ -5,6 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Radical</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        .layout-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .title-cell {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .explanation-cell {
+            width: 60%;
+            padding: 20px;
+        }
+
+        .result-cell {
+            width: 40%;
+            padding: 20px;
+            vertical-align: top;
+            background-color: #f9f9f9;
+        }
+
+        .highlighted-kanji {
+            font-weight: bold;
+            font-size: 1.5em;
+            color: #007bff;
+        }
+
+        #kanjiInput {
+            padding: 10px;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        #result {
+            margin-top: 10px;
+            font-size: 1.2em;
+            color: #333;
+        }
+    </style>
 </head>
 <body>
     <!-- Table structure with three cells as requested -->
@@ -31,7 +77,6 @@
         </table>
         <input type="text" id="kanjiInput" maxlength="1" placeholder="Type a kanji">
         <button onclick="searchKanji()">Search</button>
-        <p id="result"></p>
     </div>
 
     <script>
@@ -56,17 +101,18 @@
 
             for (const radical in phoneticRadicalWithKanji) {
                 if (phoneticRadicalWithKanji[radical].includes(inputKanji)) {
-                    resultText = `${inputKanji} contains the phonetic radical ${radical}, which is read ${phoneticRadicals[radical]}.`;
+                    resultText = `<span class="highlighted-kanji">${inputKanji}</span> contains the phonetic radical <span class="highlighted-kanji">${radical}</span>, which is read <span class="highlighted-kanji">${phoneticRadicals[radical]}</span>.`;
                     phoneticRadicalFound = true;
                     break;
                 }
             }
 
             if (!phoneticRadicalFound) {
-                resultText = `${inputKanji} has no phonetic radical (or it hasn’t been added to this dictionary).`;
+                resultText = `<span class="highlighted-kanji">${inputKanji}</span> has no phonetic radical (or it hasn’t been added to this dictionary).`;
             }
 
-            document.getElementById('result').innerText = resultText;
+            // Update the content of the phonetic-info paragraph
+            document.getElementById('phonetic-info').innerHTML = resultText;
         }
     </script>
 </body>
