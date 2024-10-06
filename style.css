@@ -116,6 +116,12 @@ body {
     flex: 1;
 }
 
+@media only screen and (max-width: 414px) {
+    .explanation {
+        visibility: hidden; /* Use this to hide the element */
+    }
+}
+
 footer {
     /* Your footer styles here */
     background-color: #f8f8f8; /* Example style */
