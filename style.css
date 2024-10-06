@@ -1,0 +1,75 @@
+/* Global Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #000000; /* Black background */
+    color: #ffffff; /* White text */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+}
+
+/* Header */
+h1 {
+    color: #00b4d8; /* Cool blue */
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Input box */
+input[type="text"] {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    border: 2px solid #00b4d8;
+    padding: 10px;
+    font-size: 1.2rem;
+    border-radius: 5px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus {
+    border-color: #0096c7; /* Slightly darker blue on focus */
+}
+
+/* Button */
+button {
+    background-color: #00b4d8;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0077b6; /* Darker blue on hover */
+}
+
+/* Result text */
+#result {
+    margin-top: 20px;
+    font-size: 1.5rem;
+    color: #90e0ef; /* Lighter blue for the result */
+}
+
+/* Container */
+.container {
+    background-color: #121212; /* Dark grayish black */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 500px;
+}
+
+/* Minimal transition effect for the input and button */
+input[type="text"], button {
+    transition: all 0.2s ease-in-out;
+}
