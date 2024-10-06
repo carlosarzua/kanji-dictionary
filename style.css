@@ -10,23 +10,53 @@ body {
     align-items: center;
     height: 100vh;
     text-align: center;
-    flex-direction: column; /* Ensure vertical alignment */
 }
 
-/* Header */
-h1 {
-    color: #00b4d8; /* Cool blue */
-    font-size: 3rem;
-    margin-bottom: 0.5rem;
+/* Table Layout */
+table.layout-table {
+    width: 80%;
+    border-collapse: collapse;
 }
 
-h2 {
-    color: #90e0ef; /* Lighter blue for subtitle */
+/* Title Cell - spans two columns */
+.title-cell {
+    background-color: #121212;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    color: #00b4d8;
+}
+
+/* Explanation Cell */
+.explanation-cell {
+    text-align: left;
+    padding: 20px;
+    background-color: #1a1a1a;
+    border-radius: 10px;
+    width: 50%;
+    color: #ffffff;
+    font-size: 1.1rem;
+}
+
+/* Result Cell */
+.result-cell {
+    padding: 20px;
+    background-color: #1a1a1a;
+    border-radius: 10px;
+    width: 50%;
+    text-align: center;
+}
+
+/* Highlighted Kanji */
+.highlighted-kanji {
+    background-color: #ffffff;
+    color: #00b4d8;
+    padding: 5px;
+    border-radius: 5px;
     font-size: 1.5rem;
-    margin-bottom: 2rem;
 }
 
-/* Input box and Button should be aligned vertically */
+/* Input box and Button */
 input[type="text"] {
     background-color: #1a1a1a;
     color: #ffffff;
@@ -35,8 +65,7 @@ input[type="text"] {
     font-size: 1.2rem;
     border-radius: 5px;
     outline: none;
-    transition: border-color 0.3s ease;
-    margin-bottom: 10px; /* Add margin between input and button */
+    margin-bottom: 10px;
 }
 
 button {
@@ -47,8 +76,7 @@ button {
     font-size: 1.2rem;
     border-radius: 5px;
     cursor: pointer;
-    margin-bottom: 20px; /* Add margin below the button */
-    transition: background-color 0.3s ease;
+    margin-bottom: 20px;
 }
 
 button:hover {
@@ -64,18 +92,13 @@ button:hover {
 
 /* Container */
 .container {
-    background-color: #121212; /* Dark grayish black */
+    background-color: #121212;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
-    max-width: 500px;
+    max-width: 800px;
     width: 100%;
     display: flex;
-    flex-direction: column; /* Vertical stacking of elements */
-    align-items: center; /* Center content */
-}
-
-/* Transition for input and button */
-input[type="text"], button {
-    transition: all 0.2s ease-in-out;
+    flex-direction: column;
+    align-items: center;
 }
