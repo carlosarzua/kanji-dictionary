@@ -116,11 +116,19 @@ body {
     flex: 1;
 }
 
+/* Hide the spacer on desktop (screens wider than 414px) */
+.spacer {
+    display: none; /* Hide by default */
+}
+
+/* Show the spacer on mobile (screens 414px wide or less) */
 @media only screen and (max-width: 414px) {
-    .explanation {
-        visibility: hidden; /* Use this to hide the element */
+    .spacer {
+        display: block; /* Show the element */
+        height: 50px;  /* Maintain the height */
     }
 }
+
 
 footer {
     /* Your footer styles here */
