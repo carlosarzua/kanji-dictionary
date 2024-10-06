@@ -1,125 +1,67 @@
-/* Global Styles */
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #000000; /* Black background */
-    color: #ffffff; /* White text */
+    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    text-align: center;
+    background-color: #f4f4f4;
 }
 
-/* Container */
 .container {
-    width: 80%;
-    margin: 0 auto;
-    text-align: center;
+    max-width: 600px; /* Limit width for better readability */
+    margin: 20px auto; /* Center the container */
     padding: 20px;
+    background-color: white; /* Background for content */
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Title and Subtitle */
-h1 {
-    color: #00b4d8;
+header {
+    text-align: center; /* Center header text */
+    margin-bottom: 20px; /* Space below header */
 }
 
-h2 {
-    color: #90e0ef;
-}
-
-/* Search Container */
 .search-container {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 20px;
+    justify-content: center; /* Center the input and button */
+    margin-bottom: 20px; /* Space below search */
 }
 
-#kanjiInput {
-    padding: 10px;
-    width: 50%; /* Shorter width */
-    font-size: 1.2rem;
-    border-radius: 5px;
-    border: 1px solid #0077b6;
+input[type="text"] {
+    padding: 10px; /* Padding for better touch */
+    flex: 1; /* Allow input to grow */
+    border: 1px solid #ccc; /* Border style */
+    border-radius: 4px;
+    font-size: 16px; /* Larger text for readability */
 }
 
 button {
-    background-color: #00b4d8;
-    color: #ffffff;
-    border: none;
-    padding: 10px 20px;
-    font-size: 1.2rem;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-left: 10px;
+    padding: 10px 20px; /* Button padding */
+    background-color: #007BFF; /* Button color */
+    color: white; /* Button text color */
+    border: none; /* Remove border */
+    border-radius: 4px; /* Rounded corners */
+    cursor: pointer; /* Pointer on hover */
+    margin-left: 10px; /* Space between input and button */
+    font-size: 16px; /* Larger text for readability */
 }
 
 button:hover {
-    background-color: #0077b6; /* Darker blue on hover */
+    background-color: #0056b3; /* Darker shade on hover */
 }
 
-/* Result Section */
 .result-cell {
-    margin-top: 20px;
-    background-color: #333333; /* Slightly darker background */
-    padding: 20px;
-    border-radius: 10px;
-    color: #ffffff;
-    text-align: center;
+    padding: 15px;
+    border: 1px solid #007BFF; /* Result border */
+    border-radius: 4px; /* Rounded corners */
+    background-color: #f9f9f9; /* Light background */
 }
 
-.result-cell p {
-    font-size: 1.5rem;
-}
-
-/* Highlighted Kanji */
 .highlighted-kanji {
-    background-color: #00b4d8;
-    color: #ffffff;
-    padding: 5px;
-    border-radius: 5px;
-    font-size: 2rem;
+    font-weight: bold; /* Emphasize highlighted kanji */
+    color: #007BFF; /* Highlight color */
 }
 
-/* Explanation Section */
 .explanation {
-    margin-top: 20px;
-    background-color: #1a1a1a;
-    color: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: left;
+    margin-top: 20px; /* Space above explanation */
+    font-size: 14px; /* Slightly smaller text */
+    line-height: 1.5; /* Line height for readability */
 }
-
-.explanation p {
-    font-size: 1.1rem;
-    line-height: 1.6;
-}
-
-.explanation strong {
-    color: #00b4d8;
-}
-
-html, body {
-    height: 100%;
-    margin: 0;
-}
-
-body {
-    display: flex;
-    flex-direction: column;
-}
-
-.container {
-    flex: 1;
-}
-
-footer {
-    /* Your footer styles here */
-    background-color: #f8f8f8; /* Example style */
-    padding: 10px;
-    text-align: center;
-}
-
