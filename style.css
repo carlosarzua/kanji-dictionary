@@ -1,64 +1,138 @@
+/* Global Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #000000; /* Black background */
+    color: #ffffff; /* White text */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+}
+
+/* Container */
 .container {
-    max-width: 600px;
-    margin: auto;
+    width: 80%;
+    margin: 0 auto;
     text-align: center;
     padding: 20px;
 }
 
-.spacer {
-    margin-top: 20px;
-}
-
+/* Title and Subtitle */
 h1 {
-    font-size: 36px;
-    margin-bottom: 10px;
+    color: #00b4d8;
 }
 
 h2 {
-    font-size: 20px;
-    margin-bottom: 20px;
+    color: #90e0ef;
 }
 
+/* Search Container */
 .search-container {
-    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
 }
 
-input[type="text"] {
+#kanjiInput {
     padding: 10px;
-    font-size: 18px;
-    width: 200px;
-    border: 1px solid #ccc;
+    width: 50%; /* Shorter width */
+    font-size: 1.2rem;
     border-radius: 5px;
+    border: 1px solid #0077b6;
 }
 
 button {
-    padding: 10px 20px;
-    font-size: 18px;
-    background-color: #4CAF50;
-    color: white;
+    background-color: #00b4d8;
+    color: #ffffff;
     border: none;
+    padding: 10px 20px;
+    font-size: 1.2rem;
     border-radius: 5px;
     cursor: pointer;
+    margin-left: 10px;
 }
 
 button:hover {
-    background-color: #45a049;
+    background-color: #0077b6; /* Darker blue on hover */
 }
 
+/* Result Section */
 .result-cell {
     margin-top: 20px;
-    font-size: 18px;
-    color: #333;
+    background-color: #333333; /* Slightly darker background */
+    padding: 20px;
+    border-radius: 10px;
+    color: #ffffff;
+    text-align: center;
 }
 
+.result-cell p {
+    font-size: 1.5rem;
+}
+
+/* Highlighted Kanji */
 .highlighted-kanji {
-    font-weight: bold;
-    font-size: 20px;
-    color: #2c3e50;
+    background-color: #00b4d8;
+    color: #ffffff;
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 2rem;
 }
 
+/* Explanation Section */
 .explanation {
-    margin-top: 40px;
-    font-size: 16px;
-    color: #666;
+    margin-top: 20px;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: left;
+}
+
+.explanation p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.explanation strong {
+    color: #00b4d8;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    flex: 1;
+}
+
+/* Hide the spacer on desktop (screens wider than 414px) */
+.spacer {
+    display: none; /* Hide by default */
+}
+
+/* Show the spacer on mobile (screens 414px wide or less) */
+@media only screen and (max-width: 414px) {
+    .spacer {
+        display: block; /* Show the element */
+        height: 350px;  /* Maintain the height */
+    }
+}
+
+
+footer {
+    /* Your footer styles here */
+    background-color: #f8f8f8; /* Example style */
+    padding: 10px;
+    text-align: center;
 }
