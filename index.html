@@ -10,7 +10,7 @@
     <div class="container">
         <!-- Title and Subtitle -->
         <div class="spacer"></div>
-        <h1>Radical.</h1>
+        <h1>Radical. v.0.0*</h1>
         <h2>Kanji Made Radically Easy.</h2>
 
         <!-- Input and Button -->
@@ -31,7 +31,9 @@
             <p>
                 Radicals are the building blocks of kanji. Some radicals show the meaning, while others indicate the <strong>on’yomi</strong> reading, used when two kanji are together. For example, 泊まる means "to stay" and is read とまる. When 泊 is next to another kanji, it's read ハク, because it contains the phonetic radical 白. Similarly, 伯, 迫, and 拍 are read ハク but have different meanings based on their meaning radicals. None of them have to do with 'white'.
             </p>
+            <p>*Version 0.0 [released Oct 14, 2024] includes a set of 97 radicals and 396 kanji. The dictionary does not yet show kun'yomi readings, an English translation, meaning radicals, or kanji whose derived reading from the phonetic radical slightly differs from the actual radical ー characters such as 詩 (read シ, yet its phonetic radical is 寺, read ジ) or exceptions (like 特 (read トク, yet its phonetic radical is 寺, read ジ). These features will soon be released and an app development is in progress as well, with features such as tracking kanji & radical acquisition progress, tests, and kanji classification by JLPT level.</p>
             <p>Made by Carlos Ramos Fuentes, teacher of Japanese at CarlosCoordinator.com. You can contact me at carlosarzua@usal.es.</p>
+            
         </div>
     </div>
 
@@ -42,7 +44,7 @@ const phoneticRadicalWithKanji = {
             '白': ['白', '伯', '拍', '迫', '泊'],
             '化': ['化', '花', '貨', '靴'],
             '可': ['可', '何', '河', '荷', '歌'],
-            '各': ['各', '客', '格', '閣'],
+            '各': ['各', '格', '閣'],
             '干': ['干', '刊', '汗', '肝', '幹'],
             '官': ['官', '館', '棺', '管'],
             '己': ['己', '紀', '記', '起', '忌'],
@@ -50,7 +52,7 @@ const phoneticRadicalWithKanji = {
             '義': ['義', '議', '儀', '犠'],
             '及': ['及', '級', '吸', '扱'],
             '圣': ['圣', '軽', '経', '径', '茎'],
-            '㑒': ['㑒', '検', '験', '険', '像', '剣'],
+            '㑒': ['㑒', '検', '験', '険', '剣'],
             '古': ['古', '固', '故', '個', '湖', '枯', '箇'],
             'エ': ['エ', '工', '項', '功', '紅', '江', '巧', '攻', '貢', '控'],
             '交': ['交', '校', '郊', '効', '絞'],
@@ -355,7 +357,7 @@ const phoneticRadicalWithKanji = {
 
             if (!phoneticRadicalFound) {
                 resultHTML = `<p>The character <span class="highlighted-kanji">${inputKanji}</span></p>`;
-                resultHTML += `<p>has no phonetic radical (or it hasn’t been added to this dictionary).</p>`;
+                resultHTML += `<p>has no phonetic radical (or it hasn’t been added to this dictionary yet).</p>`;
             }
 
             document.getElementById('phonetic-info').innerHTML = resultHTML;
