@@ -25,7 +25,8 @@ body {
 /* Title and Subtitle */
 h1 {
     color: #00b4d8;
-    padding-top: 700px;
+    margin-top: 500px;
+    padding-top: 200px;
 }
 
 h2 {
