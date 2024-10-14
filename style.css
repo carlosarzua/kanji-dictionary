@@ -23,14 +23,14 @@ body {
 /* Mobile-specific styles */
 @media only screen and (max-width: 767px) {
     .container {
-        margin-top: 300px; /* Apply 300px margin on top only for mobile screens */
+        margin-top: 500px; /* Apply 300px margin on top only for mobile screens */
     }
 }
 /* Title and Subtitle */
 h1 {
     color: #00b4d8;
-    margin-top: 50px;
-    padding-top: 50px;
+    margin-top: 100px;
+    padding-top: 100px;
 }
 
 h2 {
