@@ -10,6 +10,7 @@ body {
     align-items: center;
     height: 100vh;
     text-align: center;
+    flex-direction: column;
 }
 
 /* Container */
@@ -18,11 +19,13 @@ body {
     margin: 0 auto;
     text-align: center;
     padding: 40px;
+    flex: 1;
 }
 
 /* Title and Subtitle */
 h1 {
     color: #00b4d8;
+    padding-top: 700px;
 }
 
 h2 {
@@ -100,39 +103,4 @@ button:hover {
 
 .explanation strong {
     color: #00b4d8;
-}
-
-html, body {
-    height: 100%;
-    margin: 0;
-}
-
-body {
-    display: flex;
-    flex-direction: column;
-}
-
-.container {
-    flex: 1;
-}
-
-/* Hide the spacer on desktop (screens wider than 414px) */
-.spacer {
-    display: none; /* Hide by default */
-}
-
-/* Show the spacer on mobile (screens 414px wide or less) */
-@media only screen and (max-width: 414px) {
-    .spacer {
-        display: block; /* Show the element */
-        height: 350px;  /* Maintain the height */
-    }
-}
-
-
-footer {
-    /* Your footer styles here */
-    background-color: #f8f8f8; /* Example style */
-    padding: 10px;
-    text-align: center;
 }
