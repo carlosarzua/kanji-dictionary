@@ -74,7 +74,6 @@ button:hover {
     text-align: center; /* Align text to the left */
     font-size: 1rem; /* Adjusted font size */
     white-space: pre-line; /* Preserve line breaks */
-    width: 300px;
 }
 
 /* New classes for kanji and reading */
