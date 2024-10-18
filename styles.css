@@ -15,7 +15,6 @@ body {
 /* Container */
 .container {
     width: 80%; /* Make the container wider */
-    margin: 100px;
     margin-top: 300px;
     text-align: center;
     padding: 0px;
@@ -25,6 +24,7 @@ body {
 @media only screen and (max-width: 767px) {
     .container {
         margin-top: 2000px; /* Apply 2000px margin on top only for mobile screens */
+        width: 100%;
     }
 }
 
