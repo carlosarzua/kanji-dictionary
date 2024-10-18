@@ -27,10 +27,7 @@ body {
         margin-top: 150vh; /* This is too large */
         width: 90%;
     }
-    .result-box {
-        width: 300px;
-}
-     }
+ }
 
 /* Title and Subtitle */
 h1 {
