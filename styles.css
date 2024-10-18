@@ -10,14 +10,15 @@ body {
     align-items: center;
     height: 100vh;
     text-align: center;
-    flex-direction: column;
 }
 
-/* General styles */
+/* Container */
 .container {
-    margin: 0;
-    padding: 0;
-    /* Other container styles */
+    width: 80%; /* Make the container wider */
+    margin: 100px;
+    margin-top: 300px;
+    text-align: center;
+    padding: 0px;
 }
 
 /* Mobile-specific styles */
@@ -26,39 +27,33 @@ body {
         margin-top: 500px; /* Apply 300px margin on top only for mobile screens */
     }
 }
+
 /* Title and Subtitle */
 h1 {
-    color: #00b4d8;
-    margin-top: 100px;
-    padding-top: 100px;
+    color: #00b4d8; /* Bright blue for main title */
+    font-size: 2rem; /* Increased font size */
 }
 
 h2 {
-    color: #90e0ef;
+    color: #90e0ef; /* Lighter blue for subtitle */
+    font-size: 1.5rem; /* Adjusted font size */
 }
 
 /* Search Container */
-.search-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 20px;
-}
-
 #kanjiInput {
     padding: 10px;
     width: 50%; /* Shorter width */
-    font-size: 1.2rem;
+    font-size: 1.2rem; /* Increased font size */
     border-radius: 5px;
-    border: 1px solid #0077b6;
+    border: 1px solid #0077b6; /* Blue border */
 }
 
 button {
-    background-color: #00b4d8;
-    color: #ffffff;
+    background-color: #00b4d8; /* Bright blue background */
+    color: #ffffff; /* White text */
     border: none;
     padding: 10px 20px;
-    font-size: 1.2rem;
+    font-size: 1.2rem; /* Increased font size */
     border-radius: 5px;
     cursor: pointer;
     margin-left: 10px;
@@ -69,26 +64,28 @@ button:hover {
 }
 
 /* Result Section */
-.result-cell {
+.result-box {
     margin-top: 20px;
-    background-color: #333333; /* Slightly darker background */
+    background-color: #333333; /* Darker background for results */
     padding: 20px;
     border-radius: 10px;
-    color: #ffffff;
-    text-align: center;
+    color: #ffffff; /* White text for results */
+    text-align: center; /* Align text to the left */
+    font-size: 1rem; /* Adjusted font size */
+    white-space: pre-line; /* Preserve line breaks */
 }
 
-.result-cell p {
-    font-size: 1.5rem;
+/* New classes for kanji and reading */
+.kanji-highlight {
+    background-color: #00b4d8; /* Same bright blue as h1 */
+    padding: 2px 5px;
+    border-radius: 3px;
 }
 
-/* Highlighted Kanji */
-.highlighted-kanji {
-    background-color: #00b4d8;
-    color: #ffffff;
-    padding: 5px;
-    border-radius: 5px;
-    font-size: 2rem;
+.reading-highlight {
+    background-color: #90e0ef; /* Same light blue as h2 */
+    padding: 2px 5px;
+    border-radius: 3px;
 }
 
 /* Explanation Section */
