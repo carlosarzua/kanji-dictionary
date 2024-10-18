@@ -43,7 +43,7 @@ h2 {
 /* Search Container */
 #kanjiInput {
     padding: 10px;
-    width: 50%; /* Shorter width */
+    width: 40%; /* Shorter width */
     font-size: 1.2rem; /* Increased font size */
     border-radius: 5px;
     border: 1px solid #0077b6; /* Blue border */
@@ -74,6 +74,7 @@ button:hover {
     text-align: center; /* Align text to the left */
     font-size: 1rem; /* Adjusted font size */
     white-space: pre-line; /* Preserve line breaks */
+    width: 300px;
 }
 
 /* New classes for kanji and reading */
