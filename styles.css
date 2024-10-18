@@ -5,14 +5,18 @@ body {
     color: #ffffff; /* White text */
     margin: 0;
     padding: 0;
-    height: 100%; /* Use height 100% instead of 100vh */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
     text-align: center;
 }
 
 /* Container */
 .container {
-    width: 85%;
-    margin-top: 50px; /* Reduce the margin-top */
+    width: 85%; /* Make the container wider */
+    margin: 100px;
+    margin-top: 300px;
     text-align: center;
     padding: 0px;
 }
@@ -20,67 +24,67 @@ body {
 /* Mobile-specific styles */
 @media only screen and (max-width: 767px) {
     .container {
-        margin-top: 100vh; /* Use a smaller margin-top for mobile */
-        width: 90%; /* Adjust width for mobile */
+        margin-top: 30vh; /* This is too large */
+        width: 90%;
     }
 }
 
 /* Title and Subtitle */
 h1 {
     color: #00b4d8; /* Bright blue for main title */
-    font-size: 2rem;
+    font-size: 2rem; /* Increased font size */
 }
 
 h2 {
     color: #90e0ef; /* Lighter blue for subtitle */
-    font-size: 1.5rem;
+    font-size: 1.5rem; /* Adjusted font size */
 }
 
 /* Search Container */
 #kanjiInput {
     padding: 10px;
-    width: 80%; /* Increase width for better visibility */
-    font-size: 1.2rem;
+    width: 50%; /* Shorter width */
+    font-size: 1.2rem; /* Increased font size */
     border-radius: 5px;
-    border: 1px solid #0077b6;
+    border: 1px solid #0077b6; /* Blue border */
 }
 
 button {
-    background-color: #00b4d8;
-    color: #ffffff;
+    background-color: #00b4d8; /* Bright blue background */
+    color: #ffffff; /* White text */
     border: none;
     padding: 10px 20px;
-    font-size: 1.2rem;
+    font-size: 1.2rem; /* Increased font size */
     border-radius: 5px;
     cursor: pointer;
     margin-left: 10px;
 }
 
 button:hover {
-    background-color: #0077b6;
+    background-color: #0077b6; /* Darker blue on hover */
 }
 
 /* Result Section */
 .result-box {
     margin-top: 20px;
-    background-color: #333333;
+    background-color: #333333; /* Darker background for results */
     padding: 20px;
     border-radius: 10px;
-    color: #ffffff;
-    text-align: center;
-    font-size: 1rem;
-    white-space: pre-line;
+    color: #ffffff; /* White text for results */
+    text-align: center; /* Align text to the left */
+    font-size: 1rem; /* Adjusted font size */
+    white-space: pre-line; /* Preserve line breaks */
 }
 
 /* New classes for kanji and reading */
 .kanji-highlight {
-    background-color: #00b4d8;
+    background-color: #00b4d8; /* Same bright blue as h1 */
     padding: 2px 5px;
     border-radius: 3px;
 }
 
 .reading-highlight {
-    background-color: #90e0ef;
+    background-color: #90e0ef; /* Same light blue as h2 */
     padding: 2px 5px;
     border-radius: 3px;
 }
