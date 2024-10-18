@@ -20,7 +20,7 @@ body {
 /* Mobile-specific styles */
 @media only screen and (max-width: 767px) {
     .container {
-        margin-top: 5vh; /* Use a smaller margin-top for mobile */
+        margin-top: 100vh; /* Use a smaller margin-top for mobile */
         width: 90%; /* Adjust width for mobile */
     }
 }
