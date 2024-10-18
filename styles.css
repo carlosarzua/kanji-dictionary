@@ -24,7 +24,7 @@ body {
 /* Mobile-specific styles */
 @media only screen and (max-width: 767px) {
     .container {
-        margin-top: 200vh; /* This is too large */
+        margin-top: 150vh; /* This is too large */
         width: 90%;
     }
     .result-box {
