@@ -24,7 +24,7 @@ body {
 /* Mobile-specific styles */
 @media only screen and (max-width: 767px) {
     .container {
-        margin-top: 150vh; /* This is too large */
+        margin-top: 450px;
         width: 90%;
     }
  }
