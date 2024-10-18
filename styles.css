@@ -23,7 +23,7 @@ body {
 /* Mobile-specific styles */
 @media only screen and (max-width: 767px) {
     .container {
-        margin-top: 2000px; /* Apply 2000px margin on top only for mobile screens */
+        margin-top: 10vh; /* 10% of the viewport height */
         width: 100%;
     }
 }
