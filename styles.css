@@ -24,7 +24,7 @@ body {
 /* Mobile-specific styles */
 @media only screen and (max-width: 767px) {
     .container {
-        margin-top: 500px; /* Apply 300px margin on top only for mobile screens */
+        margin-top: 2000px; /* Apply 2000px margin on top only for mobile screens */
     }
 }
 
