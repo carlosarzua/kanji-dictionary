@@ -5523,7 +5523,7 @@ if (type === "regular") {
 } else if (type === "exception") {
     message = `The character ${kanjiElement} is read ${kanjiReadingElement}.\n` +
               `It's an exception,\n` +
-              `as kanji that contain the phonetic radical ${radicalReading}\n` +
+              `as kanji that contain the phonetic radical ${radicalElement}\n` +
               `are usually read ${radicalReadingElement}.\n\n`;  
 } else if (type === "doublereading") {
     message = `The character ${kanjiElement} has two readings.\n` +
