@@ -5496,7 +5496,7 @@ for (const [radical, radicalData] of Object.entries(phoneticRadicalDatabase)) {
     }
 }
 
-return `The kanji ${kanji} either belongs to a phonetic radical with multiple readings or is not in the database.\n`;
+return `The kanji ${kanji} is not in the database: it may not contain a phonetic radical, it may contain a phonetic radical with multiple readings or it may have not been added yet. You can contact Carlos at carlosarzua@usal.es to add missing characters.\n`;
 }
 
 // Function to format the output based on kanji type and notes
@@ -5555,13 +5555,13 @@ if (exception.length > 0) {
 // Append any relevant notes
 if (notes) {
     if (notes.isContainedIn) {
-        message += `\nCareful! The component ${radicalElement} is contained in the phonetic radical ${notes.isContainedIn}.\nThe largest radical always prevails.`;
+        message += `\nCareful! The component ${radicalElement} is contained in the phonetic radical ${notes.isContainedIn}.\nThe largest radical always prevails.\n`;
     }
     if (notes.containsRadical) {
-        message += `\nCareful! The phonetic radical ${radicalElement} contains the component ${notes.containsRadical}.\nThe largest radical always prevails.`;
+        message += `\nCareful! The phonetic radical ${radicalElement} contains the component ${notes.containsRadical}.\nThe largest radical always prevails.\n`;
     }
     if (notes.similarTo) {
-        message += `\nCareful! The component ${radicalElement} is very similar to the phonetic radical ${notes.similarTo}.`;
+        message += `\nCareful! The component ${radicalElement} is very similar to the phonetic radical ${notes.similarTo}.\n`;
     }
 }
 
@@ -5595,7 +5595,7 @@ document.getElementById("checkButton").addEventListener("click", function() {
         // Join the results with a line break between each kanji's output
         resultElement.innerHTML = results.join("\n");
     } else {
-        resultElement.textContent = "Please enter a kanji.";
+        resultElement.textContent = "Please enter up to four kanji.";
     }
 });
 });
