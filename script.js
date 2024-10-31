@@ -728,7 +728,7 @@ const phoneticRadicalDatabase =
                 },
                 notes: {
                     isContainedIn: null,
-                    containsRadical: null,
+                    containsRadical: "氏（シ）",
                     similarTo: null
                 }
             },
@@ -3782,7 +3782,7 @@ const phoneticRadicalDatabase =
                     doublereading: []
                 },
                 notes: {
-                    isContainedIn: null,
+                    isContainedIn: "氐（テイ）",
                     containsRadical: null,
                     similarTo: null
                 }
@@ -4450,7 +4450,7 @@ const phoneticRadicalDatabase =
                 notes: {
                     isContainedIn: null,
                     containsRadical: null,
-                    similarTo: null
+                    similarTo: "毛（モウ）"
                 }
             },
             "也": {
@@ -5156,7 +5156,7 @@ const phoneticRadicalDatabase =
                 notes: {
                     isContainedIn: null,
                     containsRadical: null,
-                    similarTo: null
+                    similarTo: "乇（タク）"
                 }
             },
             "文": {
@@ -6044,6 +6044,25 @@ const phoneticRadicalDatabase =
                         { kanji: "婚", reading: "コン" }
                     ],
                     modified: [],
+                    exception: [],
+                    doublereading: []
+                },
+                notes: {
+                    isContainedIn: null,
+                    containsRadical: null,
+                    similarTo: null
+                }
+            },
+            "弗": {
+                defaultReading: "フツ",
+                derivedKanji: {
+                    regular: [
+                        { kanji: "沸", reading: "フツ" },
+                    ],
+                    modified: [
+                        { kanji: "沸", reading: "フツ" },
+                        { kanji: "佛", reading: "ブツ" },
+                    ],
                     exception: [],
                     doublereading: []
                 },
