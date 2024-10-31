@@ -6060,7 +6060,7 @@ const phoneticRadicalDatabase =
                         { kanji: "沸", reading: "フツ" },
                     ],
                     modified: [
-                        { kanji: "沸", reading: "フツ" },
+                        { kanji: "費", reading: "ヒ" },
                         { kanji: "佛", reading: "ブツ" },
                     ],
                     exception: [],
