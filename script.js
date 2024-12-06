@@ -7275,34 +7275,55 @@ if (notes) {
 return message;
 }
 
-// Add event listener to the button after the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", function() {
-const resultElement = document.getElementById("result");
+    const resultElement = document.getElementById("result");
+    let isComposing = false; // Flag to track if the user is composing a character
 
-// Automatically check the kanji 紅 on page load
-const defaultKanji = "紅";
-const defaultResult = checkKanjiReadingGroup(defaultKanji);
-resultElement.innerHTML = defaultResult;
+    // Automatically check the kanji 紅 on page load
+    const defaultKanji = "紅";
+    const defaultResult = checkKanjiReadingGroup(defaultKanji);
+    resultElement.innerHTML = defaultResult;
 
-// Add click event listener to the button for manual input
-document.getElementById("checkButton").addEventListener("click", function() {
-    const kanjiInput = document.getElementById("kanjiInput").value.trim();
-    
-    if (kanjiInput) {
-        const results = [];
-        // Split the input into individual kanji and limit to a maximum of 4 kanji
-        const kanjiArray = kanjiInput.split('').slice(0, 4);
+    // Function to process the kanji input (reuse for button click and Enter key)
+    function processKanjiInput() {
+        const kanjiInput = document.getElementById("kanjiInput").value.trim();
+        
+        if (kanjiInput) {
+            const results = [];
+            // Split the input into individual kanji and limit to a maximum of 4 kanji
+            const kanjiArray = kanjiInput.split('').slice(0, 4);
 
-        // Process each kanji
-        kanjiArray.forEach(kanji => {
-            const result = checkKanjiReadingGroup(kanji);
-            results.push(result);
-        });
+            // Process each kanji
+            kanjiArray.forEach(kanji => {
+                const result = checkKanjiReadingGroup(kanji);
+                results.push(result);
+            });
 
-        // Join the results with a line break between each kanji's output
-        resultElement.innerHTML = results.join("\n\n\n");
-    } else {
-        resultElement.textContent = "Please enter up to four kanji.";
+            // Join the results with a line break between each kanji's output
+            resultElement.innerHTML = results.join("\n\n\n");
+        } else {
+            resultElement.textContent = "Please enter up to four kanji.";
+        }
     }
+
+    // Add click event listener to the button for manual input
+    document.getElementById("checkButton").addEventListener("click", processKanjiInput);
+
+    // Handle composition events to detect when the user is typing
+    document.getElementById("kanjiInput").addEventListener("compositionstart", function() {
+        isComposing = true; // Set flag when composition starts
+    });
+
+    document.getElementById("kanjiInput").addEventListener("compositionend", function() {
+        isComposing = false; // Reset flag when composition ends
+    });
+
+    // Add keydown event listener to the input field for Enter key
+    document.getElementById("kanjiInput").addEventListener("keydown", function(event) {
+        // If the user is composing, do not trigger the dictionary search
+        if (event.key === "Enter" && !isComposing) {
+            processKanjiInput(); // Call the function to process the kanji input if not composing
+        }
+    });
 });
-});
+
