@@ -823,8 +823,8 @@ const phoneticRadicalDatabase =
                     doublereading: []
                 },
                 notes: {
-                    isContainedIn: "立（リツ）",
-                    containsRadical: null,
+                    isContainedIn: null,
+                    containsRadical: "立（リツ）",
                     similarTo: "音（オン）"
                 }
             },
@@ -1812,9 +1812,7 @@ const phoneticRadicalDatabase =
                 defaultReading: "ザイ",
                 derivedKanji: {
                     regular: [
-                        { kanji: "才", reading: "ザイ" },
-                        { kanji: "材", reading: "ザイ" },
-                        { kanji: "財", reading: "ザイ" }
+                        { kanji: "材", reading: "ザイ" }
                     ],
                     modified: [
                         { kanji: "才", reading: "サイ" }
@@ -1822,7 +1820,9 @@ const phoneticRadicalDatabase =
                     exception: [
                         { kanji: "閉", reading: "ヘイ" }
                     ],
-                    doublereading: []
+                    doublereading: [
+                        { kanji: "財", reading: "ザイ" }
+                    ]
                 },
                 notes: {
                     isContainedIn: null,
@@ -4233,9 +4233,7 @@ const phoneticRadicalDatabase =
                     modified: [
                         { kanji: "唯", reading: "ユイ" }
                     ],
-                    exception: [
-                        { kanji: "難", reading: "ナン" }
-                    ],
+                    exception: [],
                     doublereading: []
                 },
                 notes: {
@@ -5474,10 +5472,10 @@ const phoneticRadicalDatabase =
                     regular: [
                         { kanji: "段", reading: "ダン" }
                     ],
-                    modified: [],
-                    exception: [
+                    modified: [
                         { kanji: "鍛", reading: "タン" }
                     ],
+                    exception: [],
                     doublereading: []
                 },
                 notes: {
@@ -6279,7 +6277,7 @@ const phoneticRadicalDatabase =
                 },
                 notes: {
                     isContainedIn: "意（オク）、竟（キョウ）、戠（シキ）",
-                    containsRadical: "立（リツ）、音（オン）",
+                    containsRadical: "立（リツ）",
                     similarTo: "咅（バイ）"
                 }
             },
@@ -6662,7 +6660,7 @@ const phoneticRadicalDatabase =
                         { kanji: "灘", reading: "ナン" }
                     ],
                     modified: [
-                        { kanji: "漢", reading: "ナン" },
+                        { kanji: "漢", reading: "カン" },
                         { kanji: "嘆", reading: "タン" }
                     ],
                     exception: [],
@@ -6994,7 +6992,7 @@ const phoneticRadicalDatabase =
                 notes: {
                     isContainedIn: null,
                     containsRadical: null,
-                    similarTo: null
+                    similarTo: "易（イ）"
                 }
             },
             "台": {
@@ -7166,6 +7164,24 @@ const phoneticRadicalDatabase =
                     similarTo: null
                 }
             },
+        "易": {
+                defaultReading: "イ",
+                derivedKanji: {
+                    regular: [
+                        { kanji: "易", reading: "イ" }
+                    ],
+                    modified: [
+                        { kanji: "賜", reading: "シ" }
+                    ],
+                    exception: [],
+                    doublereading: []
+                },
+                notes: {
+                    isContainedIn: null,
+                    containsRadical: null,
+                    similarTo: "昜（ヨウ）"
+                }
+            }
         };
         
 
