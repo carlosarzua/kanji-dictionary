@@ -7300,7 +7300,7 @@ document.getElementById("checkButton").addEventListener("click", function() {
         });
 
         // Join the results with a line break between each kanji's output
-        resultElement.innerHTML = results.join("\n");
+        resultElement.innerHTML = results.join("\n\n\n");
     } else {
         resultElement.textContent = "Please enter up to four kanji.";
     }
