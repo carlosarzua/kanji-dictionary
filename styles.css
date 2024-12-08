@@ -54,6 +54,22 @@ button:hover {
     background-color: #0077b6; /* Darker blue on hover */
 }
 
+#randomButton {
+    background-color: #90e0ef; /* Same as other buttons */
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+#randomButton:hover {
+    background-color: #0077b6; /* Darker blue on hover */
+}
+
+
 /* Result Section */
 .result-box {
     margin-top: 20px;
