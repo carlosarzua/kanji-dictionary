@@ -113,3 +113,48 @@ button:hover {
 .explanation strong {
     color: #00b4d8;
 }
+
+/* For screens smaller than 768px (tablets and phones) */
+@media (max-width: 768px) {
+    .container {
+        width: 95%;  /* Expand width on smaller screens */
+        margin: 50px 10px;  /* Reduce margins */
+        padding: 10px;
+    }
+
+    #kanjiInput {
+        width: 80%;  /* Make input wider */
+        font-size: 1rem;  /* Adjust font size for readability */
+        margin-bottom: 10px;
+    }
+
+    button {
+        font-size: 1rem;  /* Make buttons slightly smaller */
+        padding: 8px 16px;
+        margin-left: 5px;  /* Reduce margin between buttons */
+        margin-bottom: 8px;
+    }
+
+    #randomButton {
+        font-size: 1rem;  /* Make buttons slightly smaller */
+        padding: 8px 16px;
+        margin-left: 5px;  /* Reduce margin between buttons */
+    }
+
+    h1 {
+        font-size: 1.8rem;  /* Slightly smaller main title */
+    }
+
+    h2 {
+        font-size: 1.3rem;  /* Slightly smaller subtitle */
+    }
+
+    .result-box, .explanation {
+        padding: 15px;  /* Adjust padding for content boxes */
+    }
+
+    .explanation p {
+        font-size: 1rem;  /* Make explanation text smaller */
+        line-height: 1.5;
+    }
+}
