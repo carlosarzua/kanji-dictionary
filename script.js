@@ -7343,3 +7343,27 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
+// Function to get a random kanji from the database
+function getRandomKanji() {
+    const radicals = Object.values(phoneticRadicalDatabase);
+    const randomRadical = radicals[Math.floor(Math.random() * radicals.length)];
+
+    // Collect all kanji from different types
+    const allKanji = [
+        ...randomRadical.derivedKanji.regular,
+        ...randomRadical.derivedKanji.modified,
+        ...randomRadical.derivedKanji.exception,
+        ...randomRadical.derivedKanji.doublereading
+    ];
+
+    if (allKanji.length > 0) {
+        const randomKanji = allKanji[Math.floor(Math.random() * allKanji.length)].kanji;
+        const result = checkKanjiReadingGroup(randomKanji);
+        document.getElementById("result").innerHTML = result;
+    } else {
+        document.getElementById("result").textContent = "No kanji found.";
+    }
+}
+
+// Add click event listener to the "Random Kanji" button
+document.getElementById("randomButton").addEventListener("click", getRandomKanji);
