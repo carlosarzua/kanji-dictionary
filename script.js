@@ -7181,7 +7181,45 @@ const phoneticRadicalDatabase =
                     containsRadical: null,
                     similarTo: "昜（ヨウ）"
                 }
-            }
+            },
+        "壬": {
+                defaultReading: "ニン",
+                derivedKanji: {
+                    regular: [
+                        { kanji: "任", reading: "ニン" },
+                        { kanji: "妊", reading: "ニン" }
+                    ],
+                    modified: [
+                        { kanji: "淫", reading: "イン" },
+                        { kanji: "賃", reading: "チン" }
+                    ],
+                    exception: [],
+                    doublereading: []
+                },
+                notes: {
+                    isContainedIn: "廷（テイ）",
+                    containsRadical: null,
+                    similarTo: null,
+                }
+            },
+         "廷": {
+                defaultReading: "テイ",
+                derivedKanji: {
+                    regular: [
+                        { kanji: "廷", reading: "テイ" },
+                        { kanji: "庭", reading: "テイ" },
+                        { kanji: "艇", reading: "テイ" }
+                    ],
+                    modified: [],
+                    exception: [],
+                    doublereading: []
+                },
+                notes: {
+                    isContainedIn: null,
+                    containsRadical: "壬（ニン）",
+                    similarTo: null,
+                }
+            },
         };
         
 
