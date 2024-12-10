@@ -7405,3 +7405,90 @@ function getRandomKanji() {
 
 // Add click event listener to the "Random Kanji" button
 document.getElementById("randomButton").addEventListener("click", getRandomKanji);
+
+// Function to get a random kanji with multiple readings
+function getRandomKanjiWithMultipleReadings() {
+    const candidates = Object.entries(phoneticRadicalDatabase).filter(([radical, data]) =>
+        data.derivedKanji.modified.length > 0 || data.derivedKanji.doublereading.length > 0
+    );
+
+    if (candidates.length === 0) return null;
+
+    const [radical, data] = candidates[Math.floor(Math.random() * candidates.length)];
+    const allKanji = [
+        ...data.derivedKanji.modified,
+        ...data.derivedKanji.doublereading
+    ];
+
+    const randomKanji = allKanji[Math.floor(Math.random() * allKanji.length)];
+    return { kanji: randomKanji.kanji, reading: randomKanji.reading, radical, radicalReading: data.defaultReading };
+}
+
+// Function to show quiz
+function showQuiz() {
+    const quizData = getRandomKanjiWithMultipleReadings();
+    if (!quizData) {
+        document.getElementById("quizResult").textContent = "No kanji with multiple readings found.";
+        return;
+    }
+
+    const { kanji, reading, radical, radicalReading } = quizData;
+    document.getElementById("quizKanji").textContent = kanji;
+
+    // Gather all possible readings from the database
+    const allPossibleReadings = Array.from(
+        new Set(Object.values(phoneticRadicalDatabase).flatMap(data =>
+            [data.defaultReading, ...data.derivedKanji.modified.map(k => k.reading), ...data.derivedKanji.doublereading.map(k => k.reading)]
+        ))
+    );
+
+    // Filter out the correct reading
+    const incorrectOptions = allPossibleReadings
+        .filter(opt => opt !== reading)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 3)
+        .map(text => ({ text, correct: false }));
+
+    const correctOption = { text: reading, correct: true };
+    const options = [correctOption, ...incorrectOptions].sort(() => Math.random() - 0.5);
+
+    const optionsContainer = document.getElementById("quizOptions");
+    optionsContainer.innerHTML = "";
+
+    options.forEach(({ text, correct }) => {
+        const button = document.createElement("button");
+        button.textContent = text;
+        button.addEventListener("click", () => handleQuizAnswer(correct, kanji, reading, radical, radicalReading));
+        optionsContainer.appendChild(button);
+    });
+
+    document.getElementById("quiz").classList.remove("hidden");
+}
+
+// Function to handle quiz answer selection
+function handleQuizAnswer(correct, kanji, reading, radical, radicalReading) {
+    const resultElement = document.getElementById("quizResult");
+    const retryButton = document.getElementById("retryButton");
+
+    if (correct) {
+        resultElement.innerHTML = `Way to go! The character <span class="kanji-highlight">${kanji}</span> is read <span class="reading-highlight">${reading}</span> and contains the phonetic radical <span class="kanji-highlight">${radical}</span>, usually read <span class="reading-highlight">${radicalReading}</span>.`;
+    } else {
+        resultElement.innerHTML = `Nope! The character <span class="kanji-highlight">${kanji}</span> is read <span class="reading-highlight">${reading}</span> and contains the phonetic radical <span class="kanji-highlight">${radical}</span>, usually read <span class="reading-highlight">${radicalReading}</span>.`;
+    }
+
+    retryButton.classList.remove("hidden");
+}
+
+// Event listeners
+document.getElementById("closeQuiz").addEventListener("click", () => {
+    document.getElementById("quiz").classList.add("hidden");
+});
+
+document.getElementById("retryButton").addEventListener("click", () => {
+    showQuiz();
+    document.getElementById("quizResult").textContent = "";
+    document.getElementById("retryButton").classList.add("hidden");
+});
+
+// Show the quiz after 1.5 seconds
+setTimeout(showQuiz, 1500);
