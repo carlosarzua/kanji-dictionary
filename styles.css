@@ -158,3 +158,74 @@ button:hover {
         line-height: 1.5;
     }
 }
+
+/* Quiz Box */
+.quiz-box {
+    position: fixed;
+    top: 50%;
+    right: 10%;
+    transform: translateY(-50%);
+    width: 300px;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.hidden {
+    display: none;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 1.2rem;
+    float: right;
+    cursor: pointer;
+}
+
+.kanji-display {
+    font-size: 3rem;
+    margin: 20px 0;
+    color: #00b4d8;
+}
+
+.options-container button {
+    background-color: #00b4d8;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    margin: 5px;
+    cursor: pointer;
+    width: 80%;
+}
+
+.options-container button:hover {
+    background-color: #0077b6;
+}
+
+.quiz-result {
+    font-size: 1.2rem;
+    margin-top: 15px;
+}
+
+.retry-button {
+    background-color: #90e0ef;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    margin-top: 15px;
+    cursor: pointer;
+}
+
+.retry-button:hover {
+    background-color: #0077b6;
+}
