@@ -7407,22 +7407,28 @@ function getRandomKanji() {
 document.getElementById("randomButton").addEventListener("click", getRandomKanji);
 
 // Function to get a random kanji with multiple readings
+// Function to get a random kanji with multiple readings
 function getRandomKanjiWithMultipleReadings() {
-    const candidates = Object.entries(phoneticRadicalDatabase).filter(([radical, data]) =>
-        data.derivedKanji.modified.length > 0 || data.derivedKanji.doublereading.length > 0
-    );
+    const radicals = Object.entries(phoneticRadicalDatabase);
 
-    if (candidates.length === 0) return null;
+    if (radicals.length === 0) return null;
 
-    const [radical, data] = candidates[Math.floor(Math.random() * candidates.length)];
+    const [radical, data] = radicals[Math.floor(Math.random() * radicals.length)];
+
+    // Collect all kanji from all types
     const allKanji = [
+        ...data.derivedKanji.regular,
         ...data.derivedKanji.modified,
+        ...data.derivedKanji.exception,
         ...data.derivedKanji.doublereading
     ];
+
+    if (allKanji.length === 0) return null;
 
     const randomKanji = allKanji[Math.floor(Math.random() * allKanji.length)];
     return { kanji: randomKanji.kanji, reading: randomKanji.reading, radical, radicalReading: data.defaultReading };
 }
+
 
 // Function to show quiz
 function showQuiz() {
