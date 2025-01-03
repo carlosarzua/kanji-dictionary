@@ -8,12 +8,65 @@
 </head>
 <body>
     <div class="container">
-        <h1>Radical. v.2*</h1>
+        <h4><a style="color: #00b4d8" href="https://carloscoordinator.com">CarlosCoordinator.com</a>'s</h4> 
+        <h1>Radical. v.3*</h1>
         <h2>Kanji Made Radically Easier.</h2>
-        <input type="text" id="kanjiInput" placeholder="Enter up to 4 kanji">
-        <button id="checkButton">Check Kanji</button>
-        <button id="randomButton">Random Kanji</button>
-        <div id="result" class="result-box"></div>
+        <div class="search-container">
+            <input type="text" id="kanjiInput" placeholder="Enter a kanji">
+            <button id="checkButton">Check Kanji</button>
+            <button id="randomButton">Random Kanji</button>
+        </div>
+
+<!-- Six new boxes for mobile -->
+<div class="mobile-boxes"> 
+    <div class="mobile-box" id="mobile-displayKanjiContainer">
+        <div id="mobile-displayKanji"></div>
+        <div id="mobile-levelBubble"></div>
+    </div>
+    <div class="mobile-box" id="mobile-english-box">English Meaning //</div>
+    <div class="row-2">
+        <div class="mobile-box" id="mobile-kunyomi-box">Kun'yomi //</div>
+        <div class="mobile-box" id="mobile-meaningradical-box">Meaning Radical //</div>
+    </div>
+    <div class="row-3">
+        <div class="mobile-box" id="mobile-onyomi-box"> On'yomi //</div>
+        <div class="mobile-box" id="mobile-radical-box">Phonetic Radical //</div>
+    </div>
+</div>
+
+
+
+
+        <!-- New Kanji Box Section -->
+        <div id="kanjiBoxSection" class="kanji-box-section">
+            <div id="kanjiDisplay" class="kanji-display-section">
+                <div class="kanji-box" id="displayKanji"></div>
+                <div class="level-bubble" id="levelBubble"></div>
+                <!-- Placed English Box Below Kanji Box and Bubble -->
+                <div id="english-box" class="reading-box white-reading-box"></div>
+            </div>
+            <div class="light-blue-row">
+                <div class="reading-box-container">
+                    <div class="reading-box white-reading-box" id="kunyomi-box"></div>
+                </div>
+                <div class="reading-box blue-reading-box" id="meaningradical-box"></div>
+                <div class="small-blue-box"><p>Meaning Radical</p></div>
+                <div class="small-white-box"><p>Kun'yomi //</p></div>
+            </div>
+            <div class="light-blue-row">
+                <div class="reading-box white-reading-box" id="onyomi-box"></div>
+                <div class="reading-box blue-reading-box" id="radical-box"></div>
+                <div class="small-blue-box"><p>Phonetic Radical</p></div>
+                <div class="small-white-box"><p>On'yomi //</p></div>
+            </div>
+        </div>
+
+        <!-- Result Container Section -->
+        <div class="result-container">
+            <div id="result-left" class="result-box"></div>
+            <div id="result" class="result-box"></div>
+        </div>
+
         <!-- Kanji Quiz Section -->
         <div id="quiz" class="quiz-box hidden">
             <button id="closeQuiz" class="close-button">✖</button>
@@ -24,17 +77,18 @@
             <button id="retryButton" class="retry-button hidden">Try Again!</button>
         </div>
 
-
         <!-- Explanation Section -->
         <div class="explanation">
+            <p>The first bilingual Japanese kanji dictionary designed to truly help learners accurately identify meaning and phonetic radicals. Creating a project like this inspired me to learn programming (HTML, CSS, JavaScript, Python) and explore AI. If you'd like to support the development of Radical, <a style="color: #00b4d8" href="https://paypal.me/carloscoordinator?country.x=ES&locale.x=en_US">you can donate here</a>. You can also book a free trial Japanese class with me <a style="color: #00b4d8" href="https://zcal.co/carloscoordinator/japanese">here</a> or find out what I'm up to on <a style="color: #00b4d8" href="https://www.linkedin.com/in/carlosramosfuentes/">LinkedIn</a>, <a style="color: #00b4d8" href="https://www.youtube.com/@CarlosCoordinator?sub_confirmation=1">YouTube</a> or <a style="color: #00b4d8" href="https://www.tiktok.com/@carloscoordinator">TikTok</a> or <a style="color: #00b4d8" href="https://www.instagram.com/carloscoordinator/">Instagram</a>.</p>
             <p>Radicals are the building blocks of kanji. Some radicals show the meaning, while others indicate the <strong>on’yomi</strong> reading, used when two kanji are together. For example, 泊まる means "to stay" and is read とまる. When 泊 is next to another kanji, it's read ハク, because it contains the phonetic radical 白. Similarly, 伯, 迫, and 拍 are read ハク but have different meanings based on their meaning radicals. None of them have to do with 'white'.</p>
-            <p><strong>*Version 2</strong> [released Dec 27, 2024] added double-reading phonetic radicals and now contains <strong>375 radicals</strong> and <strong>1,402 kanji</strong>. The dictionary does not yet show kun'yomi readings, an English translation, or meaning radicals.These features will soon be released and an app development is in progress as well, with features such as tracking kanji & radical acquisition progress, tests, and kanji classification by JLPT level.</p>
-            <p><strong>*Version 1.5</strong> [released Dec 10, 2024] added the Quiz and the "Random Kanji" functionalities, improved the mobile display and contained a set of <strong>368 radicals</strong> and <strong>1,300 kanji</strong>.</p>
+            <p><strong>*Version 3</strong> [released Jan 3, 2025] added all common use kanji [常用漢字], added meaning radicals, JLPT level classification and now contains <strong>377 phonetic radicals</strong>, <strong>225 meaning radicals</strong> and <strong>2,484 kanji</strong>. The next update will allow learners to look up not just kanji, but also words, classified by JLPT level. An app is in development as well, with features such as tracking kanji & radical acquisition progress, customizable tests, and kanji classification by JLPT level.</p>
+            <p><strong>*Version 2</strong> [released Dec 27, 2024] added double-reading phonetic radicals and contained <strong>375 phonetic radicals</strong> and <strong>1,402 kanji</strong>. </p>
+            <p><strong>*Version 1.5</strong> [released Dec 10, 4] added the Quiz and the "Random Kanji" functionalities, improved the mobile display and contained a set of <strong>368 radicals</strong> and <strong>1,300 kanji</strong>.</p>
             <p><strong>*Version 1.0</strong> [released Oct 18, 2024] included a set of 279 radicals and 1,148 kanji.</p>
             <p>Made by Carlos Ramos Fuentes, teacher of Japanese at <a style="color: #00b4d8" href="https://carloscoordinator.com">CarlosCoordinator.com</a>. You can contact me via <a style="color: #00b4d8" href="mailto:carlosarzua@usal.es?subject=Inquiry About Radical, Kanji Dictionary">email here</a>.</p>
-            </div>
+        </div>
     </div>
-
-    <script src="script.js"></script>
+    <script src="readings.js" defer></script> <!-- Load readings.js first -->
+    <script src="script.js" defer></script> <!-- Then load script.js -->
 </body>
 </html>
