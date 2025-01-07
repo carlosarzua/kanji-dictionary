@@ -6378,7 +6378,7 @@ const phoneticRadicalDatabase =
                     similarTo: null
                 }
             },
-            "撃": {
+            "軗": {
                 defaultReading: "ゲキ",
                 derivedKanji: {
                     regular: [
