@@ -3410,8 +3410,8 @@ const phoneticRadicalDatabase =
                 },
                 notes: {
                     isContainedIn: null,
-                    containsRadical: "凶（キョウ）",
-                    similarTo: null
+                    containsRadical: null,
+                    similarTo: "凶（キョウ）"
                 }
             },
             "君": {
@@ -7634,7 +7634,7 @@ const meaningRadicalDatabase = {
                 },
                 "阝": {
                     radical: "hills",
-                    kanjiList: ["阪", "防", "阻", "附", "限", "院", "陥", "降", "除", "陣", "陛", "陰", "険", "陳", "陶", "陪", "陸", "隆", "陵", "階", "隅", "随", "隊", "陽", "隔", "隙", "隠", "際", "障", "隣"]
+                    kanjiList: ["険", "阪", "防", "阻", "附", "限", "院", "陥", "降", "除", "陣", "陛", "陰", "険", "陳", "陶", "陪", "陸", "隆", "陵", "階", "隅", "随", "隊", "陽", "隔", "隙", "隠", "際", "障", "隣"]
                 },
         
                 "火": {
