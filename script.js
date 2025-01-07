@@ -7286,6 +7286,27 @@ const phoneticRadicalDatabase =
                         similarTo: null
                     }
                 },
+                "光": {
+                    defaultReading: "コウ",
+                    derivedKanji: {
+                        regular: [
+                            { kanji: "光", reading: "コウ" },
+                            { kanji: "胱", reading: "コウ" },
+                            { kanji: "晃", reading: "コウ" }
+                        ],
+                        modified: [
+                        ],
+                        exception: [
+                        ],
+                        doublereading: [
+                        ]
+                    },
+                    notes: {
+                        isContainedIn: null,
+                        containsRadical: null,
+                        similarTo: null
+                    }
+                },
                 "色": {
                     defaultReading: "ショク",
                     derivedKanji: {
@@ -7361,7 +7382,9 @@ const phoneticRadicalDatabase =
                             { kanji: "肪", reading: "ボウ" },
                             { kanji: "房", reading: "ボウ" },
                             { kanji: "紡", reading: "ボウ" },
-                            { kanji: "傍", reading: "ボウ" }
+                            { kanji: "傍", reading: "ボウ" },
+                            { kanji: "膀", reading: "ボウ" }
+
                         ],
                         modified: [
                             { kanji: "傲", reading: "ゴウ" }
@@ -7595,7 +7618,7 @@ const meaningRadicalDatabase = {
         
                 "月": {
                     radical: "meat",
-                    kanjiList: ["肌", "肝", "肖", "肘", "育", "肩", "股", "肯", "肢", "肥", "肪", "胃", "胎", "胆", "背", "肺", "胞", "胸", "脅", "脂", "脊", "胴", "能", "脈", "脇", "脚", "脱", "脳", "腕", "腫", "腎", "腺", "腸", "腹", "腰", "膜", "膝", "膚", "膳", "膨", "臆", "臓"]
+                    kanjiList: ["膀","胱", "肌", "肝", "肖", "肘", "育", "肩", "股", "肯", "肢", "肥", "肪", "胃", "胎", "胆", "背", "肺", "胞", "胸", "脅", "脂", "脊", "胴", "能", "脈", "脇", "脚", "脱", "脳", "腕", "腫", "腎", "腺", "腸", "腹", "腰", "膜", "膝", "膚", "膳", "膨", "臆", "臓"]
                 },
         
                 "日": {
