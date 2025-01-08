@@ -7616,9 +7616,9 @@ const meaningRadicalDatabase = {
                 },
         
         
-                "月": {
+                "月 (meat)": {
                     radical: "meat",
-                    kanjiList: ["膀","胱", "肌", "肝", "肖", "肘", "育", "肩", "股", "肯", "肢", "肥", "肪", "胃", "胎", "胆", "背", "肺", "胞", "胸", "脅", "脂", "脊", "胴", "能", "脈", "脇", "脚", "脱", "脳", "腕", "腫", "腎", "腺", "腸", "腹", "腰", "膜", "膝", "膚", "膳", "膨", "臆", "臓"]
+                    kanjiList: ["肌", "肝", "肖", "肘", "育", "肩", "股", "肯", "肢", "肥", "肪", "胃", "胎", "胆", "背", "肺", "胞", "胸", "脅", "脂", "脊", "胴", "能", "脈", "脇", "脚", "脱", "脳", "腕", "腫", "腎", "腺", "腸", "腹", "腰", "膜", "膝", "膚", "膳", "膨", "臆", "臓", "膀","胱"]
                 },
         
                 "日": {
@@ -7655,7 +7655,7 @@ const meaningRadicalDatabase = {
                     radical: "sword",
                     kanjiList: ["刊", "刑", "列", "判", "別", "利", "刻", "刷", "刹", "刺", "制", "到", "削", "前", "則", "剣", "剛", "剤", "剝", "剖", "剰", "副", "割", "創", "劇"]
                 },
-                "阝": {
+                "阝 (hills)": {
                     radical: "hills",
                     kanjiList: ["降", "阪", "防", "阻", "附", "限", "院", "陥", "降", "除", "陣", "陛", "陰", "険", "陳", "陶", "陪", "陸", "隆", "陵", "階", "隅", "随", "隊", "陽", "隔", "隙", "隠", "際", "障", "隣"]
                 },
@@ -7829,7 +7829,7 @@ const meaningRadicalDatabase = {
                     kanjiList: ["寸", "寺", "寿", "対", "専", "封", "射", "将", "尉", "尋", "尊", "導"]
                 },
         
-                "阝": {
+                "阝 (city)": {
                     radical: "city",
                     kanjiList: ["那", "邦", "邪", "邸", "郊", "郎", "郡", "郭", "郷", "都", "部", "郵"]
                 },
@@ -7913,7 +7913,7 @@ const meaningRadicalDatabase = {
                     kanjiList: ["八", "公", "六", "共", "兵", "具", "典", "兼"]
                 },
         
-                "月": {
+                "月 (moon)": {
                     radical: "moon",
                     kanjiList: ["月", "有", "服", "朕", "朗", "望", "期", "朝"]
                 },
@@ -9358,15 +9358,15 @@ function formatMeaningRadicalMessage(kanji) {
     }
 
     // Special handling for specific meaning radicals
-    if (meaningRadical === "月") {
-        const moonRadical = meaningRadicalDatabase["月"].kanjiList;
-        const meatRadical = meaningRadicalDatabase["月"].kanjiList;
+    if (meaningRadical.startsWith("月")) {
+        const moonRadical = meaningRadicalDatabase["月 (moon)"].kanjiList;
+        const meatRadical = meaningRadicalDatabase["月 (meat)"].kanjiList;
         message += `<br><br>Careful! The meaning radical meat (月) looks exactly the same as the meaning radical moon (月).<br>` +
                    `Characters with the meat radical:<br>${meatRadical.map(k => `<span class="kanji-highlight">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join("、 ")}<br>` +
                    `Characters with the moon radical:<br>${moonRadical.map(k => `<span class="kanji-highlight">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join("、 ")}`;
-    } else if (meaningRadical === "阝") {
-        const hillsRadical = meaningRadicalDatabase["阝"].kanjiList;
-        const cityRadical = meaningRadicalDatabase["阝"].kanjiList;
+    } else if (meaningRadical.startsWith("阝")) {
+        const hillsRadical = meaningRadicalDatabase["阝 (hills)"].kanjiList;
+        const cityRadical = meaningRadicalDatabase["阝 (city)"].kanjiList;
         message += `<br><br>Careful! The meaning radical hills (阝) looks exactly the same as the meaning radical city (阝).<br>` +
                    `Characters with the hills radical:<br>${hillsRadical.map(k => `<span class="kanji-highlight">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join("、 ")}<br>` +
                    `Characters with the city radical:<br>${cityRadical.map(k => `<span class="kanji-highlight">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join("、 ")}`;
