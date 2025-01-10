@@ -96,6 +96,7 @@ button:hover {
     display: flex;
     justify-content: space-between;
     width: 100%;
+    margin-top: -45px;
 }
 
 /* Result Section */
@@ -151,7 +152,7 @@ button:hover {
 
 
 /* Media query for mobile devices (screens smaller than 768px) */
-@media (max-width: 768px) {
+@media (max-width: 1035px) {
     .container {
         width: 95%; /* Expand width on smaller screens */
         margin: 10px auto; /* Center the container */
@@ -193,7 +194,7 @@ button:hover {
 
     .result-container {
         display: flex; /* Ensure these elements are displayed */
-        margin-top: -70px;
+        margin: -70px;
     }
 
     .quiz-box {
@@ -227,7 +228,7 @@ button:hover {
         color: #00b4d8;
     }
 
-    .kanji-box-section {
+    .kanji-box-section, #english-box {
         display: none !important;
     }
 
@@ -430,7 +431,6 @@ button:hover {
     align-items: center;
     justify-content: center;
     position: relative;
-    margin-right: -250px; /* Space between white box and blue rows */
 }
 
 /* Light Blue Row */
@@ -590,21 +590,16 @@ button:hover {
 
 /* English Box */
 #english-box {
-    position: relative; /* Ensure it's positioned relative to the parent container */
-    top: 100px; /* Adjust this value to control the vertical placement */
-    left: -122px; /* Ensure it's aligned properly */
-    min-width: 200px; /* Minimum width */
-    height: 40px; /* Set height */
+    position: relative;
+    margin-top: -30px;
+    min-width: 300px; /* Minimum width */
     background-color: #ffffff; /* White background color */
     color: #000000;
     border: 4px solid #00b4d8; /* Blue border */
     display: flex;
-    align-items: center; /* Center vertically */
-    justify-content: center; /* Center horizontally */
-    padding: 0 10px; /* Add padding on the left and right */
+    padding: 0 15px; /* Add padding on the left and right */
     border-radius: 5px;
     white-space: nowrap; /* Prevent text wrapping */
-    overflow: visible; /* Allow overflow to be visible */
     text-overflow: clip; /* Clip the overflowing text without adding ellipsis */
     max-width: none; /* Allow the box to stretch as needed */
     width: auto; /* Adjust width automatically based on content */
@@ -770,8 +765,9 @@ unicode-bidi: isolate;
 }
 
 /* Hide .mobile-boxes on desktop */
-@media (min-width: 767px) {
+@media (min-width: 1036px) {
     .mobile-boxes {
         display: none;
     }
 }
+
