@@ -9031,7 +9031,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 // Update kunyomi and english boxes with default values
                 kunyomiBoxElement.innerHTML = `<p>no kun'yomi</p>`;
-                englishBoxElement.innerHTML = `<p>unknown m.</p>`;
+                englishBoxElement.innerHTML = `<p>unknown meaning</p>`;
             } else {
                 // Update values if kanji is not found and no phonetic radical reading is available
                 updateUnknownValues();
@@ -9124,7 +9124,7 @@ function updateUnknownValues() {
     const onyomiBoxElement = document.getElementById('onyomi-box'); 
 
     const kunyomiReading = "no kun'yomi";
-    const englishTranslation = "unknown m."; // Updated value
+    const englishTranslation = "unknown meaning"; // Updated value
     const meaningRadicalMessage = "unknown";
     const onyomiReading = "no on'yomi"; 
 
@@ -9255,7 +9255,7 @@ function processKanjiInput(inputKanji) {
 
             // Update kunyomi and english boxes with default values
             kunyomiBoxElement.innerHTML = `<p>no kun'yomi</p>`;
-            englishBoxElement.innerHTML = `<p>unknown m.</p>`;
+            englishBoxElement.innerHTML = `<p>unknown meaning</p>`;
         } else {
             // Update values if kanji is not found and no phonetic radical reading is available
             updateUnknownValues();
