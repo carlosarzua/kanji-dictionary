@@ -7325,6 +7325,24 @@ const phoneticRadicalDatabase =
                         similarTo: null
                     }
                 },
+                "旬": {
+                    defaultReading: "ジュン",
+                    derivedKanji: {
+                        regular: [],
+                        modified: [
+                            { kanji: "殉", reading: "ジュン" }
+                        ],
+                        exception: [],
+                        doublereading: [
+                            { kanji: "旬", reading: "シュン" }
+                        ]
+                    },
+                    notes: {
+                        isContainedIn: null,
+                        containsRadical: null,
+                        similarTo: null
+                    }
+                },
                 "周": {
                     defaultReading: ["シュウ", "チョウ"],
                     derivedKanji: {
