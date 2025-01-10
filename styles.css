@@ -590,10 +590,10 @@ button:hover {
 
 /* English Box */
 #english-box {
-    position: relative; /* Ensure it's positioned relative to the parent container */
-    top: 100px; /* Adjust this value to control the vertical placement */
-    left: -122px; /* Ensure it's aligned properly */
-    min-width: 200px; /* Minimum width */
+    position: absolute; /* Ensure it's positioned relative to the parent container */
+    top:140px; /* Adjust this value to control the vertical placement */
+    left: 0px !important; /* Ensure it's aligned properly */
+    min-width: 420px !important; /* Minimum width */
     height: 40px; /* Set height */
     background-color: #ffffff; /* White background color */
     color: #000000;
@@ -603,11 +603,8 @@ button:hover {
     justify-content: center; /* Center horizontally */
     padding: 0 10px; /* Add padding on the left and right */
     border-radius: 5px;
-    white-space: nowrap; /* Prevent text wrapping */
     overflow: visible; /* Allow overflow to be visible */
-    text-overflow: clip; /* Clip the overflowing text without adding ellipsis */
     max-width: none; /* Allow the box to stretch as needed */
-    width: auto; /* Adjust width automatically based on content */
 }
 
 /* Adjusted CSS for light-blue-row to align elements */
@@ -653,7 +650,7 @@ button:hover {
     justify-content: center;
     min-height: 40px; /* Ensure consistent height */
     box-sizing: border-box; /* Ensures consistent box sizing */
-    width: 250px;
+    width: 200px;
 }
 
 /* Specific CSS for kunyomi-box */
@@ -664,7 +661,7 @@ button:hover {
     justify-content: center;
     min-height: 40px; /* Ensure consistent height */
     box-sizing: border-box; /* Ensures consistent box sizing */
-    width: 350px; /* Adjust the width as needed */
+    width: 300px; /* Adjust the width as needed */
     position: relative; /* Ensure relative positioning for absolute elements */
 }
 
@@ -678,7 +675,7 @@ button:hover {
     display: flex;
     align-items: center; /* Center vertically */
     justify-content: center; /* Center horizontally */
-    width: 200px; /* Adjust the width as needed */
+    width: 150px; /* Adjust the width as needed */
     height: 40px; /* Adjust the height as needed */
     border-radius: 5px;
     margin: 0 15px; /* Space between elements */
