@@ -290,16 +290,31 @@ button:hover {
         color: #ffffff;
         font-size: 1.2rem;
     }
+#mobile-english-box {
+    flex-grow: 1; /* Allow it to grow and fill available space */
+    flex-shrink: 1; /* Allow it to shrink when space is limited */
+    flex-basis: 0; /* Start with a flexible basis size */
+    height: 100px; /* Consistent height */
+    background-color: white; /* White background */
+    color: black; /* Black text */
+    margin-left: 10px; /* Space between the boxes */
+    border: 3px solid #00b4d8;
 
-    #mobile-english-box {
-        flex-grow: 1; /* Flex to fill remaining space */
-        height: 100px; /* Consistent height */
-        background-color: white; /* Blue background */
-        color: black; /* White text */
-        margin-left: 10px; /* Add space between the square and rectangle */
-        border: 3px solid #00b4d8;
-        font-size: 40px;
-    }
+    /* Font size and text wrapping */
+    font-size: 40px; /* Default font size */
+    white-space: normal; /* Allow wrapping */
+    word-break: break-word; /* Break long words */
+    overflow: hidden; /* Prevent text overflow */
+
+    /* Center text inside */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+
+
 
     .row-2, .row-3 {
         display: flex;
