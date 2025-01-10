@@ -7328,10 +7328,9 @@ const phoneticRadicalDatabase =
                 "旬": {
                     defaultReading: "ジュン",
                     derivedKanji: {
-                        regular: [],
-                        modified: [
-                            { kanji: "殉", reading: "ジュン" }
-                        ],
+                        regular: [
+                            { kanji: "殉", reading: "ジュン" }],
+                        modified: [],
                         exception: [],
                         doublereading: [
                             { kanji: "旬", reading: "シュン" }
