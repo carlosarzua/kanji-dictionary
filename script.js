@@ -2713,7 +2713,7 @@ const phoneticRadicalDatabase =
                 notes: {
                     isContainedIn: "量（リョウ）、童（ドウ）",
                     containsRadical: null,
-                    similarTo: null
+                    similarTo: "菫（キン）"
                 }
             },
             "尞": {
@@ -6205,7 +6205,7 @@ const phoneticRadicalDatabase =
                 },
                 notes: {
                     isContainedIn: null,
-                    containsRadical: "立（リツ）、里（リ）",
+                    containsRadical: "立（リツ）、里（リ）、菫（キン）",
                     similarTo: null
                 }
             },
@@ -7340,6 +7340,24 @@ const phoneticRadicalDatabase =
                         isContainedIn: null,
                         containsRadical: null,
                         similarTo: null
+                    }
+                },
+                "菫": {
+                    defaultReading: "キン",
+                    derivedKanji: {
+                        regular: [
+                            { kanji: "勤", reading: "キン" },
+　　　　　　　　　　　　　　　　　　 { kanji: "謹", reading: "キン" }
+                        ],
+                        modified: [],
+                        exception: [],
+                        doublereading: [
+                        ]
+                    },
+                    notes: {
+                        isContainedIn: null,
+                        containsRadical: null,
+                        similarTo: "里（リ）、童（ドウ）"
                     }
                 },
                 "周": {
