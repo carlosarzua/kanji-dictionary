@@ -6030,7 +6030,7 @@ const phoneticRadicalDatabase =
                 },
                 notes: {
                     isContainedIn: null,
-                    containsRadical: "古（コ）",
+                    containsRadical: "工（コウ）",
                     similarTo: "左（サ）"
                 }
             },
