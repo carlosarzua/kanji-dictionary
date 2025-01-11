@@ -9,7 +9,7 @@
 <body>
     <div class="container">
         <h4><a style="color: #00b4d8" href="https://carloscoordinator.com">CarlosCoordinator.com</a>'s</h4> 
-        <h1>Radical. v.3*</h1>
+        <h1>Radical. v.4*</h1>
         <h2>Kanji Made Radically Easier.</h2>
         <div class="search-container">
             <input type="text" id="kanjiInput" placeholder="Enter a kanji">
@@ -26,10 +26,10 @@
             <div class="mobile-box" id="mobile-english-box">English Meaning //</div>
             <div class="row-2">
                 <div class="mobile-box" id="mobile-kunyomi-box">Kun'yomi //</div>
-                <div class="mobile-box" id="mobile-meaningradical-box">Meaning Radical //</div>
+                <div class="mobile-box" id="mobile-onyomi-box">On'yomi //</div>
             </div>
             <div class="row-3">
-                <div class="mobile-box" id="mobile-onyomi-box">On'yomi //</div>
+                <div class="mobile-box" id="mobile-meaningradical-box">Meaning Radical //</div>
                 <div class="mobile-box" id="mobile-radical-box">Phonetic Radical //</div>
             </div>
         </div>
@@ -58,9 +58,9 @@
 
         <div id="english-box" class="reading-box white-reading-box"></div>
 
-        <div id="vocabSection"></div>
-
-
+        <div id="vocabSection">
+            
+        </div>
 
         <!-- Result Container Section -->
         <div class="result-container">
@@ -81,8 +81,11 @@
         <!-- Explanation Section -->
         <div class="explanation">
             <p>The first bilingual Japanese kanji dictionary designed to truly help learners accurately identify meaning and phonetic radicals. Creating a project like this inspired me to learn programming (HTML, CSS, JavaScript, Python) and explore AI. If you'd like to support the development of Radical, <a style="color: #00b4d8" href="https://paypal.me/carloscoordinator?country.x=ES&locale.x=en_US">you can donate here</a>. You can also book a free trial Japanese class with me <a style="color: #00b4d8" href="https://zcal.co/carloscoordinator/japanese">here</a> or find out what I'm up to on <a style="color: #00b4d8" href="https://www.linkedin.com/in/carlosramosfuentes/">LinkedIn</a>, <a style="color: #00b4d8" href="https://www.youtube.com/@CarlosCoordinator?sub_confirmation=1">YouTube</a> or <a style="color: #00b4d8" href="https://www.tiktok.com/@carloscoordinator">TikTok</a> or <a style="color: #00b4d8" href="https://www.instagram.com/carloscoordinator/">Instagram</a>.</p>
+            <br>
             <p>Radicals are the building blocks of kanji. Some radicals show the meaning, while others indicate the <strong>on’yomi</strong> reading, used when two kanji are together. For example, 泊まる means "to stay" and is read とまる. When 泊 is next to another kanji, it's read ハク, because it contains the phonetic radical 白. Similarly, 伯, 迫, and 拍 are read ハク but have different meanings based on their meaning radicals. None of them have to do with 'white'.</p>
-            <p><strong>*Version 3</strong> [released Jan 3, 2025] added all common use kanji [常用漢字], added meaning radicals, JLPT level classification and now contains <strong>377 phonetic radicals</strong>, <strong>225 meaning radicals</strong> and <strong>2,484 kanji</strong>. The next update will allow learners to look up not just kanji, but also words, classified by JLPT level. An app is in development as well, with features such as tracking kanji & radical acquisition progress, customizable tests, and kanji classification by JLPT level.</p>
+            <br>
+            <p><strong>*Version 4</strong> [released Jan 11, 2025] now contains <strong>380 phonetic radicals</strong>, <strong>279 meaning radicals</strong> and <strong>6,368 kanji</strong>, partly obtained from the KANJIDIC Project. The next update will allow learners to look up not just kanji, but also words, classified by JLPT level. An app is in development as well, with features such as tracking kanji & radical acquisition progress, customizable tests, and kanji classification by JLPT level.</p>
+            <p><strong>*Version 3</strong> [released Jan 3, 2025] added all common use kanji [常用漢字], added meaning radicals, JLPT level classification and now contains <strong>377 phonetic radicals</strong>, <strong>225 meaning radicals</strong> and <strong>2,484 kanji</strong>. </p>
             <p><strong>*Version 2</strong> [released Dec 27, 2024] added double-reading phonetic radicals and contained <strong>375 phonetic radicals</strong> and <strong>1,402 kanji</strong>. </p>
             <p><strong>*Version 1.5</strong> [released Dec 10, 4] added the Quiz and the "Random Kanji" functionalities, improved the mobile display and contained a set of <strong>368 radicals</strong> and <strong>1,300 kanji</strong>.</p>
             <p><strong>*Version 1.0</strong> [released Oct 18, 2024] included a set of 279 radicals and 1,148 kanji.</p>
@@ -90,6 +93,7 @@
         </div>
     </div>
     <script src="readings.js" defer></script> <!-- Load readings.js first -->
+    <script src="meaningrads.js" defer></script> <!-- Load meaningrads.js next -->
     <script src="script.js" defer></script> <!-- Then load script.js -->
 </body>
 </html>
