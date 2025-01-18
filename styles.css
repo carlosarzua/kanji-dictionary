@@ -772,3 +772,96 @@ unicode-bidi: isolate;
     }
 }
 
+/* CSS for the new vocab box */
+#vocabSection {
+    background-color: #000000; /* Black background color */
+    border: none; /* No border */
+}
+
+#vocab-box {
+    position: relative;
+    margin-top: 10px;
+    width: 85vw; /* Slightly less wide */
+    background-color: #ffffff; /* White background color */
+    color: #000000;
+    border: 1px solid #00b4d8; /* Blue border with 1px thickness */
+    padding: 0 15px; /* Add padding on the left and right */
+    border-radius: 5px;
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+/* Style for vocab-entry */
+.vocab-entry {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+    position: relative;
+    background-color: #ffffff; /* White background color for each entry */
+}
+
+/* Style for word and reading */
+.word {
+    font-size: 1.2rem;
+    text-align: left; /* Left aligned */
+    display: block;
+    width: 100%;
+}
+
+/* Style for grammar */
+.grammar {
+    font-size: 0.9rem;
+    text-align: right;
+    display: inline-block;
+    width: 25%;
+    vertical-align: top;
+}
+
+/* Style for English meanings */
+.english1, .english2 {
+    text-align: left; /* Left aligned */
+    display: block;
+    margin-left: 20px; /* Optional: Adjust based on design preferences */
+}
+
+/* JLPT Level Bubble */
+.jlpt-vocab-bubble {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.2rem;
+    z-index: 1000;
+}
+
+.jlpt-vocab-bubble.n1 { background-color: red; color: white; }
+.jlpt-vocab-bubble.n2 { background-color: orange; color: white; }
+.jlpt-vocab-bubble.n3 { background-color: yellow; color: black; }
+.jlpt-vocab-bubble.n4 { background-color: green; color: white; }
+.jlpt-vocab-bubble.n5 { background-color: blue; color: white; }
+.jlpt-vocab-bubble.notinjlpt { background-color: grey; color: white; }
+
+/* Keigo Rectangle */
+.keigo-rectangle {
+    position: absolute;
+    right: 8px;
+    bottom: 2px;
+    padding: 5px;
+    background-color: #ffeb3b; /* Yellow background */
+    color: #000; /* Black text */
+    font-size: 0.8rem;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+/* Show more words */
+.show-more {
+    margin-top: 10px;
+    cursor: pointer;
+    color: #00b4d8;
+}
