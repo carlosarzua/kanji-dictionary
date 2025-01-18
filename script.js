@@ -7952,7 +7952,99 @@ document.addEventListener("DOMContentLoaded", function() {
     
         // Call the function to update the mobile boxes
         updateMobileBoxes();
+        updateVocabDisplay(kanji);
     }
+    
+    function updateVocabDisplay(inputKanji) {
+        const vocabBox = document.getElementById('vocab-box');
+        vocabBox.innerHTML = '';
+    
+        // Filter vocabulary based on the input kanji
+        const filteredVocab = vocabulary.filter(entry =>
+            entry.word.includes(inputKanji) ||
+            entry.reading.includes(inputKanji) ||
+            entry.english1.includes(inputKanji) ||
+            entry.english2.includes(inputKanji)
+        );
+    
+        // Sort the filtered vocabulary by JLPT level
+        const jlptOrder = { "n5": 1, "n4": 2, "n3": 3, "n2": 4, "n1": 5, "": 6 };
+        filteredVocab.sort((a, b) => {
+            return (jlptOrder[a.jlpt.toLowerCase()] || 6) - (jlptOrder[b.jlpt.toLowerCase()] || 6);
+        });
+    
+        let wordsToShow = 5;
+    
+        function renderWords(limit) {
+            vocabBox.innerHTML = '';
+            filteredVocab.slice(0, limit).forEach((entry) => {
+                const box = document.createElement('div');
+                box.classList.add('vocab-entry');
+    
+                // Create word display
+                const word = document.createElement('div');
+                word.classList.add('word');
+                word.innerHTML = `${entry.word}（${entry.reading}）`;
+    
+                // Create grammar display
+                const grammar = document.createElement('div');
+                grammar.classList.add('grammar');
+                grammar.innerHTML = entry.grammar;
+    
+                // Append word and grammar
+                box.appendChild(word);
+                box.appendChild(grammar);
+    
+                // Create English meanings
+                const english1 = document.createElement('div');
+                english1.classList.add('english1');
+                english1.innerHTML = entry.english1;
+    
+                box.appendChild(english1);
+    
+                if (entry.english2) {
+                    const english2 = document.createElement('div');
+                    english2.classList.add('english2');
+                    english2.innerHTML = entry.english2;
+                    box.appendChild(english2);
+                }
+    
+                // Create JLPT bubble
+                if (entry.jlpt) {
+                    const jlptBubble = document.createElement('div');
+                    jlptBubble.classList.add('jlpt-vocab-bubble', entry.jlpt.toLowerCase());
+                    jlptBubble.innerHTML = entry.jlpt.toUpperCase();
+                    box.appendChild(jlptBubble);
+                }
+    
+                // Create keigo rectangle
+                if (entry.keigo) {
+                    const keigoRect = document.createElement('div');
+                    keigoRect.classList.add('keigo-rectangle');
+                    keigoRect.innerHTML = entry.keigo;
+                    box.appendChild(keigoRect);
+                }
+    
+                vocabBox.appendChild(box);
+            });
+    
+            // Show "Show more words" if needed
+            if (filteredVocab.length > limit) {
+                const showMore = document.createElement('div');
+                showMore.classList.add('show-more');
+                showMore.innerHTML = 'Show more words';
+                showMore.addEventListener('click', function() {
+                    wordsToShow += 5;
+                    renderWords(wordsToShow);
+                });
+                vocabBox.appendChild(showMore);
+            }
+        }
+    
+        renderWords(wordsToShow);
+    }
+    
+    
     
 
 
@@ -8599,3 +8691,106 @@ function analyzeDatabases() {
 
 const result = analyzeDatabases();
 console.log(result);
+
+function updateVocabDisplay(inputKanji) {
+    const vocabBox = document.getElementById('vocab-box');
+    vocabBox.innerHTML = '';
+
+    // Filter vocabulary based on the input kanji
+    const filteredVocab = vocabulary.filter(entry =>
+        entry.word.includes(inputKanji) ||
+        entry.reading.includes(inputKanji) ||
+        entry.english1.includes(inputKanji) ||
+        entry.english2.includes(inputKanji)
+    );
+
+    // Sort the filtered vocabulary by JLPT level
+    const jlptOrder = { "n5": 1, "n4": 2, "n3": 3, "n2": 4, "n1": 5, "": 6 };
+    filteredVocab.sort((a, b) => {
+        return (jlptOrder[a.jlpt.toLowerCase()] || 6) - (jlptOrder[b.jlpt.toLowerCase()] || 6);
+    });
+
+    let wordsToShow = 5;
+
+    function renderWords(limit) {
+        vocabBox.innerHTML = '';
+        filteredVocab.slice(0, limit).forEach((entry) => {
+            const box = document.createElement('div');
+            box.classList.add('vocab-entry');
+
+            // Create word display
+            const word = document.createElement('div');
+            word.classList.add('word');
+            word.innerHTML = `${entry.word}（${entry.reading}）`;
+
+            // Create grammar display
+            const grammar = document.createElement('div');
+            grammar.classList.add('grammar');
+            grammar.innerHTML = entry.grammar;
+
+            // Append word and grammar
+            box.appendChild(word);
+            box.appendChild(grammar);
+
+            // Create English meanings
+            const english1 = document.createElement('div');
+            english1.classList.add('english1');
+            english1.innerHTML = entry.english1;
+
+            box.appendChild(english1);
+
+            if (entry.english2) {
+                const english2 = document.createElement('div');
+                english2.classList.add('english2');
+                english2.innerHTML = entry.english2;
+                box.appendChild(english2);
+            }
+
+            // Create JLPT bubble
+            if (entry.jlpt) {
+                const jlptBubble = document.createElement('div');
+                jlptBubble.classList.add('jlpt-vocab-bubble', entry.jlpt.toLowerCase());
+                jlptBubble.innerHTML = entry.jlpt.toUpperCase();
+                box.appendChild(jlptBubble);
+            }
+
+            // Create keigo rectangle
+            if (entry.keigo) {
+                const keigoRect = document.createElement('div');
+                keigoRect.classList.add('keigo-rectangle');
+                keigoRect.innerHTML = entry.keigo;
+                box.appendChild(keigoRect);
+            }
+
+            vocabBox.appendChild(box);
+        });
+
+        // Show "Show more words" if needed
+        if (filteredVocab.length > limit) {
+            const showMore = document.createElement('div');
+            showMore.classList.add('show-more');
+            showMore.innerHTML = 'Show more words';
+            showMore.addEventListener('click', function() {
+                wordsToShow += 5;
+                renderWords(wordsToShow);
+            });
+            vocabBox.appendChild(showMore);
+        }
+    }
+
+    renderWords(wordsToShow);
+}
+
+
+
+
+// Event listener for "Check Kanji" button
+document.getElementById('checkButton').addEventListener('click', () => {
+    const inputKanji = document.getElementById('kanjiInput').value;
+    updateVocabDisplay(inputKanji);
+});
+
+// Call this function when the user looks up a kanji
+// Initial display
+updateVocabDisplay('');
+
