@@ -1,2 +1,2 @@
 # kanji-dictionary
-This is a kanji dictionary where you can check whether a character you're studying contains a phonetic radical or not.
+Radical™ is a Japanese-English dictionary where you can check readings, meanings, phonetic radicals and phonetic radicals of kanji characters as well as words. It is the only dictionary that correctly distinguishes between meaning radicals and phonetic radicals in kanji characters.
