@@ -793,7 +793,6 @@ unicode-bidi: isolate;
 .vocab-entry {
     padding: 10px;
     margin-bottom: 10px;
-    margin-right: 20px;
     position: relative;
     background-color: #ffffff; /* White background color for each entry */
     border: 2px solid #00b4d8; /* Blue border with 1px thickness */
