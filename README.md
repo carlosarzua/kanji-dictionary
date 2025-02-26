@@ -1,2 +1,0 @@
-# kanji-dictionary
-Radical™ is a Japanese-English dictionary where you can check readings, meanings, phonetic radicals and meaning radicals of kanji characters as well as words. It is the only dictionary that correctly distinguishes between meaning radicals and phonetic radicals in kanji characters.
