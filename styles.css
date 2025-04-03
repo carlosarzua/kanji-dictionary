@@ -1,0 +1,873 @@
+/* Global Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #000000; /* Black background */
+    color: #ffffff; /* White text */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+/* Title and Subtitle */
+h1 {
+    color: #00b4d8; /* Bright blue for main title */
+    font-size: 3rem; /* Increased font size */
+    margin-bottom: 0px;
+    margin-top: -10px;
+}
+
+h2 {
+    color: #90e0ef; /* Lighter blue for subtitle */
+    font-size: 1.5rem; /* Adjusted font size */
+}
+
+/* Search Container */
+.search-container {
+    display: flex;
+    justify-content: center; /* Ensure buttons and input are centered */
+    align-items: center;
+    margin-bottom: 10px; /* Space below the search bar */
+    width: 100%; /* Make it the same width as the container */
+    box-sizing: border-box; /* Ensure padding and border are included in the width */
+}
+
+/* Kanji Input */
+#kanjiInput {
+    padding: 10px;
+    width: 100%; /* Adjust width to match other boxes */
+    font-size: 1.2rem; /* Increased font size */
+    border-radius: 5px;
+    border: 1px solid #0077b6; /* Blue border */
+    margin-bottom: 0;
+}
+
+/* Buttons */
+button {
+    background-color: #00b4d8;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap; /* Prevent button text from wrapping */
+}
+
+button:hover {
+    background-color: #0077b6; /* Darker blue on hover */
+}
+
+#randomButton {
+    background-color: #90e0ef; /* Same as other buttons */
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+#randomButton:hover {
+    background-color: #0077b6; /* Darker blue on hover */
+}
+
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 90%;
+    margin: 0 auto;
+    text-align: center;
+    padding: 0;
+    position: relative; /* Ensure container is relatively positioned */
+}
+
+.result-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: -45px;
+}
+
+/* Result Section */
+.result-box {
+    width: 48%; /* Adjust width to fit side-by-side */
+    margin-top: 70px;
+    background-color: #333333; /* Darker background for results */
+    padding: 20px;
+    border-radius: 10px;
+    color: #ffffff; /* White text for results */
+    text-align: center; /* Align text to the left */
+    font-size: 1rem; /* Adjusted font size */
+    white-space: pre-line; /* Preserve line breaks */
+    box-sizing: border-box; /* Ensure padding and border are included in the width */
+}
+
+/* Explanation Section */
+.explanation {
+    width: 100%; /* Make it the same width as the container */
+    margin-top: 50px; /* Adjust this value to position below the result boxes */
+    background-color: #1a1a1a;
+    color: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: left;
+    box-sizing: border-box; /* Ensure padding and border are included in the width */
+}
+
+.explanation p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.explanation strong {
+    color: #00b4d8;
+}
+
+
+/* New classes for kanji and reading */
+.kanji-highlight {
+    background-color: #00b4d8; /* Same bright blue as h1 */
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+.reading-highlight {
+    background-color: #90e0ef; /* Same light blue as h2 */
+    padding: 2px 5px;
+    border-radius: 3px;
+    padding: 2px 4px;
+    color: #333333;
+}
+
+
+/* Media query for mobile devices (screens smaller than 768px) */
+@media (max-width: 1035px) {
+    .container {
+        width: 95%; /* Expand width on smaller screens */
+        margin: 10px auto; /* Center the container */
+        padding: 10px;
+        display: flex; /* Use flexbox */
+        align-items: center; /* Center-align items */
+    }
+
+    .search-container {
+        flex-direction: row; /* Place elements in one line */
+        align-items: center; /* Center-align items */
+        justify-content: center; /* Center-align items */
+        width: 100%; /* Full width */
+    }
+
+    #kanjiInput {
+        width: 60%; /* Input field width */
+        font-size: 1rem; /* Adjust font size */
+        margin-right: 10px; /* Space between input and buttons */
+    }
+
+    button, #randomButton {
+        font-size: 1rem; /* Adjust button font size */
+        padding: 10px 20px; /* Button padding */
+        margin-left: 5px; /* Space between buttons */
+        width: auto; /* Ensure buttons fit content */
+        flex: 0; /* Ensure buttons don’t take extra space */
+    }
+
+    /* Hide the kanji square, JLPT level bubble, and light blue rows */
+    .kanji-box, .level-bubble, .light-blue-row {
+        display: none; /* Hide elements */
+    }
+
+    /* Ensure the black rows remain unchanged */
+    .small-blue-box, .small-white-box, .blue-reading-box {
+        display: none; /* Hide these boxes as per your request */
+    }
+
+    .result-container {
+        display: flex; /* Ensure these elements are displayed */
+        margin: -70px;
+    }
+
+    .quiz-box {
+        display: none;
+    }
+    h1 {
+        text-align: center;
+        font-size: 2rem;
+        margin: 10px 10px;
+        margin-top: 5px;
+    }
+
+
+    h2 {
+        text-align: center;
+        font-size: 1.5rem;
+        margin: 10px 10px;
+        margin-top: 5px;
+    }
+
+    h4 {
+        margin-top: 10px !important;
+        margin-bottom: 10px !important;
+    }
+
+    h2 {
+        margin-bottom: 30px;
+    }
+
+    a {
+        color: #00b4d8;
+    }
+
+    .kanji-box-section, #english-box {
+        display: none !important;
+    }
+
+    .mobile-boxes {
+        display: flex;
+        flex-wrap: wrap; /* Allow wrapping to form multiple lines */
+        gap: 10px; /* Space between boxes */
+        margin: 10px 20px;
+        width: 95%;
+    }
+
+    
+    .mobile-box {
+        position: relative;
+        padding: 0px;
+        background-color: #00b4d8;
+        display: flex;
+        flex-direction: column; /* Arrange elements in a column */
+        justify-content: center;
+        font-size: 1rem;
+        color: white;
+        border-radius: 10px;
+        margin-bottom: 10px;
+    }
+    
+
+    /* Ensure the first box is a square */
+    #mobile-displayKanjiContainer {
+        position: relative; /* Ensure the container is relative */
+        width: 100px; /* Ensure it's a square */
+        height: 100px; /* Ensure it's a square */
+        background-color: white; /* White background */
+        border: 3px solid #00b4d8; /* Dark blue border */
+        border-radius: 10px; /* Rounded corners */
+        flex-shrink: 0; /* Prevent shrinking */
+        color: black;
+        font-size: 50px;
+    }
+
+    #mobile-displayKanji {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        width: 100%;
+    }
+
+    /* Level bubble in mobile display */
+    #mobile-levelBubble {
+        position: absolute;
+        top: -15px !important; /* Position the bubble at the top right corner */
+        left: 65px !important; /* Position the bubble at the top right corner */
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-size: 1.2rem;
+    }
+
+    #mobile-english-box {
+        flex-grow: 1; /* Flex to fill remaining space */
+        height: 100px; /* Consistent height */
+        background-color: white; /* Blue background */
+        color: black; /* White text */
+        margin-left: 10px; /* Add space between the square and rectangle */
+        border: 3px solid #00b4d8;
+        font-size: 40px;
+    }
+
+    .row-2, .row-3 {
+        display: flex;
+        width: 100%;
+        gap: 10px;
+    }
+
+    #mobile-kunyomi-box,
+    #mobile-meaningradical-box,
+    #mobile-onyomi-box,
+    #mobile-radical-box {
+        width: calc(50% - 10px); /* Two columns */
+        font-size: 20px;
+        display: inline-block !important;
+        margin-block-end: 10px !important;
+    }
+
+    #mobile-kunyomi-box,
+    #mobile-onyomi-box {
+        background-color: white;
+        border: 1px solid #00b4d8;
+        color: black;
+    }
+
+    #mobile-meaningradical-box,
+    #mobile-radical-box {
+        border: 1px solid #ffffff;
+    }
+    
+    .kanji-display {
+        font-size: 3rem;
+        margin: 0px 0 !important;
+        color: #00b4d8;
+    }
+    
+    p {
+        margin-block-start: 0.5px;
+        margin-block-end: 0.5px;
+      }
+}
+
+
+
+
+
+/* Quiz Box */
+.quiz-box {
+    position: fixed;
+    top: 50%;
+    right: 10%;
+    transform: translateY(-50%);
+    width: 300px;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.hidden {
+    display: none;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 1.2rem;
+    float: right;
+    cursor: pointer;
+}
+
+.kanji-display {
+    font-size: 3rem;
+    margin: 20px 0;
+    color: #00b4d8;
+}
+
+.options-container button {
+    background-color: #00b4d8;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    margin: 5px;
+    cursor: pointer;
+    width: 80%;
+}
+
+.options-container button:hover {
+    background-color: #0077b6;
+}
+
+.quiz-result {
+    font-size: 1.2rem;
+    margin-top: 15px;
+}
+
+.retry-button {
+    background-color: #90e0ef;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    margin-top: 15px;
+    cursor: pointer;
+}
+
+.retry-button:hover {
+    background-color: #0077b6;
+}
+/* Kanji Box Section */
+.kanji-box-section {
+    margin-top: 30px; /* Space below the search bar */
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative; /* Position relative to contain the absolute positioning of kanji-display-section */
+}
+
+/* Kanji Display Section */
+.kanji-display-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* Light Blue Row */
+.light-blue-row {
+    background-color: #ADD8E6; /* Light blue color */
+    flex: 1; /* Take up remaining space */
+    height: 80px;
+    margin-left: 20px; /* Space between rows */
+    border-radius: 10px;
+    position: relative; /* Position relative to contain the small blue box */
+    display: flex; /* Add flexbox to align text */
+    align-items: center; /* Center align items vertically */
+    justify-content: center; /* Center horizontally */
+    font-size: 1rem; /* Adjust font size for long text */
+}
+
+.light-blue-row p {
+    margin: 0;
+    padding: 0;
+    font-size: inherit; /* Inherit font size from parent */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Add ellipsis for overflow */
+    max-width: 100%; /* Ensure text fits within the container */
+}
+
+
+
+.blue-reading-box {
+    background-color: #00b4d8; /* Same color as the small blue box */
+    color: #ffffff; /* White text */
+    border: 1px solid #ffffff;
+}
+
+/* Text inside Reading Boxes */
+.reading-box p {
+    margin: 0; /* Remove default margin */
+    padding: 0; /* Remove padding */
+    font-size: inherit; /* Inherit font size from parent */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Add ellipsis for overflow */
+}
+
+
+/* Small Blue Box */
+.small-blue-box {
+    background-color: rgba(0, 180, 216, 0.9);
+    width: 150px;
+    height: 35px;
+    border-radius: 5px;
+    position: absolute;
+    bottom: 75px; /* Adjust to position slightly above the edge */
+    right: 20px;  /* Adjust to position slightly to the left of the edge */
+    display: flex;
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margin */
+    border: 1px solid #ffffff;
+}
+
+/* Small White Box */
+.small-white-box {
+    background-color:rgba(255, 255, 255, 0.9);
+    width: 150px;
+    height: 35px;
+    border-radius: 5px;
+    position: absolute;
+    bottom: 75px; /* Adjust to position slightly above the edge */
+    left: 20px;  /* Adjust to position slightly to the right of the edge */
+    display: flex;
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margin */
+    border: 1px solid #00b4d8;
+}
+
+/* Text inside Small Boxes */
+.small-blue-box p,
+.small-white-box p {
+    margin: 0; /* Remove default margin */
+    color: white; /* Set text color to white for better contrast in blue boxes */
+    font-size: 1rem; /* Adjust font size as needed */
+}
+
+.small-white-box p {
+    color: black; /* Set text color to black for better contrast in white boxes */
+}
+
+
+
+/* White Box */
+.kanji-box {
+    font-size: 3rem; /* Adjusted font size to match the box */
+    width: 100px; /* Adjusted width */
+    height: 100px; /* Same size as the section */
+    left: 0px;
+    background-color: #ffffff;
+    color: #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 4px solid #00b4d8;
+    position: relative; /* Position relative to contain the JLPT bubble */
+}
+
+/* JLPT Level Bubble */
+.level-bubble, #mobile-levelBubble.level-bubble {
+    position: absolute;
+    top: -25px; /* Position the bubble at the top right corner */
+    left: 85px; /* Position the bubble at the top right corner */
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.2rem;
+    z-index: 1000;
+
+}
+
+.level-bubble.n1, #mobile-levelBubble.level-bubble.n1 {
+    background-color: red;
+    color: white; /* Ensure text is visible */
+}
+
+.level-bubble.n2, #mobile-levelBubble.level-bubble.n2 {
+    background-color: orange;
+    color: white; /* Ensure text is visible */
+}
+
+.level-bubble.n3, #mobile-levelBubble.level-bubble.n3 {
+    background-color: yellow;
+    color: black; /* Change text color to black */
+}
+
+.level-bubble.n4, #mobile-levelBubble.level-bubble.n4 {
+    background-color: green;
+    color: white; /* Ensure text is visible */
+}
+
+.level-bubble.n5, #mobile-levelBubble.level-bubble.n5 {
+    background-color: blue;
+    color: white; /* Ensure text is visible */
+}
+
+.level-bubble.notinjlpt, #mobile-levelBubble.level-bubble.notinjlpt {
+    background-color: grey; /* Add background-color here too */
+    color: white; /* Ensure text is visible */
+}
+
+
+/* English Box */
+#english-box {
+    position: relative;
+    margin-top: -30px;
+    min-width: 300px; /* Minimum width */
+    min-height: auto;
+    background-color: #ffffff; /* White background color */
+    color: #000000;
+    border: 4px solid #00b4d8; /* Blue border */
+    display: flex;
+    padding: 0 15px; /* Add padding on the left and right */
+    border-radius: 5px;
+    white-space: nowrap; /* Prevent text wrapping */
+    text-overflow: clip; /* Clip the overflowing text without adding ellipsis */
+    max-width: none; /* Allow the box to stretch as needed */
+    width: auto; /* Adjust width automatically based on content */
+}
+
+/* Adjusted CSS for light-blue-row to align elements */
+.light-blue-row {
+    display: flex;
+    justify-content: space-between; /* Align items to the left and right */
+    align-items: center; /* Align items at the center height-wise */
+    gap: 10px; /* Optional: Space between items */
+}
+
+/* Ensure reading-boxes are aligned at the same height */
+.reading-box {
+    flex: 1;
+    display: flex;
+    align-items: center; /* Center items vertically */
+    justify-content: center; /* Center items horizontally */
+    padding: 10px; /* Add padding if necessary */
+    height: 100%; /* Ensure full height for alignment */
+}
+
+
+
+
+/* Specific CSS for meaningradical-box */
+#meaningradical-box {
+    white-space: nowrap;
+    overflow: hidden; /* Ensure content doesn't spill outside */
+    text-overflow: ellipsis; /* Add ellipsis for overflow */
+    font-size: 1rem !important; /* Force the font size */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    box-sizing: border-box; /* Ensures consistent box sizing */
+    border: 2px solid white;
+}
+
+/* Specific CSS for onyomi-box */
+#onyomi-box {
+    font-size: 1.25rem !important; /* Force the font size */
+    display: flex; /* Ensure it's consistent with other boxes */
+    align-items: center;
+    justify-content: center;
+    min-height: 40px; /* Ensure consistent height */
+    box-sizing: border-box; /* Ensures consistent box sizing */
+    width: 250px;
+}
+
+/* Specific CSS for kunyomi-box */
+#kunyomi-box {
+    font-size: 1.1rem !important; /* Force the font size */
+    display: flex; /* Ensure it's consistent with other boxes */
+    align-items: center;
+    justify-content: center;
+    min-height: 40px; /* Ensure consistent height */
+    box-sizing: border-box; /* Ensures consistent box sizing */
+    width: 350px; /* Adjust the width as needed */
+    position: relative; /* Ensure relative positioning for absolute elements */
+}
+
+/* Ensuring the parent container is positioned relative */
+#parent-container {
+    position: relative;
+}
+
+/* Reading Boxes */
+.reading-box {
+    display: flex;
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+    width: 200px; /* Adjust the width as needed */
+    height: 40px; /* Adjust the height as needed */
+    border-radius: 5px;
+    margin: 0 15px; /* Space between elements */
+    font-size: 2rem; /* Twice as big as the other boxes */
+    border: 2px solid #00b4d8;
+}
+
+.white-reading-box {
+    background-color: #ffffff; /* Same color as the small white box */
+    color: #000000; /* Black text */
+    border: 2px solid #00b4d8;
+}
+
+/* Combined CSS for all reading boxes */
+#meaningradical-box,
+#onyomi-box,
+#kunyomi-box,
+#radical-box {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    box-sizing: border-box; /* Ensures consistent box sizing */
+}
+#meaningradical-box p, 
+#onyomi-box p,
+#kunyomi-box p,
+#radical-box p {
+margin-block-start: 0em !important;
+margin-block-end: 0em !important;
+margin-inline-start: 0px;
+margin-inline-end: 0px;
+unicode-bidi: isolate;
+}
+
+
+/* Specific CSS for radical-box */
+#radical-box {
+    font-size: 1.25rem !important; /* Force the font size */
+    display: flex; /* Ensure it's consistent with other boxes */
+    align-items: center;
+    justify-content: center;
+    min-height: 40px; /* Ensure consistent height */
+    border: 2px solid white;
+}
+
+
+
+/* Define the original background color */
+.original-info {
+    background-color: #fff; /* Set this to the original background color */
+    color: #000; /* Set this to the original text color */
+}
+.inline-level-bubble {
+    display: inline-block;
+    padding: 2px 4px;
+    border-radius: 3px;
+    margin-bottom: 2px;
+    font-size: 1rem;
+    color: white; /* Ensure text is visible */
+}
+
+.inline-level-bubble.n1 {
+    background-color: red;
+}
+
+.inline-level-bubble.n2 {
+    background-color: orange;
+}
+
+.inline-level-bubble.n3 {
+    background-color: yellow;
+    color: black; /* Change text color to black */
+}
+
+.inline-level-bubble.n4 {
+    background-color: green;
+}
+
+.inline-level-bubble.n5 {
+    background-color: blue;
+}
+
+.inline-level-bubble.notinjlpt {
+    color: white; /* Ensure text is visible */
+}
+
+/* Hide .mobile-boxes on desktop */
+@media (min-width: 1036px) {
+    .mobile-boxes {
+        display: none;
+    }
+}
+
+/* CSS for the new vocab box */
+#vocabSection {
+    background-color: #000000; /* Black background color */
+    border: none; /* No border */
+}
+
+#vocab-box {
+    position: relative;
+    margin-top: 10px;
+    width: 85vw; /* Slightly less wide */
+    background-color: #000000; /* White background color */
+    color: #000000;
+    padding: 0 15px; /* Add padding on the left and right */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+
+}
+
+/* Style for vocab-entry */
+.vocab-entry {
+    padding: 10px;
+    margin-bottom: 10px;
+    position: relative;
+    background-color: #ffffff; /* White background color for each entry */
+    border: 2px solid #00b4d8; /* Blue border with 1px thickness */
+    border-radius: 5px;
+}
+
+/* Style for word and reading */
+.word {
+    font-size: 1.2rem;
+    text-align: left; /* Left aligned */
+    display: block;
+    width: 100%;
+}
+
+/* Style for grammar */
+.grammar {
+    font-size: 0.8rem;
+    text-align: right;
+    display: inline-block;
+    width: 50%;
+    vertical-align: top;
+}
+
+/* Style for English meanings */
+.english1, .english2 {
+    text-align: left; /* Left aligned */
+    display: block;
+    margin-left: 30px; /* Optional: Adjust based on design preferences */
+}
+
+/* JLPT Level Bubble */
+.jlpt-vocab-bubble {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.2rem;
+    z-index: 1000;
+}
+
+.jlpt-vocab-bubble.n1 { background-color: red; color: white; }
+.jlpt-vocab-bubble.n2 { background-color: orange; color: white; }
+.jlpt-vocab-bubble.n3 { background-color: yellow; color: black; }
+.jlpt-vocab-bubble.n4 { background-color: green; color: white; }
+.jlpt-vocab-bubble.n5 { background-color: blue; color: white; }
+.jlpt-vocab-bubble.notinjlpt { background-color: grey; color: white; }
+
+/* Keigo Rectangle */
+.keigo-rectangle {
+    position: absolute;
+    right: 8px;
+    bottom: 2px;
+    padding: 5px;
+    background-color: #ffeb3b; /* Yellow background */
+    color: #000; /* Black text */
+    font-size: 0.8rem;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+/* Show more words */
+.show-more {
+    margin-top: 10px;
+    cursor: pointer;
+    color: #00b4d8;
+}
+
+.jlpt-n1 { background-color: red; color: white; padding: 2px; } /* Padding for a nicer highlight */
+.jlpt-n2 { background-color: orange; color: white; padding: 2px; }
+.jlpt-n3 { background-color: yellow; color: black; padding: 2px; }
+.jlpt-n4 { background-color: green; color: white; padding: 2px; }
+.jlpt-n5 { background-color: blue; color: white; padding: 2px; }
