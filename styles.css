@@ -871,3 +871,35 @@ unicode-bidi: isolate;
 .jlpt-n3 { background-color: yellow; color: black; padding: 2px; }
 .jlpt-n4 { background-color: green; color: white; padding: 2px; }
 .jlpt-n5 { background-color: blue; color: white; padding: 2px; }
+
+.level-bubble {
+    display: absolute;
+    width: 50px; /* Adjust if your bubble size differs */
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    border-radius: 50%; /* Circular like a bubble */
+    background-color: #f0f0f0; /* Light gray, tweak to match */
+    font-size: 1.2rem;
+}
+
+.nav-button {
+    position: absolute;
+    top: 88px; /* Position the bubble at the top right corner */
+    left: 88px; /* Position the bubble at the top right corner */
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.5rem;
+    z-index: 1000;
+    background-color: #00b4d8;
+
+}
+
+.nav-button:hover {
+    background-color: #e0e0e0; /* Slightly darker on hover */
+}
