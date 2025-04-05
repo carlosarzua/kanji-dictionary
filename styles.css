@@ -499,7 +499,7 @@ button:hover {
 .light-blue-row {
     background-color: #ADD8E6; /* Light blue color */
     flex: 1; /* Take up remaining space */
-    height: 80px;
+    height: 90px;
     margin-left: 20px; /* Space between rows */
     border-radius: 10px;
     position: relative; /* Position relative to contain the small blue box */
@@ -545,7 +545,7 @@ button:hover {
     height: 35px;
     border-radius: 5px;
     position: absolute;
-    bottom: 75px; /* Adjust to position slightly above the edge */
+    bottom: 85px; /* Adjust to position slightly above the edge */
     right: 20px;  /* Adjust to position slightly to the left of the edge */
     display: flex;
     align-items: center; /* Center vertically */
@@ -562,7 +562,7 @@ button:hover {
     height: 35px;
     border-radius: 5px;
     position: absolute;
-    bottom: 75px; /* Adjust to position slightly above the edge */
+    bottom: 85px; /* Adjust to position slightly above the edge */
     left: 20px;  /* Adjust to position slightly to the right of the edge */
     display: flex;
     align-items: center; /* Center vertically */
@@ -750,29 +750,58 @@ button:hover {
     border: 2px solid #00b4d8;
 }
 
-/* Combined CSS for all reading boxes */
-#meaningradical-box,
-#onyomi-box,
-#kunyomi-box,
-#radical-box {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 40px;
-    box-sizing: border-box; /* Ensures consistent box sizing */
-}
-#meaningradical-box p, 
-#onyomi-box p,
-#kunyomi-box p,
-#radical-box p {
-margin-block-start: 0em !important;
-margin-block-end: 0em !important;
-margin-inline-start: 0px;
-margin-inline-end: 0px;
-unicode-bidi: isolate;
+@media (min-width: 768px) {
+    #meaningradical-box,
+    #onyomi-box,
+    #kunyomi-box,
+    #radical-box {
+        white-space: pre-wrap;
+        overflow-y: auto;
+        text-overflow: unset;
+        display: flex;
+        align-items: flex-start; /* Changed to flex-start for top alignment */
+        justify-content: center;
+        min-height: 40px; /* Minimum height for single line */
+        max-height: 50px; /* Maximum height within 80px row */
+        box-sizing: border-box;
+        padding: 5px;
+        position: relative;
+        transition: max-height 0.3s ease;
+    }
+
+    /* Always show fade effect when overflowing */
+    #meaningradical-box:where(:where(:overflow-y: auto)),
+    #onyomi-box:where(:where(:overflow-y: auto)),
+    #kunyomi-box:where(:where(:overflow-y: auto)),
+    #radical-box:where(:where(:overflow-y: auto)) {
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+            pointer-events: none;
+        }
+    }
+
+    /* Vertically center text in onyomi-box */
+    #onyomi-box {
+        align-items: center; /* Override flex-start for vertical centering */
+    }
+
+    #meaningradical-box p,
+    #onyomi-box p,
+    #kunyomi-box p,
+    #radical-box p {
+        margin-block-start: 0em !important;
+        margin-block-end: 0em !important;
+        margin-inline-start: 0px;
+        margin-inline-end: 0px;
+        unicode-bidi: isolate;
+        white-space: pre-wrap;
+    }
 }
 
 
@@ -965,3 +994,4 @@ unicode-bidi: isolate;
 .nav-button:hover {
     background-color: #e0e0e0; /* Slightly darker on hover */
 }
+
