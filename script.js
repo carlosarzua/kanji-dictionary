@@ -7753,15 +7753,46 @@ function updateReadingBoxes(onyomiReading = "", radical = "", radicalReading = "
     const radicalBoxElement = document.getElementById('radical-box');
     const kunyomiBoxElement = document.getElementById('kunyomi-box');
 
-    if (onyomiBoxElement) {
-        onyomiBoxElement.innerHTML = onyomiReading ? `<p>${onyomiReading}</p>` : "";
+    function setupBox(boxElement, content) {
+        if (!boxElement || !content) {
+            boxElement.innerHTML = "";
+            boxElement.style.height = 'auto';
+            boxElement.style.overflow = 'hidden';
+            return;
+        }
+
+        // Set the content
+        boxElement.innerHTML = content ? `<p>${content}</p>` : "";
+
+        // Measure the content height
+        const contentElement = boxElement.querySelector('p');
+        const lineHeight = parseInt(window.getComputedStyle(boxElement).lineHeight) || 20; // Default line height
+        const minHeight = lineHeight + 10; // Single line + padding
+        const maxHeight = lineHeight * 2 + 10; // Double line + padding
+
+        // Check if content fits in one line
+        boxElement.style.height = 'auto'; // Temporarily allow natural height
+        const naturalHeight = contentElement.scrollHeight;
+
+        if (naturalHeight <= minHeight) {
+            // Fits in one line, set to minimum height
+            boxElement.style.height = `${minHeight}px`;
+            boxElement.style.overflow = 'hidden';
+        } else if (naturalHeight <= maxHeight) {
+            // Fits in two lines, set to double-line height
+            boxElement.style.height = `${maxHeight}px`;
+            boxElement.style.overflow = 'hidden';
+        } else {
+            // Exceeds two lines, use max-height with scrollbar
+            boxElement.style.height = 'auto';
+            boxElement.style.maxHeight = '75px'; // Within 80px row
+            boxElement.style.overflowY = 'auto';
+        }
     }
-    if (radicalBoxElement) {
-        radicalBoxElement.innerHTML = radical && radicalReading ? `<p>${radical} → ${radicalReading}</p>` : "";
-    }
-    if (kunyomiBoxElement) {
-        kunyomiBoxElement.innerHTML = kunyomiReading ? `<p>${kunyomiReading}</p>` : "";
-    }
+
+    setupBox(onyomiBoxElement, onyomiReading);
+    setupBox(radicalBoxElement, radical && radicalReading ? `${radical} → ${radicalReading}` : "");
+    setupBox(kunyomiBoxElement, kunyomiReading);
 }
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -8657,4 +8688,3 @@ document.getElementById('checkButton').addEventListener('click', () => {
 // Call this function when the user looks up a kanji
 // Initial display
 updateVocabDisplay('');
-
