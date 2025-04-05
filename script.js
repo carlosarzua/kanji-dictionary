@@ -7884,7 +7884,8 @@ document.addEventListener("DOMContentLoaded", function() {
         const radicalBoxElement = document.getElementById('radical-box');
         const kunyomiBoxElement = document.getElementById('kunyomi-box');
         const englishBoxElement = document.getElementById('english-box');
-
+    
+        // Clear all elements
         displayKanjiElement.textContent = "";
         levelBubbleElement.textContent = "";
         resultElement.textContent = "";
@@ -7896,14 +7897,14 @@ document.addEventListener("DOMContentLoaded", function() {
         radicalBoxElement.innerHTML = "";
         radicalBoxElement.style.backgroundColor = "";
         radicalBoxElement.style.color = "";
-
+    
         const navContainer = document.getElementById('kanjiDisplay');
         let navButton = document.getElementById('navButton');
         let prevButton = document.getElementById('prevButton');
-
+    
         if (navButton) navButton.remove();
         if (prevButton) prevButton.remove();
-
+    
         if (currentInput.length > 1) {
             navButton = document.createElement('span');
             navButton.id = 'navButton';
@@ -7911,7 +7912,7 @@ document.addEventListener("DOMContentLoaded", function() {
             prevButton = document.createElement('span');
             prevButton.id = 'prevButton';
             prevButton.className = 'nav-button';
-
+    
             if (currentKanjiIndex === 0) {
                 navButton.innerText = '→';
                 navButton.onclick = () => navigateKanji(1);
@@ -7929,77 +7930,107 @@ document.addEventListener("DOMContentLoaded", function() {
                 navContainer.appendChild(navButton);
             }
         }
-
+    
         let onyomiReading = "";
         let kunyomiReading = "";
         let englishTranslation = "";
         let phoneticRadical = "";
         let phoneticRadicalReading = "";
-
+    
         if (kanji) {
             displayKanjiElement.textContent = kanji;
-            const level = getJLPTLevel(kanji);
-            levelBubbleElement.textContent = level || 'N/A';
-            levelBubbleElement.className = `level-bubble ${level ? level.toLowerCase() : ""}`;
-
-            const phoneticRadicalInfo = checkKanjiReadingGroup(kanji);
-            const hasPhoneticRadical = phoneticRadicalInfo.indexOf('not in the database') === -1;
-
-            if (hasPhoneticRadical) {
-                const parts = phoneticRadicalInfo.split('phonetic radical');
-                if (parts.length > 1) {
-                    const radicalPart = parts[1];
-                    const radicalMatch = radicalPart.match(/<span class="kanji-highlight">(.+?)<\/span>/);
-                    if (radicalMatch) {
-                        phoneticRadical = radicalMatch[1];
-                        const readingMatch = radicalPart.match(/<span class="reading-highlight">(.+?)<\/span>/);
-                        if (readingMatch) {
-                            phoneticRadicalReading = readingMatch[1];
+    
+            // Check if the character is hiragana or katakana
+            const charType = getCharacterType(kanji);
+            if (charType === 'hiragana' || charType === 'small-hiragana' || charType === 'katakana' || charType === 'small-katakana') {
+                // Handle hiragana or katakana
+                const phoneticValue = getPhoneticValue(kanji);
+                const typeLabel = charType === 'small-hiragana' ? 'small hiragana' : charType === 'small-katakana' ? 'small katakana' : charType;
+                englishTranslation = `${typeLabel} ‘${phoneticValue}’`;
+    
+                // Update the meaning box
+                englishBoxElement.innerHTML = `<p>${englishTranslation}</p>`;
+    
+                // Clear other boxes
+                updateReadingBoxes("", "", "", "");
+    
+                // Set JLPT level to N/A for kana
+                levelBubbleElement.textContent = 'N/A';
+                levelBubbleElement.className = 'level-bubble';
+            } else {
+                // Existing kanji lookup logic
+                const level = getJLPTLevel(kanji);
+                levelBubbleElement.textContent = level || 'N/A';
+                levelBubbleElement.className = `level-bubble ${level ? level.toLowerCase() : ""}`;
+    
+                const phoneticRadicalInfo = checkKanjiReadingGroup(kanji);
+                const hasPhoneticRadical = phoneticRadicalInfo.indexOf('not in the database') === -1;
+    
+                if (hasPhoneticRadical) {
+                    const parts = phoneticRadicalInfo.split('phonetic radical');
+                    if (parts.length > 1) {
+                        const radicalPart = parts[1];
+                        const radicalMatch = radicalPart.match(/<span class="kanji-highlight">(.+?)<\/span>/);
+                        if (radicalMatch) {
+                            phoneticRadical = radicalMatch[1];
+                            const readingMatch = radicalPart.match(/<span class="reading-highlight">(.+?)<\/span>/);
+                            if (readingMatch) {
+                                phoneticRadicalReading = readingMatch[1];
+                            }
                         }
                     }
                 }
-            }
-
-            resultElement.innerHTML = `${phoneticRadicalInfo}`;
-            const meaningRadicalMessage = formatMeaningRadicalMessage(kanji);
-            resultLeftElement.innerHTML = meaningRadicalMessage || "";
-
-            checkMeaningRadical(kanji);
-            const kanjiReading = readings.find(reading => reading.kanji === kanji);
-
-            if (kanjiReading) {
-                kunyomiReading = kanjiReading.kunyomi || "no kun'yomi";
-                englishTranslation = kanjiReading.english || "no translation";
-                onyomiReading = kanjiReading.onyomi || "no on'yomi";
-
-                kunyomiBoxElement.innerHTML = `<p>${kunyomiReading}</p>`;
+    
+                resultElement.innerHTML = `${phoneticRadicalInfo}`;
+                const meaningRadicalMessage = formatMeaningRadicalMessage(kanji);
+                resultLeftElement.innerHTML = meaningRadicalMessage || "";
+    
+                checkMeaningRadical(kanji);
+                const kanjiReading = readings.find(reading => reading.kanji === kanji);
+    
+                if (kanjiReading) {
+                    kunyomiReading = kanjiReading.kunyomi || "no kun'yomi";
+                    englishTranslation = kanjiReading.english || "no translation";
+                    onyomiReading = kanjiReading.onyomi || "no on'yomi";
+                } else if (hasPhoneticRadical) {
+                    const phoneticRadicalData = phoneticRadicalDatabase[phoneticRadical];
+                    if (phoneticRadicalData) {
+                        const derivedKanji = [
+                            ...(phoneticRadicalData.derivedKanji?.regular || []),
+                            ...(phoneticRadicalData.derivedKanji?.modified || []),
+                            ...(phoneticRadicalData.derivedKanji?.exception || []),
+                            ...(phoneticRadicalData.derivedKanji?.doublereading || [])
+                        ];
+                        const kanjiEntry = derivedKanji.find(entry => entry.kanji === kanji);
+                        onyomiReading = kanjiEntry ? kanjiEntry.reading : phoneticRadicalReading || "";
+                    }
+                    kunyomiReading = "";
+                    englishTranslation = "";
+                }
+    
+                // Update the reading boxes with dynamic height adjustment
+                updateReadingBoxes(onyomiReading, phoneticRadical, phoneticRadicalReading, kunyomiReading);
+    
+                // Apply styling to kunyomiBoxElement
                 kunyomiBoxElement.style.backgroundColor = "#ffffff";
                 kunyomiBoxElement.style.color = "#000000";
+    
+                // Update englishBoxElement
                 englishBoxElement.innerHTML = englishTranslation !== "no translation" ? `<p>${englishTranslation}</p>` : "";
-                onyomiBoxElement.innerHTML = `<p>${onyomiReading}</p>`;
-            } else if (hasPhoneticRadical) {
-                const phoneticRadicalData = phoneticRadicalDatabase[phoneticRadical];
-                if (phoneticRadicalData) {
-                    const derivedKanji = [
-                        ...(phoneticRadicalData.derivedKanji?.regular || []),
-                        ...(phoneticRadicalData.derivedKanji?.modified || []),
-                        ...(phoneticRadicalData.derivedKanji?.exception || []),
-                        ...(phoneticRadicalData.derivedKanji?.doublereading || [])
-                    ];
-                    const kanjiEntry = derivedKanji.find(entry => entry.kanji === kanji);
-                    onyomiReading = kanjiEntry ? kanjiEntry.reading : phoneticRadicalReading || "";
-                    onyomiBoxElement.innerHTML = `<p>${onyomiReading}</p>`;
-                }
-                kunyomiReading = "";
-                englishTranslation = "";
+    
+                // Apply styling to radicalBoxElement
+                radicalBoxElement.style.backgroundColor = phoneticRadical ? "#00b4d8" : "";
+                radicalBoxElement.style.color = phoneticRadical ? "#ffffff" : "";
             }
         } else {
             resultElement.textContent = "Enter a kanji.";
+            englishBoxElement.innerHTML = "";
+            updateReadingBoxes("", "", "", "");
+            levelBubbleElement.textContent = 'N/A';
+            levelBubbleElement.className = 'level-bubble';
         }
-
-        updateReadingBoxes(onyomiReading, phoneticRadical, phoneticRadicalReading, kunyomiReading);
-        radicalBoxElement.style.backgroundColor = phoneticRadical ? "#00b4d8" : "";
-        radicalBoxElement.style.color = phoneticRadical ? "#ffffff" : "";
+    
+        // Update other functions
         updateMobileBoxes();
         updateVocabDisplay(currentInput);
     }
@@ -8688,3 +8719,77 @@ document.getElementById('checkButton').addEventListener('click', () => {
 // Call this function when the user looks up a kanji
 // Initial display
 updateVocabDisplay('');
+
+
+function getCharacterType(char) {
+    const codePoint = char.charCodeAt(0);
+
+    // Hiragana range: U+3040 to U+309F
+    if (codePoint >= 0x3040 && codePoint <= 0x309F) {
+        const smallHiragana = ['ぁ', 'ぃ', 'ぅ', 'ぇ', 'ぉ', 'っ', 'ゃ', 'ゅ', 'ょ', 'ゎ'];
+        const isSmall = smallHiragana.includes(char);
+        return isSmall ? 'small-hiragana' : 'hiragana';
+    }
+
+    // Katakana range: U+30A0 to U+30FF
+    if (codePoint >= 0x30A0 && codePoint <= 0x30FF) {
+        const smallKatakana = ['ァ', 'ィ', 'ゥ', 'ェ', 'ォ', 'ッ', 'ャ', 'ュ', 'ョ', 'ヮ'];
+        const isSmall = smallKatakana.includes(char);
+        return isSmall ? 'small-katakana' : 'katakana';
+    }
+
+    return 'other';
+}
+
+const kanaPhoneticMap = {
+    // Hiragana
+    'あ': 'a', 'い': 'i', 'う': 'u', 'え': 'e', 'お': 'o',
+    'か': 'ka', 'き': 'ki', 'く': 'ku', 'け': 'ke', 'こ': 'ko',
+    'さ': 'sa', 'し': 'shi', 'す': 'su', 'せ': 'se', 'そ': 'so',
+    'た': 'ta', 'ち': 'chi', 'つ': 'tsu', 'て': 'te', 'と': 'to',
+    'な': 'na', 'に': 'ni', 'ぬ': 'nu', 'ね': 'ne', 'の': 'no',
+    'は': 'ha', 'ひ': 'hi', 'ふ': 'fu', 'へ': 'he', 'ほ': 'ho',
+    'ま': 'ma', 'み': 'mi', 'む': 'mu', 'め': 'me', 'も': 'mo',
+    'や': 'ya', 'ゆ': 'yu', 'よ': 'yo',
+    'ら': 'ra', 'り': 'ri', 'る': 'ru', 'れ': 're', 'ろ': 'ro',
+    'わ': 'wa', 'を': 'wo', 'ん': 'n',
+    // Small Hiragana
+    'ぁ': 'a', 'ぃ': 'i', 'ぅ': 'u', 'ぇ': 'e', 'ぉ': 'o',
+    'っ': 'tsu', 'ゃ': 'ya', 'ゅ': 'yu', 'ょ': 'yo', 'ゎ': 'wa',
+    // Voiced Hiragana
+    'が': 'ga', 'ぎ': 'gi', 'ぐ': 'gu', 'げ': 'ge', 'ご': 'go',
+    'ざ': 'za', 'じ': 'ji', 'ず': 'zu', 'ぜ': 'ze', 'ぞ': 'zo',
+    'だ': 'da', 'ぢ': 'ji', 'づ': 'zu', 'で': 'de', 'ど': 'do',
+    'ば': 'ba', 'び': 'bi', 'ぶ': 'bu', 'べ': 'be', 'ぼ': 'bo',
+    // Semi-Voiced Hiragana
+    'ぱ': 'pa', 'ぴ': 'pi', 'ぷ': 'pu', 'ぺ': 'pe', 'ぽ': 'po',
+    // Katakana
+    'ア': 'a', 'イ': 'i', 'ウ': 'u', 'エ': 'e', 'オ': 'o',
+    'カ': 'ka', 'キ': 'ki', 'ク': 'ku', 'ケ': 'ke', 'コ': 'ko',
+    'サ': 'sa', 'シ': 'shi', 'ス': 'su', 'セ': 'se', 'ソ': 'so',
+    'タ': 'ta', 'チ': 'chi', 'ツ': 'tsu', 'テ': 'te', 'ト': 'to',
+    'ナ': 'na', 'ニ': 'ni', 'ヌ': 'nu', 'ネ': 'ne', 'ノ': 'no',
+    'ハ': 'ha', 'ヒ': 'hi', 'フ': 'fu', 'ヘ': 'he', 'ホ': 'ho',
+    'マ': 'ma', 'ミ': 'mi', 'ム': 'mu', 'メ': 'me', 'モ': 'mo',
+    'ヤ': 'ya', 'ユ': 'yu', 'ヨ': 'yo',
+    'ラ': 'ra', 'リ': 'ri', 'ル': 'ru', 'レ': 're', 'ロ': 'ro',
+    'ワ': 'wa', 'ヲ': 'wo', 'ン': 'n',
+    // Small Katakana
+    'ァ': 'a', 'ィ': 'i', 'ゥ': 'u', 'ェ': 'e', 'ォ': 'o',
+    'ッ': 'tsu', 'ャ': 'ya', 'ュ': 'yu', 'ョ': 'yo', 'ヮ': 'wa',
+    // Voiced Katakana
+    'ガ': 'ga', 'ギ': 'gi', 'グ': 'gu', 'ゲ': 'ge', 'ゴ': 'go',
+    'ザ': 'za', 'ジ': 'ji', 'ズ': 'zu', 'ゼ': 'ze', 'ゾ': 'zo',
+    'ダ': 'da', 'ヂ': 'ji', 'ヅ': 'zu', 'デ': 'de', 'ド': 'do',
+    'バ': 'ba', 'ビ': 'bi', 'ブ': 'bu', 'ベ': 'be', 'ボ': 'bo',
+    // Semi-Voiced Katakana
+    'パ': 'pa', 'ピ': 'pi', 'プ': 'pu', 'ペ': 'pe', 'ポ': 'po'
+};
+
+function getPhoneticValue(char) {
+    return kanaPhoneticMap[char] || 'unknown';
+}
+
+function getPhoneticValue(char) {
+    return kanaPhoneticMap[char] || 'unknown';
+}
