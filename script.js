@@ -7657,11 +7657,11 @@ let currentInput = "";
 // Function to format the output (unchanged, included for context)
 function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes) {
     let message = "";
-    const kanjiElement = `<span class="kanji-highlight">${kanji}</span>`;
+    const kanjiElement = `<span class="kanji-highlight clickable-kanji">${kanji}</span>`;
     const kanjiReadingElement = Array.isArray(kanjiReadings) ? 
         kanjiReadings.map(reading => `<span class="reading-highlight">${reading}</span>`).join(" or ") : 
         `<span class="reading-highlight">${kanjiReadings}</span>`;
-    const radicalElement = `<span class="kanji-highlight">${radical}</span>`;
+    const radicalElement = `<span class="kanji-highlight">${radical}</span>`; // No clickable-kanji here
     const radicalReadingElement = Array.isArray(radicalReading) ? 
         radicalReading.map(reading => `<span class="reading-highlight">${reading}</span>`).join(" or ") : 
         `<span class="reading-highlight">${radicalReading}</span>`;
@@ -7671,7 +7671,9 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
 
     function getKanjiWithJLPT(kanji) {
         const level = getJLPTLevel(kanji);
-        return level ? `<span class="kanji-highlight jlpt-${level.toLowerCase()}">${kanji}</span>` : `<span class="kanji-highlight">${kanji}</span>`;
+        return level ? 
+            `<span class="kanji-highlight clickable-kanji jlpt-${level.toLowerCase()}">${kanji}</span>` : 
+            `<span class="kanji-highlight clickable-kanji">${kanji}</span>`;
     }
 
     function sortByJLPT(kanjiList) {
@@ -7945,7 +7947,6 @@ document.addEventListener("DOMContentLoaded", function() {
         if (navButton) navButton.remove();
         if (prevButton) prevButton.remove();
     
-        // Only show navigation buttons for Japanese input with multiple characters
         const isJapanese = /[一-龯ぁ-んァ-ン]/.test(currentInput);
         if (isJapanese && currentInput.length > 1) {
             navButton = document.createElement('span');
@@ -7980,51 +7981,33 @@ document.addEventListener("DOMContentLoaded", function() {
         let phoneticRadicalReading = "";
     
         if (currentInput) {
-            // Check if the input is an English word (not a kanji or kana)
             if (!isJapanese) {
-                // For English input, use the full currentInput
                 const input = currentInput;
-    
-                // Filter vocabulary for English input
                 const filteredVocab = vocabulary.filter(entry =>
                     entry.english1.toLowerCase().includes(input.toLowerCase()) ||
                     (entry.english2 && entry.english2.toLowerCase().includes(input.toLowerCase()))
                 );
     
-                // Rank the filtered vocabulary
                 filteredVocab.sort((a, b) => {
                     const inputLower = input.toLowerCase();
                     function getRank(entry) {
                         const eng1 = entry.english1.toLowerCase();
                         const eng2 = entry.english2 ? entry.english2.toLowerCase() : '';
-    
-                        // Rank 1: Exact match with the English definition in english1
                         if (eng1 === inputLower) return 1;
-                        // Rank 2: Exact match in english2
                         if (eng2 === inputLower) return 2;
-    
-                        // Rank 3: Verb starting with "to <input>" in english1
                         const verbMatch1 = eng1.startsWith(`to ${inputLower} `) || eng1 === `to ${inputLower}`;
                         if (verbMatch1) return 3;
-                        // Rank 4: Verb starting with "to <input>" in english2
                         const verbMatch2 = eng2.startsWith(`to ${inputLower} `) || eng2 === `to ${inputLower}`;
                         if (verbMatch2) return 4;
-    
-                        // Rank 5: Exact word match within english1
                         const eng1Words = eng1.split(/[\s,]+/);
                         const exactWordMatch1 = eng1Words.includes(inputLower);
                         if (exactWordMatch1) return 5;
-                        // Rank 6: Exact word match within english2
                         const eng2Words = eng2.split(/[\s,]+/);
                         const exactWordMatch2 = eng2Words.includes(inputLower);
                         if (exactWordMatch2) return 6;
-    
-                        // Rank 7: Substring match in english1
                         if (eng1.includes(inputLower)) return 7;
-                        // Rank 8: Substring match in english2
                         if (eng2.includes(inputLower)) return 8;
-    
-                        return 9; // Default rank
+                        return 9;
                     }
     
                     const rankA = getRank(a);
@@ -8034,21 +8017,15 @@ document.addEventListener("DOMContentLoaded", function() {
                         const jlptOrder = { "n5": 1, "n4": 2, "n3": 3, "n2": 4, "n1": 5, "": 6 };
                         const jlptA = jlptOrder[a.jlpt.toLowerCase()] || 6;
                         const jlptB = jlptOrder[b.jlpt.toLowerCase()] || 6;
-    
                         if (jlptA === jlptB) {
-                            // Tiebreaker: Prefer entries where the input is a standalone word in the definition
                             const eng1A = a.english1.toLowerCase().split(/[\s,]+/);
                             const eng2A = a.english2 ? a.english2.toLowerCase().split(/[\s,]+/) : [];
                             const eng1B = b.english1.toLowerCase().split(/[\s,]+/);
                             const eng2B = b.english2 ? b.english2.toLowerCase().split(/[\s,]+/) : [];
-    
                             const standaloneA = eng1A.includes(inputLower) || eng2A.includes(inputLower);
                             const standaloneB = eng1B.includes(inputLower) || eng2B.includes(inputLower);
-    
                             if (standaloneA && !standaloneB) return -1;
                             if (!standaloneA && standaloneB) return 1;
-    
-                            // Final tiebreaker: Shorter word (in kanji)
                             return a.word.length - b.word.length;
                         }
                         return jlptA - jlptB;
@@ -8057,13 +8034,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 });
     
                 if (filteredVocab.length > 0) {
-                    // Log the top few entries to debug
-                    console.log("Top 3 filtered entries for input:", input);
-                    filteredVocab.slice(0, 3).forEach((entry, index) => {
-                        console.log(`Rank ${index + 1}: ${entry.word} (${entry.reading}) - ${entry.english1}, JLPT: ${entry.jlpt}`);
-                    });
-    
-                    // Find the first entry with a kanji
                     let topEntry = null;
                     let topKanji = '';
                     for (let entry of filteredVocab) {
@@ -8074,19 +8044,23 @@ document.addEventListener("DOMContentLoaded", function() {
                                 break;
                             }
                         }
-                        if (topKanji) break; // Stop once we find a kanji
+                        if (topKanji) break;
                     }
     
                     if (!topKanji) {
-                        console.warn("No kanji found in any entry:", filteredVocab);
                         displayKanjiElement.textContent = "";
                         resultElement.textContent = "No kanji found in vocabulary entries.";
+                        englishBoxElement.innerHTML = "<p>no word found</p>";
+                        updateReadingBoxes("", "", "", "");
+                        levelBubbleElement.style.display = "none";
+                        lightBlueRows.forEach(row => row.style.display = 'none');
+                        if (resultContainer) resultContainer.style.display = 'none';
+                        englishBoxElement.classList.remove('kana-mode');
                         return;
                     }
     
                     displayKanjiElement.textContent = topKanji;
     
-                    // Update other boxes with the top entry's information
                     const level = getJLPTLevel(topKanji);
                     if (level) {
                         levelBubbleElement.textContent = level;
@@ -8149,9 +8123,13 @@ document.addEventListener("DOMContentLoaded", function() {
                     englishBoxElement.innerHTML = englishTranslation !== "no translation" ? `<p>${englishTranslation}</p>` : "";
                     radicalBoxElement.style.backgroundColor = phoneticRadical && phoneticRadical !== "none" ? "#00b4d8" : "";
                     radicalBoxElement.style.color = phoneticRadical && phoneticRadical !== "none" ? "#ffffff" : "";
+                    // Ensure light blue boxes are visible for valid kanji
+                    lightBlueRows.forEach(row => row.style.display = '');
+                    if (resultContainer) resultContainer.style.display = 'flex';
                 } else {
                     displayKanjiElement.textContent = "";
                     resultElement.textContent = "No matching vocabulary found.";
+                    englishBoxElement.innerHTML = "<p>no word found</p>";
                     updateReadingBoxes("", "", "", "");
                     levelBubbleElement.style.display = "none";
                     lightBlueRows.forEach(row => row.style.display = 'none');
@@ -8159,7 +8137,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     englishBoxElement.classList.remove('kana-mode');
                 }
             } else {
-                // For Japanese input, use the character at currentKanjiIndex
                 const kanjiChar = currentInput[currentKanjiIndex] || '';
                 displayKanjiElement.textContent = kanjiChar;
     
@@ -8276,6 +8253,22 @@ document.addEventListener("DOMContentLoaded", function() {
     
         updateMobileBoxes();
         updateVocabDisplay(currentInput);
+    
+        // Add click event listeners to all clickable kanji
+        document.querySelectorAll('.clickable-kanji').forEach(kanjiSpan => {
+            kanjiSpan.addEventListener('click', () => {
+                const clickedKanji = kanjiSpan.textContent;
+                document.getElementById('kanjiInput').value = clickedKanji;
+                processKanjiInput(clickedKanji);
+                // Scroll to the h1 element to bring the top of the page into view
+                setTimeout(() => {
+                    const h1Element = document.querySelector('h4');
+                    if (h1Element) {
+                        h1Element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 100); // Small delay to ensure DOM updates are complete
+            });
+        });
     }
 
     function navigateKanji(direction) {
@@ -8336,13 +8329,12 @@ document.addEventListener("DOMContentLoaded", function() {
 // Function to format the message for the meaning radical
 function formatMeaningRadicalMessage(kanji) {
     const kanjiReading = readings.find(reading => reading.kanji === kanji);
-    const englishMeaning = kanjiReading ? kanjiReading.english : "unknown m."; // Updated default value
+    const englishMeaning = kanjiReading ? kanjiReading.english : "unknown m.";
     
     const meaningRadicalInfo = Object.entries(meaningRadicalDatabase).find(([radical, data]) => data.kanjiList.includes(kanji));
     const meaningRadical = meaningRadicalInfo ? meaningRadicalInfo[0] : "Unknown";
     const meaningRadicalTranslation = meaningRadicalInfo ? meaningRadicalInfo[1].radical : "Unknown";
 
-    // Return an empty string if the meaning radical is "Unknown"
     if (meaningRadical === "Unknown" || meaningRadicalTranslation === "Unknown") {
         return "";
     }
@@ -8356,20 +8348,18 @@ function formatMeaningRadicalMessage(kanji) {
         NotInJLPT: []
     };
 
-    // Group kanji by JLPT level
     meaningRadicalInfo[1].kanjiList.forEach(k => {
         const reading = readings.find(r => r.kanji === k);
         const level = getJLPTLevel(k) || 'NotInJLPT';
         if (reading) {
-            kanjiGroups[level].push(`<span class="kanji-highlight">${k}</span> (${reading.english || "No Translation"})`);
+            kanjiGroups[level].push(`<span class="kanji-highlight clickable-kanji">${k}</span> (${reading.english || "No Translation"})`);
         }
     });
 
-    let message = `The character <span class="kanji-highlight">${kanji}</span> means <span class="reading-highlight">${englishMeaning}</span>,<br>` +
+    let message = `The character <span class="kanji-highlight clickable-kanji">${kanji}</span> means <span class="reading-highlight">${englishMeaning}</span>,<br>` +
                   `as it contains the meaning radical <span class="kanji-highlight">${meaningRadical}</span> (<span class="reading-highlight">${meaningRadicalTranslation}</span>).<br><br>` +
-                  `Other kanji that contain the meaning radical ${meaningRadical} are:<br>`;
+                  `Other kanji that contain the meaning radical <span class="kanji-highlight">${meaningRadical}</span> are:<br>`;
 
-    // Add JLPT level groups to the message in the specified order
     const jlptLevels = ['N5', 'N4', 'N3', 'N2', 'N1', 'NotInJLPT'];
     for (const level of jlptLevels) {
         if (kanjiGroups[level].length > 0) {
@@ -8379,19 +8369,18 @@ function formatMeaningRadicalMessage(kanji) {
         }
     }
 
-    // Special handling for specific meaning radicals
     if (meaningRadical.startsWith("月")) {
         const moonRadical = meaningRadicalDatabase["月 (moon)"].kanjiList;
         const meatRadical = meaningRadicalDatabase["月 (meat)"].kanjiList;
-        message += `<br><br>Careful! The meaning radical meat (月) looks exactly the same as the meaning radical moon (月).<br>` +
-                   `Characters with the meat radical:<br>${meatRadical.map(k => `<span class="kanji-highlight">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join("、 ")}<br>` +
-                   `Characters with the moon radical:<br>${moonRadical.map(k => `<span class="kanji-highlight">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join("、 ")}`;
+        message += `<br><br>Careful! The meaning radical meat (<span class="kanji-highlight">月</span>) looks exactly the same as the meaning radical moon (<span class="kanji-highlight">月</span>).<br>` +
+                   `Characters with the meat radical:<br>${meatRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join("、 ")}<br>` +
+                   `Characters with the moon radical:<br>${moonRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join("、 ")}`;
     } else if (meaningRadical.startsWith("阝")) {
         const hillsRadical = meaningRadicalDatabase["阝 (hills)"].kanjiList;
         const cityRadical = meaningRadicalDatabase["阝 (city)"].kanjiList;
-        message += `<br><br>Careful! The meaning radical hills (阝) looks exactly the same as the meaning radical city (阝).<br>` +
-                   `Characters with the hills radical:<br>${hillsRadical.map(k => `<span class="kanji-highlight">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join("、 ")}<br>` +
-                   `Characters with the city radical:<br>${cityRadical.map(k => `<span class="kanji-highlight">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join("、 ")}`;
+        message += `<br><br>Careful! The meaning radical hills (<span class="kanji-highlight">阝</span>) looks exactly the same as the meaning radical city (<span class="kanji-highlight">阝</span>).<br>` +
+                   `Characters with the hills radical:<br>${hillsRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join("、 ")}<br>` +
+                   `Characters with the city radical:<br>${cityRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join("、 ")}`;
     }
 
     return message;
