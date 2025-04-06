@@ -7895,6 +7895,8 @@ document.addEventListener("DOMContentLoaded", function() {
         const radicalBoxElement = document.getElementById('radical-box');
         const kunyomiBoxElement = document.getElementById('kunyomi-box');
         const englishBoxElement = document.getElementById('english-box');
+        const lightBlueRows = document.querySelectorAll('.light-blue-row');
+        const resultContainer = document.querySelector('.result-container');
     
         // Clear all elements
         displayKanjiElement.textContent = "";
@@ -7928,7 +7930,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 navButton.innerText = '→';
                 navButton.onclick = () => navigateKanji(1);
                 navContainer.appendChild(navButton);
-            } else if (currentKanjiIndex === currentInput.length - 1) {
+            } else if (currentKanjiIndex === currentKanjiIndex.length - 1) {
                 prevButton.innerText = '←';
                 prevButton.onclick = () => navigateKanji(-1);
                 navContainer.appendChild(prevButton);
@@ -7951,12 +7953,41 @@ document.addEventListener("DOMContentLoaded", function() {
         if (kanji) {
             displayKanjiElement.textContent = kanji;
     
+            // Force kanjiDisplay to be left-aligned
+            navContainer.style.display = 'flex';
+            navContainer.style.justifyContent = 'flex-start';
+            navContainer.style.alignItems = 'center';
+            navContainer.style.margin = '0';
+            navContainer.style.width = 'auto';
+            navContainer.style.alignSelf = 'flex-start';
+    
             // Check if the character is hiragana or katakana
             const charType = getCharacterType(kanji);
-            if (charType === 'hiragana' || charType === 'small-hiragana' || charType === 'katakana' || charType === 'small-katakana') {
+            const isKana = charType === 'hiragana' || charType === 'small-hiragana' || 
+                          charType === 'katakana' || charType === 'small-katakana';
+    
+            // Show or hide the light-blue-row sections based on character type
+            lightBlueRows.forEach(row => {
+                row.style.display = isKana ? 'none' : '';
+            });
+    
+            // Show or hide the result-container based on character type
+            if (resultContainer) {
+                resultContainer.style.display = isKana ? 'none' : 'flex';
+            }
+    
+            // Add or remove kana-mode class for english-box transition
+            if (isKana) {
+                englishBoxElement.classList.add('kana-mode');
+            } else {
+                englishBoxElement.classList.remove('kana-mode');
+            }
+    
+            if (isKana) {
                 // Handle hiragana or katakana
                 const phoneticValue = getPhoneticValue(kanji);
-                const typeLabel = charType === 'small-hiragana' ? 'small hiragana' : charType === 'small-katakana' ? 'small katakana' : charType;
+                const typeLabel = charType === 'small-hiragana' ? 'small hiragana' : 
+                                 charType === 'small-katakana' ? 'small katakana' : charType;
                 englishTranslation = `${typeLabel} ‘${phoneticValue}’`;
     
                 // Update the meaning box
@@ -7973,17 +8004,14 @@ document.addEventListener("DOMContentLoaded", function() {
                 // Existing kanji lookup logic
                 const level = getJLPTLevel(kanji);
                 if (level) {
-                    // Show the bubble with the JLPT level
                     levelBubbleElement.textContent = level;
                     levelBubbleElement.className = `level-bubble ${level.toLowerCase()}`;
                     levelBubbleElement.style.display = "inline-block";
                 } else {
-                    // Hide the bubble if the kanji is not in the JLPT list
                     levelBubbleElement.style.display = "none";
                 }
     
                 const phoneticRadicalInfo = checkKanjiReadingGroup(kanji);
-                // Fix the hasPhoneticRadical check to match the actual message
                 const hasPhoneticRadical = !phoneticRadicalInfo.includes('does not contain a phonetic radical');
     
                 if (hasPhoneticRadical) {
@@ -8000,7 +8028,6 @@ document.addEventListener("DOMContentLoaded", function() {
                         }
                     }
                 } else {
-                    // Explicitly set phoneticRadical to a message when there is no phonetic radical
                     phoneticRadical = "none";
                 }
     
@@ -8049,8 +8076,20 @@ document.addEventListener("DOMContentLoaded", function() {
             resultElement.textContent = "Enter a kanji.";
             englishBoxElement.innerHTML = "";
             updateReadingBoxes("", "", "", "");
-            // Hide the bubble when there is no input
             levelBubbleElement.style.display = "none";
+    
+            // Hide light-blue-row sections when there is no input
+            lightBlueRows.forEach(row => {
+                row.style.display = 'none';
+            });
+    
+            // Hide result-container when there is no input
+            if (resultContainer) {
+                resultContainer.style.display = 'none';
+            }
+    
+            // Remove kana-mode class when there is no input
+            englishBoxElement.classList.remove('kana-mode');
         }
     
         // Update other functions
