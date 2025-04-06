@@ -486,7 +486,7 @@ button:hover {
     justify-content: flex-start !important; /* Add !important to ensure it’s applied */
     position: relative;
     width: 100%; /* Ensure it takes full width */
-    text-align: left; /* Prevent inherited text-align: center */
+    text-align: center; /* Prevent inherited text-align: center */
 }
 /* Kanji Display Section */
 .kanji-display-section {
