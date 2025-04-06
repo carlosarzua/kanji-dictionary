@@ -1034,3 +1034,11 @@ button:hover {
     display: none;
 }
 
+.clickable-kanji {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.clickable-kanji:hover {
+    color: #007bff; /* Change color on hover to indicate clickability */
+}
