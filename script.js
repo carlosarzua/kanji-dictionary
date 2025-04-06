@@ -7954,14 +7954,20 @@ document.addEventListener("DOMContentLoaded", function() {
                 // Clear other boxes
                 updateReadingBoxes("", "", "", "");
     
-                // Set JLPT level to N/A for kana
-                levelBubbleElement.textContent = 'N/A';
-                levelBubbleElement.className = 'level-bubble';
+                // Set JLPT level to N5 for kana
+                levelBubbleElement.textContent = 'N5';
+                levelBubbleElement.className = 'level-bubble n5';
+                levelBubbleElement.style.display = "inline-block";
             } else {
                 // Existing kanji lookup logic
                 const level = getJLPTLevel(kanji);
-                levelBubbleElement.textContent = level || 'N/A';
-                levelBubbleElement.className = `level-bubble ${level ? level.toLowerCase() : ""}`;
+                if (level) {
+                    levelBubbleElement.textContent = level;
+                    levelBubbleElement.className = `level-bubble ${level.toLowerCase()}`;
+                    levelBubbleElement.style.display = "inline-block";
+                } else {
+                    levelBubbleElement.style.display = "none";
+                }
     
                 const phoneticRadicalInfo = checkKanjiReadingGroup(kanji);
                 const hasPhoneticRadical = phoneticRadicalInfo.indexOf('not in the database') === -1;
@@ -8026,8 +8032,7 @@ document.addEventListener("DOMContentLoaded", function() {
             resultElement.textContent = "Enter a kanji.";
             englishBoxElement.innerHTML = "";
             updateReadingBoxes("", "", "", "");
-            levelBubbleElement.textContent = 'N/A';
-            levelBubbleElement.className = 'level-bubble';
+            levelBubbleElement.style.display = "none";
         }
     
         // Update other functions
