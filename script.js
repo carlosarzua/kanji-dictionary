@@ -7753,7 +7753,7 @@ function updateReadingBoxes(onyomiReading = "", radical = "", radicalReading = "
     const radicalBoxElement = document.getElementById('radical-box');
     const kunyomiBoxElement = document.getElementById('kunyomi-box');
 
-    function setupBox(boxElement, content) {
+    function setupBox(boxElement, content, customFontSize = null) {
         if (!boxElement || !content) {
             boxElement.innerHTML = "";
             boxElement.style.height = 'auto';
@@ -7761,8 +7761,12 @@ function updateReadingBoxes(onyomiReading = "", radical = "", radicalReading = "
             return;
         }
 
-        // Set the content
-        boxElement.innerHTML = content ? `<p>${content}</p>` : "";
+        // Set the content with an optional inline font-size style
+        if (customFontSize) {
+            boxElement.innerHTML = `<p style="font-size: ${customFontSize}">${content}</p>`;
+        } else {
+            boxElement.innerHTML = `<p>${content}</p>`;
+        }
 
         // Measure the content height
         const contentElement = boxElement.querySelector('p');
@@ -7791,7 +7795,14 @@ function updateReadingBoxes(onyomiReading = "", radical = "", radicalReading = "
     }
 
     setupBox(onyomiBoxElement, onyomiReading);
-    setupBox(radicalBoxElement, radical && radicalReading ? `${radical} → ${radicalReading}` : "");
+    // Handle the phonetic radical box
+    if (radical === "none") {
+        // Apply the same font size as the meaning radical box
+        setupBox(radicalBoxElement, "no phonetic radical", "0.8em"); // Adjust the font size to match meaningradical-box
+    } else {
+        // Use the default font size when there is a phonetic radical
+        setupBox(radicalBoxElement, radical && radicalReading ? `${radical} → ${radicalReading}` : "");
+    }
     setupBox(kunyomiBoxElement, kunyomiReading);
 }
 
@@ -7962,15 +7973,18 @@ document.addEventListener("DOMContentLoaded", function() {
                 // Existing kanji lookup logic
                 const level = getJLPTLevel(kanji);
                 if (level) {
+                    // Show the bubble with the JLPT level
                     levelBubbleElement.textContent = level;
                     levelBubbleElement.className = `level-bubble ${level.toLowerCase()}`;
                     levelBubbleElement.style.display = "inline-block";
                 } else {
+                    // Hide the bubble if the kanji is not in the JLPT list
                     levelBubbleElement.style.display = "none";
                 }
     
                 const phoneticRadicalInfo = checkKanjiReadingGroup(kanji);
-                const hasPhoneticRadical = phoneticRadicalInfo.indexOf('not in the database') === -1;
+                // Fix the hasPhoneticRadical check to match the actual message
+                const hasPhoneticRadical = !phoneticRadicalInfo.includes('does not contain a phonetic radical');
     
                 if (hasPhoneticRadical) {
                     const parts = phoneticRadicalInfo.split('phonetic radical');
@@ -7985,6 +7999,9 @@ document.addEventListener("DOMContentLoaded", function() {
                             }
                         }
                     }
+                } else {
+                    // Explicitly set phoneticRadical to a message when there is no phonetic radical
+                    phoneticRadical = "none";
                 }
     
                 resultElement.innerHTML = `${phoneticRadicalInfo}`;
@@ -8025,13 +8042,14 @@ document.addEventListener("DOMContentLoaded", function() {
                 englishBoxElement.innerHTML = englishTranslation !== "no translation" ? `<p>${englishTranslation}</p>` : "";
     
                 // Apply styling to radicalBoxElement
-                radicalBoxElement.style.backgroundColor = phoneticRadical ? "#00b4d8" : "";
-                radicalBoxElement.style.color = phoneticRadical ? "#ffffff" : "";
+                radicalBoxElement.style.backgroundColor = phoneticRadical && phoneticRadical !== "none" ? "#00b4d8" : "";
+                radicalBoxElement.style.color = phoneticRadical && phoneticRadical !== "none" ? "#ffffff" : "";
             }
         } else {
             resultElement.textContent = "Enter a kanji.";
             englishBoxElement.innerHTML = "";
             updateReadingBoxes("", "", "", "");
+            // Hide the bubble when there is no input
             levelBubbleElement.style.display = "none";
         }
     
