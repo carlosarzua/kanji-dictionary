@@ -5,11 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Radical. Kanji Dictionary</title>
     <link rel="stylesheet" href="styles.css">
-</head>
 <body>
     <div class="container">
         <h4><a style="color: #00b4d8" href="https://carloscoordinator.com">CarlosCoordinator.com</a>'s</h4> 
-        <h1>Radical. v.5*</h1>
+        <h1>Radical. v.6*</h1>
         <h2>Kanji Made Radically Easier.</h2>
         <div class="search-container">
             <input type="text" id="kanjiInput" placeholder="Enter Japanese or English">
@@ -59,6 +58,12 @@
         <div id="english-box" class="reading-box white-reading-box"></div>
 
         <div id="vocabSection">
+            <div id="loading" style="display: none; text-align: center; padding: 10px;">Loading vocabulary...</div>
+            <div id="loading-bar" style="text-align: center; padding: 10px; display: none;">
+                <div id="progress-bar" style="width: 0%; height: 20px; background-color: #4CAF50; transition: width 0.3s;"></div>
+                <div id="progress-text" style="margin-top: 5px;">0/148352 words loaded (0%)</div>
+            </div>
+            <div id="error" style="display: none; text-align: center; padding: 10px; color: red;"></div>
             <div id="vocab-box"></div>  
         </div>
 
@@ -84,7 +89,8 @@
             <br>
             <p>Radicals are the building blocks of kanji. Some radicals show the meaning, while others indicate the <strong>on’yomi</strong> reading, used when two kanji are together. For example, 泊まる means "to stay" and is read とまる. When 泊 is next to another kanji, it's read ハク, because it contains the phonetic radical 白. Similarly, 伯, 迫, and 拍 are read ハク but have different meanings based on their meaning radicals. None of them have to do with 'white'.</p>
             <br>
-            <p><strong>*Version 5</strong> [released Jan 18, 2025] is now a full fledged dictionary where you can look up words in English and in Japanese, including in hiragana. It now contains <strong>17,608 words</strong>, <strong>380 phonetic radicals</strong>, <strong>279 meaning radicals</strong> and <strong>6,368 kanji</strong>, partly obtained from the JMDict and the KANJIDIC Projects. The next update will allow learners to see sample sentences as well. An app is in development as well, with features such as tracking kanji & radical acquisition progress, customizable tests, and study plans by JLPT level.</p>
+            <p><strong>*Version 6</strong> [released Apr 13, 2025] is now a full fledged dictionary where you can look up words in English and in Japanese, including in hiragana and in English. It now contains <strong>148,352 words</strong>, <strong>380 phonetic radicals</strong>, <strong>279 meaning radicals</strong> and <strong>6,368 kanji</strong>, partly obtained from the JMDict and the KANJIDIC Projects. An app is in development as well, with features such as tracking kanji & radical acquisition progress, customizable tests, and study plans by JLPT level.</p>
+            <p><strong>*Version 5</strong> [released Jan 18, 2025] added the hiragana and English search functions. It contained 17,608 words, 380 phonetic radicals, 279 meaning radicals and 6,368 kanji, partly obtained from the JMDict and the KANJIDIC Projects.</p>
             <p><strong>*Version 4</strong> [released Jan 11, 2025] contained 380 phonetic radicals, 279 meaning radicals and 6,368 kanji.</p>
             <p><strong>*Version 3</strong> [released Jan 3, 2025] added all common use kanji [常用漢字], added meaning radicals, JLPT level classification and contained 377 phonetic radicals, 225 meaning radicals and 2,484 kanji. </p>
             <p><strong>*Version 2</strong> [released Dec 27, 2024] added double-reading phonetic radicals and contained 375 phonetic radicals and 1,402 kanji. </p>
@@ -93,9 +99,11 @@
             <p>Made by Carlos Ramos Fuentes, teacher of Japanese at <a style="color: #00b4d8" href="https://carloscoordinator.com">CarlosCoordinator.com</a>. You can contact me via <a style="color: #00b4d8" href="mailto:carlosarzua@usal.es?subject=Inquiry About Radical, Kanji Dictionary">email here</a>.</p>
         </div>
     </div>
-    <script src="vocab.js" defer></script>
-    <script src="readings.js" defer></script> <!-- Load readings.js first -->
-    <script src="meaningrads.js" defer></script> <!-- Load meaningrads.js next -->
-    <script src="script.js" defer></script> <!-- Then load script.js -->
+
+    <!-- Load other scripts with defer -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+    <script src="readings.js" defer></script>
+    <script src="meaningrads.js" defer></script>
+    <script src="script.js"></script>
 </body>
 </html>
