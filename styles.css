@@ -1042,3 +1042,22 @@ button:hover {
 .clickable-kanji:hover {
     color: #007bff; /* Change color on hover to indicate clickability */
 }
+
+
+#loading-bar {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+#progress-bar {
+    height: 20px;
+    background-color: #4CAF50;
+    transition: width 0.3s ease-in-out;
+}
+
+#progress-text {
+    margin-top: 5px;
+    font-size: 0.9em;
+    color: #333;
+}
