@@ -9003,13 +9003,18 @@ async function updateVocabDisplay(input) {
     let filteredVocab = [];
 
     if (isJapanese) {
+        // --- MODIFIED FILTERING LOGIC ---
         filteredVocab = vocabulary.filter(entry => {
-            const kanjiMatch = entry.kanji.some(k => k.text === input || k.text.includes(input));
-            const readingMatch = entry.reading.some(r => r.text === input || r.text.includes(input) || input.includes(r.text));
-            const kanjiPartMatch = entry.kanji.some(k => k.text === input.replace(/[る]$/, ''));
-            return kanjiMatch || readingMatch || kanjiPartMatch;
+            // Check if the exact input string is present within any kanji text field
+            const kanjiMatch = entry.kanji.some(k => k.text.includes(input));
+            // Check if the exact input string is present within any reading text field
+            const readingMatch = entry.reading.some(r => r.text.includes(input));
+
+            // We no longer check if the reading is PART of the input (e.g., "み" in "みる").
+            // We only want results where the full input ("みる") exists in the entry's kanji or reading.
+            return kanjiMatch || readingMatch;
         });
-        console.log("Japanese input - Matching entries:", filteredVocab.length, filteredVocab);
+        console.log("Japanese input - Refined Matching entries:", filteredVocab.length, filteredVocab);
     } else {
         console.log("Vocabulary sample:", vocabulary.slice(0, 5));
         console.log("All sense.text values:", vocabulary.map(entry => ({
@@ -9174,5 +9179,3 @@ document.getElementById('checkButton').addEventListener('click', async () => {
 // Call this function when the user looks up a kanji
 // Initial display
 updateVocabDisplay('');
-
-
