@@ -9224,32 +9224,35 @@ async function updateVocabDisplay(input) {
     // 5. Rank and Sort Filtered Vocabulary
     const jlptScoreMap = { "n5": 0, "n4": 0.1, "n3": 0.2, "n2": 0.3, "n1": 0.4, "": 0.5 };
 
-        // --- calculateRank Function Definition ---
+    // --- calculateRank Function Definition ---
+    // (Keeping the improved calculateRank function from the previous step, including the JLPT key fix)
     function calculateRank(entry, searchInput, isJapaneseInput) {
         let score = 99; // Default score (worst rank)
 
         if (!entry) return score; // Basic safety check
 
-        // Determine Base Commonality (no changes needed)
+        // Determine Base Commonality
         const hasCommonKanji = entry.kanji?.some(k => k && k.common);
         const hasCommonReading = entry.reading?.some(r => r && r.common);
 
-        // Calculate Commonality Penalty (no changes needed)
+        // Calculate Commonality Penalty
         let commonalityPenalty = 0;
         if (entry.kanji?.length > 0 && !hasCommonKanji) {
             commonalityPenalty += 1;
         }
         if (!hasCommonReading && (!hasCommonKanji || !entry.kanji || entry.kanji.length === 0)) {
-             commonalityPenalty += 1;
+            commonalityPenalty += 1;
         }
 
-        // JLPT Score Adjustment (no changes needed)
-        // Ensure jlptScoreMap is accessible in this scope
-        const levelScore = jlptScoreMap[entry.jlpt?.toLowerCase()] || 0.5;
+        // JLPT Score Adjustment (FIXED)
+        const jlptKey = entry.jlpt
+            ? entry.jlpt.toLowerCase().replace('jlpt ', '').trim()
+            : "";
+        const levelScore = jlptScoreMap[jlptKey] ?? 0.5;
 
         // --- Input-Specific Ranking ---
         if (isJapaneseInput) {
-            // --- Japanese Input Logic (Remains the same) ---
+            // Japanese input logic (unchanged from previous version)
             let matchTypeScore = 99;
             let commonBonus = 0;
 
@@ -9272,43 +9275,20 @@ async function updateVocabDisplay(input) {
                 matchTypeScore = 6;
             }
             score = matchTypeScore + commonBonus + levelScore + commonalityPenalty;
-            // --- End Japanese Input Logic ---
 
-        } else { // English Input Ranking Logic
+        } else { // English Input Ranking Logic (unchanged from previous version)
             let definitionScore = 99;
-            const searchInputLower = searchInput.toLowerCase(); // Lowercase search term
+            const searchInputLower = searchInput.toLowerCase();
 
             entry.sense?.forEach((s, index) => {
-                if (!s || !s.text) return; // Skip empty senses
+                if (!s || !s.text) return;
                 const senseTextLower = s.text.toLowerCase();
-                const words = senseTextLower.split(/[\s.,;!?()"]+/).filter(Boolean); // Split words
+                const words = senseTextLower.split(/[\s.,;!?()"'-]+/).filter(Boolean);
                 let currentSenseRank = 99;
 
-                // ***** START DETAILED DEBUG for 食べる *****
-                // Check if this is the '食べる' entry based on its reading
-                let isTaberuEntry = entry.reading?.some(r => r && r.text === 'たべる');
-                // Only log for the first sense of 食べる when searching specifically for 'eat'
-                if (isTaberuEntry && index === 0 && searchInputLower === 'eat') {
-                     console.log(`-- Debugging 食べる Sense 1 --`);
-                     console.log(`   senseTextLower: "${senseTextLower}"`);
-                     console.log(`   searchInputLower: "${searchInputLower}"`); // Should be "eat"
-                     console.log(`   words: ${JSON.stringify(words)}`);
-                     // Log the evaluation of each condition
-                     let cond1 = (words.length > 0 && words[0] === searchInputLower);
-                     let cond2 = (senseTextLower.startsWith('to ') && words.length > 1 && words[1] === searchInputLower); // The corrected logic
-                     let cond3 = (words.includes(searchInputLower));
-                     let cond4 = (senseTextLower.includes(searchInputLower)); // Substring check
-                     console.log(`   cond1 (words[0]==='${searchInputLower}'): ${cond1}`);
-                     console.log(`   cond2 (startsWith 'to ' && words[1]==='${searchInputLower}'): ${cond2}`);
-                     console.log(`   cond3 (words.includes('${searchInputLower}')): ${cond3}`);
-                     console.log(`   cond4 (sense.includes('${searchInputLower}')): ${cond4}`);
-                }
-                // ***** END DETAILED DEBUG for 食べる *****
-
-                // Determine the quality of the match using the corrected logic
                 if (words.length > 0 && words[0] === searchInputLower) {
                     currentSenseRank = 1;
-                } else if (senseTextLower.startsWith('to ') && words.length > 1 && words[1] === searchInputLower) { // Corrected "to [verb]" check
+                } else if (senseTextLower.startsWith('to ') && words.length > 1 && words[1] === searchInputLower) {
                     currentSenseRank = 1;
                 } else if (words.includes(searchInputLower)) {
                     currentSenseRank = 2;
@@ -9316,53 +9296,49 @@ async function updateVocabDisplay(input) {
                     currentSenseRank = 3;
                 }
 
-                // Log the chosen rank specifically for 食べる
-                if (isTaberuEntry && index === 0 && searchInputLower === 'eat') {
-                    console.log(`   >> Determined currentSenseRank for 食べる: ${currentSenseRank}`);
-                    console.log(`-- End Debug 食べる Sense --`);
-                }
-
-                // Apply sense index penalty
-                const senseIndexPenalty = index * 2;
+                const senseIndexPenalty = index * 0.1; // Using the smaller penalty
                 const scoreForThisSense = currentSenseRank + senseIndexPenalty;
-
-                // Update the best definition score found so far
                 definitionScore = Math.min(definitionScore, scoreForThisSense);
-            }); // --- End of entry.sense?.forEach ---
+            });
 
-            // Katakana/Loanword Penalty (no changes needed)
+            // Katakana/Loanword Penalty (unchanged from previous version)
             let loanwordPenalty = 0;
-            const isLikelyLoanword = (!entry.kanji || entry.kanji.length === 0 || entry.kanji.every(k => k && /^[ァ-ン・ー]+$/.test(k.text))) &&
-                                     (entry.reading?.some(r => r && /^[ァ-ン・ー]+$/.test(r.text)));
-            if (isLikelyLoanword) {
-                loanwordPenalty = 0.2;
+            const hasOnlyKatakanaReadings = entry.reading?.length > 0 && entry.reading.every(r => r && /^[ァ-ン・ー]+$/.test(r.text));
+            const hasOnlyKatakanaKanjiOrNoKanji = !entry.kanji || entry.kanji.length === 0 || entry.kanji.every(k => k && /^[ァ-ン・ー]+$/.test(k.text));
+            if (hasOnlyKatakanaReadings && hasOnlyKatakanaKanjiOrNoKanji) {
+                 loanwordPenalty = 0.2;
             }
 
-            // ***** Log score components specifically for 食べる *****
-            let isTaberuEntryForScoreLog = entry.reading?.some(r => r && r.text === 'たべる');
-            if (isTaberuEntryForScoreLog && searchInputLower === 'eat') {
-                console.log(`-- Scores for 食べる --`);
-                console.log(`   DefinitionScore (best sense): ${definitionScore}`);
-                console.log(`   CommonalityPenalty: ${commonalityPenalty}`);
-                console.log(`   LevelScore (JLPT: "${entry.jlpt || ''}"): ${levelScore}`);
-                console.log(`   LoanwordPenalty: ${loanwordPenalty}`);
-                console.log(`   ==> Preliminary Total Score: ${(definitionScore + commonalityPenalty + levelScore + loanwordPenalty).toFixed(3)}`);
+            // --- DEBUGGING LOG for 'water' (Updated to show cleaned key) ---
+            if (searchInputLower === 'water') {
+                const kanjiText = entry.kanji?.map(k => k.text).join(', ') || 'N/A';
+                const readingText = entry.reading?.map(r => r.text).join(', ') || 'N/A';
+                const firstSense = entry.sense?.[0]?.text || 'N/A';
+                console.log(`--- Ranking for ${kanjiText} (${readingText}) ---`);
+                console.log(`  ID: ${entry.id || 'N/A'}`);
+                console.log(`  JLPT (raw): "${entry.jlpt}"`);
+                console.log(`  JLPT Map Key Used (Cleaned): "${jlptKey}"`); // Log the final key
+                console.log(`  JLPT Map Lookup Result: ${jlptScoreMap[jlptKey]}`); // Use the cleaned key
+                console.log(`  First Sense: "${firstSense}"`);
+                console.log(`  Definition Score (Best Sense): ${definitionScore.toFixed(3)}`);
+                console.log(`  Commonality Penalty: ${commonalityPenalty} (Kanji Common: ${hasCommonKanji}, Reading Common: ${hasCommonReading})`);
+                console.log(`  JLPT Score Component: ${levelScore}`);
+                console.log(`  Loanword Penalty: ${loanwordPenalty}`);
+                const totalScore = definitionScore + commonalityPenalty + levelScore + loanwordPenalty;
+                console.log(`  >> Total Score: ${totalScore.toFixed(3)}`);
+                console.log('----------------------------------------');
             }
-             // ***** END Log score components *****
+             // --- END DEBUGGING LOG ---
 
-            // Final score calculation for English input
             score = definitionScore + commonalityPenalty + levelScore + loanwordPenalty;
-            // --- End English Input Logic ---
-        } // End of if/else for input type
+        }
 
-        // Return the final calculated score, capped at 100
         return Math.min(score, 100);
     }
     // --- End of calculateRank Function Definition ---
 
-
     // Add the calculated rank score to each entry
-    const rankedVocabWithScore = filteredVocab.map(entry => ({ // Renamed variable temporarily
+    const rankedVocabWithScore = filteredVocab.map(entry => ({
         ...entry,
         rankScore: calculateRank(entry, input, isJapanese)
     }));
@@ -9370,25 +9346,22 @@ async function updateVocabDisplay(input) {
     // Filter out definite non-matches AFTER calculating score
     const rankedVocab = rankedVocabWithScore.filter(entry => entry.rankScore < 90);
 
-
-        // ***** START DEBUGGING LOGS *****
-    // *** CHANGE THE INPUT CHECK ***
-    if (input.toLowerCase() === 'eat') { // Only log when searching for "eat"
+    // ***** DEBUGGING LOGS for 'eat' (kept from previous version) *****
+    if (input.toLowerCase() === 'eat') {
         console.log("--- DEBUGGING RANK SCORES for 'eat' (BEFORE SORT) ---");
-        const debugEntries = rankedVocab.filter(e => // Filter from the array *before* sorting
-            // *** TARGET THE RELEVANT WORDS ***
-            e.kanji?.some(k => ['食べる', '召し上がる', '食う', '喫する'].includes(k.text)) ||
-            e.reading?.some(r => ['たべる', 'めしあがる', 'くう', 'きっする'].includes(r.text))
+        const debugEntries = rankedVocab.filter(e =>
+            e.kanji?.some(k => k && ['食べる', '召し上がる', '食う', '喫する'].includes(k.text)) ||
+            e.reading?.some(r => r && ['たべる', 'めしあがる', 'くう', 'きっする'].includes(r.text))
         );
-
         if (debugEntries.length === 0) {
-             console.log("COULD NOT FIND relevant 'eat' verbs in filtered results. Check filtering step.");
+             console.log("COULD NOT FIND relevant 'eat' verbs in filtered results (<90 score). Check filtering/ranking.");
         } else {
              debugEntries.forEach(entry => {
-                 console.log(`Entry ID: ${entry.id || 'N/A'}, Word: ${entry.kanji?.[0]?.text || entry.reading?.[0]?.text}, JLPT: "${entry.jlpt || ''}"`); // Log JLPT string explicitly
-                 console.log('  Kanji:', JSON.stringify(entry.kanji, null, 2)); // Show common flags
-                 console.log('  Reading:', JSON.stringify(entry.reading, null, 2)); // Show common flags
-                 console.log('  Sense 1:', entry.sense?.[0]?.text);
+                 const cleanedJlptKey = entry.jlpt ? entry.jlpt.toLowerCase().replace('jlpt ', '').trim() : "";
+                 console.log(`Entry ID: ${entry.id || 'N/A'}, Word: ${entry.kanji?.[0]?.text || entry.reading?.[0]?.text}, JLPT (Raw): "${entry.jlpt || ''}", JLPT Key: "${cleanedJlptKey}"`);
+                 console.log('  Kanji:', entry.kanji ? JSON.stringify(entry.kanji.map(k => ({text: k.text, common: k.common})), null, 1) : 'N/A');
+                 console.log('  Reading:', entry.reading ? JSON.stringify(entry.reading.map(r => ({text: r.text, common: r.common})), null, 1) : 'N/A');
+                 console.log('  Sense 1:', entry.sense?.[0]?.text || 'N/A');
                  console.log(`  >> Calculated Rank Score: ${entry.rankScore.toFixed(3)}`);
                  console.log('--------------------');
              });
@@ -9398,17 +9371,14 @@ async function updateVocabDisplay(input) {
     // ***** END DEBUGGING LOGS *****
 
     // Sort by the calculated rankScore (lower is better)
-    rankedVocab.sort((a, b) => { /* ... sort logic ... */ });
-
-    // Log the top results AFTER sorting (no changes needed here)
-    console.log("Ranked Vocab Sample (Top 5 AFTER SORT):", /* ... existing log ... */);
-
-
-    // Sort by the calculated rankScore (lower is better)
+    // (Keeping the improved sort with secondary commonality check)
     rankedVocab.sort((a, b) => {
         if (a.rankScore === b.rankScore) {
-            // Optional: Add secondary sort criteria like ID if scores are identical
-            return (a.id || 0) - (b.id || 0);
+             const aIsCommon = a.kanji?.some(k=>k.common) || a.reading?.some(r=>r.common);
+             const bIsCommon = b.kanji?.some(k=>k.common) || b.reading?.some(r=>r.common);
+             if (aIsCommon && !bIsCommon) return -1;
+             if (!aIsCommon && bIsCommon) return 1;
+            return (a.id || 0) - (b.id || 0); // Fallback to ID
         }
         return a.rankScore - b.rankScore;
     });
@@ -9417,9 +9387,9 @@ async function updateVocabDisplay(input) {
     console.log("Ranked Vocab Sample (Top 5 AFTER SORT):", rankedVocab.slice(0, 5).map(e => ({
         id: e.id,
         score: e.rankScore.toFixed(2),
-        kanji: e.kanji?.map(k => k.text)[0], // Show first kanji form
-        reading: e.reading?.map(r => r.text)[0], // Show first reading form
-        sense: e.sense?.[0]?.text // Show first sense
+        kanji: e.kanji?.map(k => k.text)[0],
+        reading: e.reading?.map(r => r.text)[0],
+        sense: e.sense?.[0]?.text
      })));
 
 
@@ -9433,9 +9403,8 @@ async function updateVocabDisplay(input) {
         console.log(`Rendering ${entriesToRender.length} words (limit: ${limit})`);
 
         if (entriesToRender.length === 0) {
-            // Handle cases where rankedVocab might be empty after filtering/sorting
              if (rankedVocab.length > 0) {
-                 console.warn("Attempted to render 0 words, but rankedVocab has entries. Check slicing logic.");
+                 console.warn("Attempted to render 0 words, but rankedVocab has entries. Check slicing/limit logic.");
                  vocabBox.innerHTML = '<p>Error rendering results.</p>';
              } else {
                  vocabBox.innerHTML = '<p>No matching vocabulary found.</p>';
@@ -9443,12 +9412,11 @@ async function updateVocabDisplay(input) {
              return;
          }
 
-        // Loop through entries and render them (with corrected color/numbering)
         entriesToRender.forEach((entry) => {
             const box = document.createElement('div');
             box.classList.add('vocab-entry');
 
-            // Word Header (Kanji/Kana)
+            // Word Header (Kanji/Kana) - *** REVERTED STYLING ***
             const word = document.createElement('div');
             word.classList.add('word');
             let kanjiHtml = '';
@@ -9457,8 +9425,9 @@ async function updateVocabDisplay(input) {
                     if (!k || !k.text) return '';
                     const span = document.createElement('span');
                     span.textContent = k.text;
-                    span.style.color = k.common ? 'black' : 'gray'; // Color fix
-                    span.style.marginRight = '0.2em';
+                    // Reverted: Use original color logic (black/gray), no bold
+                    span.style.color = k.common ? 'black' : 'gray';
+                    span.style.marginRight = '0.2em'; // Original margin
                     return span.outerHTML;
                 }).join('');
             }
@@ -9466,10 +9435,13 @@ async function updateVocabDisplay(input) {
             if (entry.reading && entry.reading.length > 0) {
                 kanaHtml = entry.reading.map(r => {
                      if (!r || !r.text) return '';
-                     const color = r.common ? 'black' : 'gray'; // Color fix
+                     // Reverted: Use original color logic (black/gray), no bold
+                     const color = r.common ? 'black' : 'gray';
+                     // Reverted: Original appliesTo styling/logic
                      const appliesTo = (r.appliesToKanji && r.appliesToKanji[0] !== '*' && entry.kanji?.length > 1)
                          ? ` <i style="font-size:0.8em; opacity: 0.6;">(${r.appliesToKanji.join(',')})</i>`
                          : '';
+                     // Reverted: Span without font-weight
                      return `<span style="color: ${color}; margin-right: 0.5em;">${r.text}</span>${appliesTo}`;
                 }).join('');
             }
@@ -9480,50 +9452,72 @@ async function updateVocabDisplay(input) {
             }
             box.appendChild(word);
 
-            // Sense/Definition Details
-            entry.sense?.forEach((s) => { // Removed senseIndex from use here
+            // Sense/Definition Details (Keeping improvements like bolding input, better grammar display)
+            entry.sense?.forEach((s) => {
                 if (!s || !s.text) return;
                 const senseContainer = document.createElement('div');
                 senseContainer.classList.add('sense-container');
+
                 const grammar = document.createElement('div');
                 grammar.classList.add('grammar');
-                let posText = Array.isArray(s.partOfSpeech) ? s.partOfSpeech.join(', ') : s.partOfSpeech;
-                let extraInfoCleaned = s.extraInfo ? s.extraInfo.replace(/^; |^, /, '') : '';
-                grammar.innerHTML = `${posText || ''}${posText && extraInfoCleaned ? '; ' : ''}${extraInfoCleaned ? `<i>${extraInfoCleaned}</i>` : ''}`;
+                let posText = Array.isArray(s.partOfSpeech) ? s.partOfSpeech.join(', ') : (s.partOfSpeech || '');
+                 let extraInfoText = Array.isArray(s.extraInfo) ? s.extraInfo.join('; ') : (s.extraInfo || '');
+                 extraInfoText = extraInfoText.replace(/^; |^, |; $|, $/g, '').trim();
+                let grammarHtml = posText;
+                if (posText && extraInfoText) {
+                    grammarHtml += '; ';
+                }
+                if (extraInfoText) {
+                     grammarHtml += `<i>${extraInfoText}</i>`;
+                }
+                grammar.innerHTML = grammarHtml;
                 if (grammar.innerHTML.trim()) {
                    senseContainer.appendChild(grammar);
                 }
+
                 const english = document.createElement('div');
                 english.classList.add('english-meaning');
-                function boldInputWord(text, inputWord) {
-                    if (!text || !inputWord || isJapanese) return text;
-                    const escapedInput = inputWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const regex = new RegExp(`\\b(${escapedInput})\\b`, 'gi');
-                    return text.replace(regex, '<b>$1</b>');
+                function boldInputWord(text, inputWord, isJpInput) { // Keep bolding function
+                    if (!text || !inputWord || isJpInput) return text;
+                    try {
+                        const escapedInput = inputWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        const regex = new RegExp(`\\b(${escapedInput})\\b`, 'gi');
+                         return text.replace(regex, '<b>$1</b>');
+                    } catch (e) {
+                         console.error("Regex error in boldInputWord:", e);
+                         return text;
+                    }
                 }
-                english.innerHTML = `${boldInputWord(s.text, input)}`; // Numbering removed
+                english.innerHTML = boldInputWord(s.text, input, isJapanese); // Apply bolding
                 senseContainer.appendChild(english);
                 box.appendChild(senseContainer);
             });
 
-            // JLPT Bubble
+            // JLPT Bubble (Keeping the fix for the CSS class name)
             if (entry.jlpt) {
-                const jlptBubble = document.createElement('div');
-                jlptBubble.classList.add('jlpt-vocab-bubble', entry.jlpt.toLowerCase());
-                jlptBubble.innerHTML = entry.jlpt.toUpperCase();
-                box.appendChild(jlptBubble);
+                const cleanedJlptKey = entry.jlpt.toLowerCase().replace('jlpt ', '').trim();
+                if (cleanedJlptKey) {
+                    const jlptBubble = document.createElement('div');
+                    jlptBubble.classList.add('jlpt-vocab-bubble', cleanedJlptKey); // Use cleaned key
+                    jlptBubble.innerHTML = entry.jlpt.toUpperCase();
+                    box.appendChild(jlptBubble);
+                }
             }
             vocabBox.appendChild(box);
         });
 
 
-        // "Show More" Button Logic
+        // "Show More" Button Logic - *** REVERTED TO DIV and { once: true } ***
         if (rankedVocab.length > limit) {
             const existingButton = vocabBox.querySelector('.show-more');
             if (existingButton) existingButton.remove();
+
+            // Reverted: Use div element
             const showMore = document.createElement('div');
             showMore.classList.add('show-more');
+            // Reverted: Use innerHTML
             showMore.innerHTML = `Show more (${rankedVocab.length - limit} remaining)`;
+            // Reverted: Use { once: true } option, no explicit remove needed inside handler
             showMore.addEventListener('click', () => {
                 wordsToShow += 5;
                 renderWords(wordsToShow);
