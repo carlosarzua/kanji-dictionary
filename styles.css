@@ -1061,3 +1061,14 @@ button:hover {
     font-size: 0.9em;
     color: #333;
 }
+
+
+/* Override display: inline-block !important for hidden mobile boxes */
+#mobile-kunyomi-box[style*="display: none"],
+#mobile-onyomi-box[style*="display: none"],
+#mobile-meaningradical-box[style*="display: none"],
+#mobile-radical-box[style*="display: none"] {
+    display: none !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+}
