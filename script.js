@@ -7764,19 +7764,44 @@ document.addEventListener("DOMContentLoaded", function() {
         const mobileMeaningRadicalBoxElement = document.getElementById('mobile-meaningradical-box');
         const radicalBoxElement = document.getElementById('radical-box');
         const mobilePhoneticRadicalBoxElement = document.getElementById('mobile-radical-box');
-
+    
+        // Update kanji display
         mobileDisplayKanjiElement.textContent = displayKanjiElement.textContent;
-
+    
+        // Update JLPT bubble
         const jlptClasses = ['n1', 'n2', 'n3', 'n4', 'n5', 'notinjlpt'];
-        const currentClass = Array.from(levelBubbleElement.classList).find(className => jlptClasses.includes(className));
+        const currentClass = Array.from(levelBubbleElement.classList).find(className => jlptClasses.includes(className)) || 'notinjlpt';
+        
+        // Log for debugging
+        console.log('updateMobileBoxes - levelBubbleElement:', {
+            innerHTML: levelBubbleElement.innerHTML,
+            classList: Array.from(levelBubbleElement.classList)
+        });
+        console.log('updateMobileBoxes - Applying to mobileLevelBubbleElement:', {
+            innerHTML: levelBubbleElement.innerHTML,
+            className: `level-bubble ${currentClass}`
+        });
+    
+        // Clear previous classes and set new class
+        mobileLevelBubbleElement.className = 'level-bubble';
         mobileLevelBubbleElement.innerHTML = levelBubbleElement.innerHTML;
-        mobileLevelBubbleElement.className = `level-bubble ${currentClass}`;
-
+    
+        if (levelBubbleElement.innerHTML.trim() === '' || currentClass === 'notinjlpt') {
+            // Hide the bubble if no JLPT level
+            mobileLevelBubbleElement.style.display = 'none';
+            mobileLevelBubbleElement.classList.add('notinjlpt');
+        } else {
+            // Show the bubble with the correct class
+            mobileLevelBubbleElement.style.display = '';
+            mobileLevelBubbleElement.classList.add(currentClass);
+        }
+    
+        // Update navigation buttons
         let mobileNavButton = document.getElementById('mobile-navButton');
         let mobilePrevButton = document.getElementById('mobile-prevButton');
         if (mobileNavButton) mobileNavButton.remove();
         if (mobilePrevButton) mobilePrevButton.remove();
-
+    
         if (navButton) {
             mobileNavButton = document.createElement('span');
             mobileNavButton.id = 'mobile-navButton';
@@ -7793,12 +7818,13 @@ document.addEventListener("DOMContentLoaded", function() {
             mobilePrevButton.onclick = prevButton.onclick;
             mobileDisplayKanjiContainer.appendChild(mobilePrevButton);
         }
-
+    
+        // Handle kana vs. kanji display
         const currentChar = displayKanjiElement.textContent;
         const charType = getCharacterType(currentChar);
         const isKana = charType === 'hiragana' || charType === 'small-hiragana' || 
                       charType === 'katakana' || charType === 'small-katakana';
-
+    
         if (isKana) {
             if (mobileKunyomiBoxElement) mobileKunyomiBoxElement.style.display = 'none';
             if (mobileOnyomiBoxElement) mobileOnyomiBoxElement.style.display = 'none';
@@ -7810,7 +7836,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (mobileMeaningRadicalBoxElement) mobileMeaningRadicalBoxElement.style.display = '';
             if (mobilePhoneticRadicalBoxElement) mobilePhoneticRadicalBoxElement.style.display = '';
         }
-
+    
         if (!isKana) {
             mobileKunyomiBoxElement.innerHTML = "<span style='font-size:0.7em;'>Kun'yomi // </span><strong>" + kunyomiBoxElement.innerHTML + "</strong>";
             mobileOnyomiBoxElement.innerHTML = "<span style='font-size:0.7em;'>On'yomi // </span><strong>" + onyomiBoxElement.innerHTML + "</strong>";
