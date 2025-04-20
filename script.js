@@ -9047,58 +9047,54 @@ async function updateVocabDisplay(input) {
     console.log('updateVocabDisplay called with input:', input);
     console.log('isVocabularyFetched:', isVocabularyFetched);
 
-    // 1. Wait for vocabulary data if it's not ready
+    // 1. Validate input early to avoid unnecessary processing
+    if (!input || input.trim() === "") {
+        console.log("No input provided, skipping vocab display update.");
+        return;
+    }
+
+    // 2. Wait for vocabulary data if it's not ready
     while (!isVocabularyFetched) {
         console.log('Waiting for vocabulary fetch...');
         await new Promise(resolve => setTimeout(resolve, 100));
     }
 
-    // 2. Check if vocabulary data actually loaded
+    // 3. Check if vocabulary data actually loaded
     const vocabBox = document.getElementById('vocab-box');
     if (!vocabBox) {
         console.error('Vocab box element not found in the DOM');
-        return; // Cannot proceed without the display area
+        return;
     }
-    // Also check vocabulary array itself, even if fetch flag is true
     if (!Array.isArray(window.vocabulary) || window.vocabulary.length === 0) {
-         if (isVocabularyFetched) { // If fetch supposedly finished but array is empty
-             vocabBox.innerHTML = '<p>Failed to load vocabulary data or data is empty. Please try refreshing.</p>';
-             console.warn('Vocabulary array is empty after fetch attempt, cannot render.');
-         } else {
-             // This case should be caught by the while loop, but as a fallback:
-             vocabBox.innerHTML = '<p>Vocabulary data is still loading...</p>';
-              console.warn('Vocabulary array is empty, fetch may not be complete.');
-         }
+        if (isVocabularyFetched) {
+            vocabBox.innerHTML = '<p>Failed to load vocabulary data or data is empty. Please try refreshing.</p>';
+            console.warn('Vocabulary array is empty after fetch attempt, cannot render.');
+        } else {
+            vocabBox.innerHTML = '<p>Vocabulary data is still loading...</p>';
+            console.warn('Vocabulary array is empty, fetch may not be complete.');
+        }
         return;
     }
 
-
-    // 3. Clear previous results and handle empty input
+    // 4. Clear vocabBox only when rendering new content
     vocabBox.innerHTML = '';
-    if (!input || input.trim() === "") {
-        console.log("No input provided, clearing vocab display.");
-        return;
-    }
 
     console.log("Processing input for vocab:", input);
     const isJapanese = /[一-龯ぁ-んァ-ン]/.test(input);
-    const inputLower = input.toLowerCase(); // Lowercase input once for comparisons
+    const inputLower = input.toLowerCase();
     console.log("Input type detected as:", isJapanese ? "Japanese" : "English");
 
-    // 4. Filter Vocabulary Based on Input
+    // 5. Filter Vocabulary Based on Input
     let filteredVocab = [];
-
     if (isJapanese) {
-        // Filter for Japanese
-        filteredVocab = window.vocabulary.filter(entry => { // Use window.vocabulary to be sure
+        filteredVocab = window.vocabulary.filter(entry => {
             if (!entry || !Array.isArray(entry.kanji) || !Array.isArray(entry.reading)) return false;
             const kanjiMatch = entry.kanji.some(k => k && k.text && k.text.includes(input));
             const readingMatch = entry.reading.some(r => r && r.text && r.text.includes(input));
             return kanjiMatch || readingMatch;
         });
     } else {
-        // Filter for English
-        filteredVocab = window.vocabulary.filter(entry => { // Use window.vocabulary
+        filteredVocab = window.vocabulary.filter(entry => {
             if (!entry || !Array.isArray(entry.sense)) return false;
             return entry.sense.some(s => {
                 if (!s || !s.text) return false;
@@ -9112,21 +9108,13 @@ async function updateVocabDisplay(input) {
         return;
     }
 
-    // 5. Rank and Sort Filtered Vocabulary
+    // 6. Rank and Sort Filtered Vocabulary
     const jlptScoreMap = { "n5": 0, "n4": 0.1, "n3": 0.2, "n2": 0.3, "n1": 0.4, "": 0.5 };
-
-    // --- calculateRank Function Definition ---
-    // (Keeping the improved calculateRank function from the previous step, including the JLPT key fix)
     function calculateRank(entry, searchInput, isJapaneseInput) {
-        let score = 99; // Default score (worst rank)
-
-        if (!entry) return score; // Basic safety check
-
-        // Determine Base Commonality
+        let score = 99;
+        if (!entry) return score;
         const hasCommonKanji = entry.kanji?.some(k => k && k.common);
         const hasCommonReading = entry.reading?.some(r => r && r.common);
-
-        // Calculate Commonality Penalty
         let commonalityPenalty = 0;
         if (entry.kanji?.length > 0 && !hasCommonKanji) {
             commonalityPenalty += 1;
@@ -9134,31 +9122,21 @@ async function updateVocabDisplay(input) {
         if (!hasCommonReading && (!hasCommonKanji || !entry.kanji || entry.kanji.length === 0)) {
             commonalityPenalty += 1;
         }
-
-        // JLPT Score Adjustment (FIXED)
-        const jlptKey = entry.jlpt
-            ? entry.jlpt.toLowerCase().replace('jlpt ', '').trim()
-            : "";
+        const jlptKey = entry.jlpt ? entry.jlpt.toLowerCase().replace('jlpt ', '').trim() : "";
         const levelScore = jlptScoreMap[jlptKey] ?? 0.5;
-
-        // --- Input-Specific Ranking ---
         if (isJapaneseInput) {
-            // Japanese input logic (unchanged from previous version)
             let matchTypeScore = 99;
             let commonBonus = 0;
-
             const exactKanjiMatch = entry.kanji?.find(k => k && k.text === searchInput);
             if (exactKanjiMatch) {
                 matchTypeScore = 1;
                 if (exactKanjiMatch.common) commonBonus = -0.5;
             }
-
             const exactReadingMatch = entry.reading?.find(r => r && r.text === searchInput);
             if (exactReadingMatch && matchTypeScore > 2) {
                 matchTypeScore = 2;
                 if (exactReadingMatch.common && commonBonus === 0) commonBonus = -0.5;
             }
-
             if (matchTypeScore > 4 && entry.kanji?.some(k => k && k.text && k.text.includes(searchInput))) {
                 matchTypeScore = 5;
             }
@@ -9166,17 +9144,14 @@ async function updateVocabDisplay(input) {
                 matchTypeScore = 6;
             }
             score = matchTypeScore + commonBonus + levelScore + commonalityPenalty;
-
-        } else { // English Input Ranking Logic (unchanged from previous version)
+        } else {
             let definitionScore = 99;
             const searchInputLower = searchInput.toLowerCase();
-
             entry.sense?.forEach((s, index) => {
                 if (!s || !s.text) return;
                 const senseTextLower = s.text.toLowerCase();
                 const words = senseTextLower.split(/[\s.,;!?()"'-]+/).filter(Boolean);
                 let currentSenseRank = 99;
-
                 if (words.length > 0 && words[0] === searchInputLower) {
                     currentSenseRank = 1;
                 } else if (senseTextLower.startsWith('to ') && words.length > 1 && words[1] === searchInputLower) {
@@ -9186,128 +9161,63 @@ async function updateVocabDisplay(input) {
                 } else if (senseTextLower.includes(searchInputLower)) {
                     currentSenseRank = 3;
                 }
-
-                const senseIndexPenalty = index * 0.1; // Using the smaller penalty
+                const senseIndexPenalty = index * 0.1;
                 const scoreForThisSense = currentSenseRank + senseIndexPenalty;
                 definitionScore = Math.min(definitionScore, scoreForThisSense);
             });
-
-            // Katakana/Loanword Penalty (unchanged from previous version)
             let loanwordPenalty = 0;
             const hasOnlyKatakanaReadings = entry.reading?.length > 0 && entry.reading.every(r => r && /^[ァ-ン・ー]+$/.test(r.text));
             const hasOnlyKatakanaKanjiOrNoKanji = !entry.kanji || entry.kanji.length === 0 || entry.kanji.every(k => k && /^[ァ-ン・ー]+$/.test(k.text));
             if (hasOnlyKatakanaReadings && hasOnlyKatakanaKanjiOrNoKanji) {
-                 loanwordPenalty = 0.2;
+                loanwordPenalty = 0.2;
             }
-
-            // --- DEBUGGING LOG for 'water' (Updated to show cleaned key) ---
-            if (searchInputLower === 'water') {
-                const kanjiText = entry.kanji?.map(k => k.text).join(', ') || 'N/A';
-                const readingText = entry.reading?.map(r => r.text).join(', ') || 'N/A';
-                const firstSense = entry.sense?.[0]?.text || 'N/A';
-                console.log(`--- Ranking for ${kanjiText} (${readingText}) ---`);
-                console.log(`  ID: ${entry.id || 'N/A'}`);
-                console.log(`  JLPT (raw): "${entry.jlpt}"`);
-                console.log(`  JLPT Map Key Used (Cleaned): "${jlptKey}"`); // Log the final key
-                console.log(`  JLPT Map Lookup Result: ${jlptScoreMap[jlptKey]}`); // Use the cleaned key
-                console.log(`  First Sense: "${firstSense}"`);
-                console.log(`  Definition Score (Best Sense): ${definitionScore.toFixed(3)}`);
-                console.log(`  Commonality Penalty: ${commonalityPenalty} (Kanji Common: ${hasCommonKanji}, Reading Common: ${hasCommonReading})`);
-                console.log(`  JLPT Score Component: ${levelScore}`);
-                console.log(`  Loanword Penalty: ${loanwordPenalty}`);
-                const totalScore = definitionScore + commonalityPenalty + levelScore + loanwordPenalty;
-                console.log(`  >> Total Score: ${totalScore.toFixed(3)}`);
-                console.log('----------------------------------------');
-            }
-             // --- END DEBUGGING LOG ---
-
             score = definitionScore + commonalityPenalty + levelScore + loanwordPenalty;
         }
-
         return Math.min(score, 100);
     }
-    // --- End of calculateRank Function Definition ---
 
-    // Add the calculated rank score to each entry
     const rankedVocabWithScore = filteredVocab.map(entry => ({
         ...entry,
         rankScore: calculateRank(entry, input, isJapanese)
     }));
-
-    // Filter out definite non-matches AFTER calculating score
     const rankedVocab = rankedVocabWithScore.filter(entry => entry.rankScore < 90);
-
-    // ***** DEBUGGING LOGS for 'eat' (kept from previous version) *****
-    if (input.toLowerCase() === 'eat') {
-        console.log("--- DEBUGGING RANK SCORES for 'eat' (BEFORE SORT) ---");
-        const debugEntries = rankedVocab.filter(e =>
-            e.kanji?.some(k => k && ['食べる', '召し上がる', '食う', '喫する'].includes(k.text)) ||
-            e.reading?.some(r => r && ['たべる', 'めしあがる', 'くう', 'きっする'].includes(r.text))
-        );
-        if (debugEntries.length === 0) {
-             console.log("COULD NOT FIND relevant 'eat' verbs in filtered results (<90 score). Check filtering/ranking.");
-        } else {
-             debugEntries.forEach(entry => {
-                 const cleanedJlptKey = entry.jlpt ? entry.jlpt.toLowerCase().replace('jlpt ', '').trim() : "";
-                 console.log(`Entry ID: ${entry.id || 'N/A'}, Word: ${entry.kanji?.[0]?.text || entry.reading?.[0]?.text}, JLPT (Raw): "${entry.jlpt || ''}", JLPT Key: "${cleanedJlptKey}"`);
-                 console.log('  Kanji:', entry.kanji ? JSON.stringify(entry.kanji.map(k => ({text: k.text, common: k.common})), null, 1) : 'N/A');
-                 console.log('  Reading:', entry.reading ? JSON.stringify(entry.reading.map(r => ({text: r.text, common: r.common})), null, 1) : 'N/A');
-                 console.log('  Sense 1:', entry.sense?.[0]?.text || 'N/A');
-                 console.log(`  >> Calculated Rank Score: ${entry.rankScore.toFixed(3)}`);
-                 console.log('--------------------');
-             });
-        }
-         console.log("--- END DEBUGGING RANK SCORES ---");
-    }
-    // ***** END DEBUGGING LOGS *****
-
-    // Sort by the calculated rankScore (lower is better)
-    // (Keeping the improved sort with secondary commonality check)
     rankedVocab.sort((a, b) => {
         if (a.rankScore === b.rankScore) {
-             const aIsCommon = a.kanji?.some(k=>k.common) || a.reading?.some(r=>r.common);
-             const bIsCommon = b.kanji?.some(k=>k.common) || b.reading?.some(r=>r.common);
-             if (aIsCommon && !bIsCommon) return -1;
-             if (!aIsCommon && bIsCommon) return 1;
-            return (a.id || 0) - (b.id || 0); // Fallback to ID
+            const aIsCommon = a.kanji?.some(k => k.common) || a.reading?.some(r => r.common);
+            const bIsCommon = b.kanji?.some(k => k.common) || b.reading?.some(r => r.common);
+            if (aIsCommon && !bIsCommon) return -1;
+            if (!aIsCommon && bIsCommon) return 1;
+            return (a.id || 0) - (b.id || 0);
         }
         return a.rankScore - b.rankScore;
     });
 
-    // Log the top results AFTER sorting
     console.log("Ranked Vocab Sample (Top 5 AFTER SORT):", rankedVocab.slice(0, 5).map(e => ({
         id: e.id,
         score: e.rankScore.toFixed(2),
         kanji: e.kanji?.map(k => k.text)[0],
         reading: e.reading?.map(r => r.text)[0],
         sense: e.sense?.[0]?.text
-     })));
+    })));
 
-
-    // 6. Render the Sorted Vocabulary
-    let wordsToShow = 5; // Number of words to show initially
-
-    // --- renderWords Function Definition ---
+    // 7. Render the Sorted Vocabulary
+    let wordsToShow = 5;
     function renderWords(limit) {
-        vocabBox.innerHTML = ''; // Clear previous render before adding new items
+        vocabBox.innerHTML = '';
         const entriesToRender = rankedVocab.slice(0, limit);
         console.log(`Rendering ${entriesToRender.length} words (limit: ${limit})`);
-
         if (entriesToRender.length === 0) {
-             if (rankedVocab.length > 0) {
-                 console.warn("Attempted to render 0 words, but rankedVocab has entries. Check slicing/limit logic.");
-                 vocabBox.innerHTML = '<p>Error rendering results.</p>';
-             } else {
-                 vocabBox.innerHTML = '<p>No matching vocabulary found.</p>';
-             }
-             return;
-         }
-
+            if (rankedVocab.length > 0) {
+                console.warn("Attempted to render 0 words, but rankedVocab has entries. Check slicing/limit logic.");
+                vocabBox.innerHTML = '<p>Error rendering results.</p>';
+            } else {
+                vocabBox.innerHTML = '<p>No matching vocabulary found.</p>';
+            }
+            return;
+        }
         entriesToRender.forEach((entry) => {
             const box = document.createElement('div');
             box.classList.add('vocab-entry');
-
-            // Word Header (Kanji/Kana) - *** REVERTED STYLING ***
             const word = document.createElement('div');
             word.classList.add('word');
             let kanjiHtml = '';
@@ -9316,24 +9226,20 @@ async function updateVocabDisplay(input) {
                     if (!k || !k.text) return '';
                     const span = document.createElement('span');
                     span.textContent = k.text;
-                    // Reverted: Use original color logic (black/gray), no bold
                     span.style.color = k.common ? 'black' : 'gray';
-                    span.style.marginRight = '0.2em'; // Original margin
+                    span.style.marginRight = '0.2em';
                     return span.outerHTML;
                 }).join('');
             }
             let kanaHtml = '';
             if (entry.reading && entry.reading.length > 0) {
                 kanaHtml = entry.reading.map(r => {
-                     if (!r || !r.text) return '';
-                     // Reverted: Use original color logic (black/gray), no bold
-                     const color = r.common ? 'black' : 'gray';
-                     // Reverted: Original appliesTo styling/logic
-                     const appliesTo = (r.appliesToKanji && r.appliesToKanji[0] !== '*' && entry.kanji?.length > 1)
-                         ? ` <i style="font-size:0.8em; opacity: 0.6;">(${r.appliesToKanji.join(',')})</i>`
-                         : '';
-                     // Reverted: Span without font-weight
-                     return `<span style="color: ${color}; margin-right: 0.5em;">${r.text}</span>${appliesTo}`;
+                    if (!r || !r.text) return '';
+                    const color = r.common ? 'black' : 'gray';
+                    const appliesTo = (r.appliesToKanji && r.appliesToKanji[0] !== '*' && entry.kanji?.length > 1)
+                        ? ` <i style="font-size:0.8em; opacity: 0.6;">(${r.appliesToKanji.join(',')})</i>`
+                        : '';
+                    return `<span style="color: ${color}; margin-right: 0.5em;">${r.text}</span>${appliesTo}`;
                 }).join('');
             }
             if (kanjiHtml.trim()) {
@@ -9342,73 +9248,60 @@ async function updateVocabDisplay(input) {
                 word.innerHTML = kanaHtml.trim();
             }
             box.appendChild(word);
-
-            // Sense/Definition Details (Keeping improvements like bolding input, better grammar display)
             entry.sense?.forEach((s) => {
                 if (!s || !s.text) return;
                 const senseContainer = document.createElement('div');
                 senseContainer.classList.add('sense-container');
-
                 const grammar = document.createElement('div');
                 grammar.classList.add('grammar');
                 let posText = Array.isArray(s.partOfSpeech) ? s.partOfSpeech.join(', ') : (s.partOfSpeech || '');
-                 let extraInfoText = Array.isArray(s.extraInfo) ? s.extraInfo.join('; ') : (s.extraInfo || '');
-                 extraInfoText = extraInfoText.replace(/^; |^, |; $|, $/g, '').trim();
+                let extraInfoText = Array.isArray(s.extraInfo) ? s.extraInfo.join('; ') : (s.extraInfo || '');
+                extraInfoText = extraInfoText.replace(/^; |^, |; $|, $/g, '').trim();
                 let grammarHtml = posText;
                 if (posText && extraInfoText) {
                     grammarHtml += '; ';
                 }
                 if (extraInfoText) {
-                     grammarHtml += `<i>${extraInfoText}</i>`;
+                    grammarHtml += `<i>${extraInfoText}</i>`;
                 }
                 grammar.innerHTML = grammarHtml;
                 if (grammar.innerHTML.trim()) {
-                   senseContainer.appendChild(grammar);
+                    senseContainer.appendChild(grammar);
                 }
-
                 const english = document.createElement('div');
                 english.classList.add('english-meaning');
-                function boldInputWord(text, inputWord, isJpInput) { // Keep bolding function
+                function boldInputWord(text, inputWord, isJpInput) {
                     if (!text || !inputWord || isJpInput) return text;
                     try {
                         const escapedInput = inputWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                         const regex = new RegExp(`\\b(${escapedInput})\\b`, 'gi');
-                         return text.replace(regex, '<b>$1</b>');
+                        return text.replace(regex, '<b>$1</b>');
                     } catch (e) {
-                         console.error("Regex error in boldInputWord:", e);
-                         return text;
+                        console.error("Regex error in boldInputWord:", e);
+                        return text;
                     }
                 }
-                english.innerHTML = boldInputWord(s.text, input, isJapanese); // Apply bolding
+                english.innerHTML = boldInputWord(s.text, input, isJapanese);
                 senseContainer.appendChild(english);
                 box.appendChild(senseContainer);
             });
-
-            // JLPT Bubble (Keeping the fix for the CSS class name)
             if (entry.jlpt) {
                 const cleanedJlptKey = entry.jlpt.toLowerCase().replace('jlpt ', '').trim();
                 if (cleanedJlptKey) {
                     const jlptBubble = document.createElement('div');
-                    jlptBubble.classList.add('jlpt-vocab-bubble', cleanedJlptKey); // Use cleaned key
+                    jlptBubble.classList.add('jlpt-vocab-bubble', cleanedJlptKey);
                     jlptBubble.innerHTML = entry.jlpt.toUpperCase();
                     box.appendChild(jlptBubble);
                 }
             }
             vocabBox.appendChild(box);
         });
-
-
-        // "Show More" Button Logic - *** REVERTED TO DIV and { once: true } ***
         if (rankedVocab.length > limit) {
             const existingButton = vocabBox.querySelector('.show-more');
             if (existingButton) existingButton.remove();
-
-            // Reverted: Use div element
             const showMore = document.createElement('div');
             showMore.classList.add('show-more');
-            // Reverted: Use innerHTML
             showMore.innerHTML = `Show more (${rankedVocab.length - limit} remaining)`;
-            // Reverted: Use { once: true } option, no explicit remove needed inside handler
             showMore.addEventListener('click', () => {
                 wordsToShow += 5;
                 renderWords(wordsToShow);
@@ -9416,13 +9309,10 @@ async function updateVocabDisplay(input) {
             vocabBox.appendChild(showMore);
         }
     }
-    // --- End of renderWords Function Definition ---
 
-    // 7. Initial Render Call
+    // 8. Initial Render Call
     renderWords(wordsToShow);
-
-} // End of updateVocabDisplay function
-
+}
 
 
 // Event listener for "Check Kanji" button
