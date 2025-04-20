@@ -7765,14 +7765,15 @@ document.addEventListener("DOMContentLoaded", function() {
         const radicalBoxElement = document.getElementById('radical-box');
         const mobilePhoneticRadicalBoxElement = document.getElementById('mobile-radical-box');
     
+        // Log call to detect multiple invocations
+        console.log('updateMobileBoxes called at:', new Date().toISOString());
+    
         // Update kanji display
         mobileDisplayKanjiElement.textContent = displayKanjiElement.textContent;
     
         // Update JLPT bubble
         const jlptClasses = ['n1', 'n2', 'n3', 'n4', 'n5', 'notinjlpt'];
         const currentClass = Array.from(levelBubbleElement.classList).find(className => jlptClasses.includes(className)) || 'notinjlpt';
-        
-        // Log for debugging
         console.log('updateMobileBoxes - levelBubbleElement:', {
             innerHTML: levelBubbleElement.innerHTML,
             classList: Array.from(levelBubbleElement.classList)
@@ -7781,17 +7782,12 @@ document.addEventListener("DOMContentLoaded", function() {
             innerHTML: levelBubbleElement.innerHTML,
             className: `level-bubble ${currentClass}`
         });
-    
-        // Clear previous classes and set new class
         mobileLevelBubbleElement.className = 'level-bubble';
         mobileLevelBubbleElement.innerHTML = levelBubbleElement.innerHTML;
-    
         if (levelBubbleElement.innerHTML.trim() === '' || currentClass === 'notinjlpt') {
-            // Hide the bubble if no JLPT level
             mobileLevelBubbleElement.style.display = 'none';
             mobileLevelBubbleElement.classList.add('notinjlpt');
         } else {
-            // Show the bubble with the correct class
             mobileLevelBubbleElement.style.display = '';
             mobileLevelBubbleElement.classList.add(currentClass);
         }
@@ -7801,7 +7797,6 @@ document.addEventListener("DOMContentLoaded", function() {
         let mobilePrevButton = document.getElementById('mobile-prevButton');
         if (mobileNavButton) mobileNavButton.remove();
         if (mobilePrevButton) mobilePrevButton.remove();
-    
         if (navButton) {
             mobileNavButton = document.createElement('span');
             mobileNavButton.id = 'mobile-navButton';
@@ -7825,25 +7820,74 @@ document.addEventListener("DOMContentLoaded", function() {
         const isKana = charType === 'hiragana' || charType === 'small-hiragana' || 
                       charType === 'katakana' || charType === 'small-katakana';
     
+        // Log character and type
+        console.log('updateMobileBoxes - Character:', currentChar, 'Type:', charType, 'isKana:', isKana);
+    
         if (isKana) {
-            if (mobileKunyomiBoxElement) mobileKunyomiBoxElement.style.display = 'none';
-            if (mobileOnyomiBoxElement) mobileOnyomiBoxElement.style.display = 'none';
-            if (mobileMeaningRadicalBoxElement) mobileMeaningRadicalBoxElement.style.display = 'none';
-            if (mobilePhoneticRadicalBoxElement) mobilePhoneticRadicalBoxElement.style.display = 'none';
+            // Hide and clear boxes for kana
+            if (mobileKunyomiBoxElement) {
+                mobileKunyomiBoxElement.style.display = 'none';
+                mobileKunyomiBoxElement.style.minHeight = '0';
+                mobileKunyomiBoxElement.style.padding = '0';
+                mobileKunyomiBoxElement.innerHTML = '';
+                console.log('Hiding mobile-kunyomi-box, computed display:', window.getComputedStyle(mobileKunyomiBoxElement).display);
+            }
+            if (mobileOnyomiBoxElement) {
+                mobileOnyomiBoxElement.style.display = 'none';
+                mobileOnyomiBoxElement.style.minHeight = '0';
+                mobileOnyomiBoxElement.style.padding = '0';
+                mobileOnyomiBoxElement.innerHTML = '';
+                console.log('Hiding mobile-onyomi-box, computed display:', window.getComputedStyle(mobileOnyomiBoxElement).display);
+            }
+            if (mobileMeaningRadicalBoxElement) {
+                mobileMeaningRadicalBoxElement.style.display = 'none';
+                mobileMeaningRadicalBoxElement.style.minHeight = '0';
+                mobileMeaningRadicalBoxElement.style.padding = '0';
+                mobileMeaningRadicalBoxElement.innerHTML = '';
+                console.log('Hiding mobile-meaningradical-box, computed display:', window.getComputedStyle(mobileMeaningRadicalBoxElement).display);
+            }
+            if (mobilePhoneticRadicalBoxElement) {
+                mobilePhoneticRadicalBoxElement.style.display = 'none';
+                mobilePhoneticRadicalBoxElement.style.minHeight = '0';
+                mobilePhoneticRadicalBoxElement.style.padding = '0';
+                mobilePhoneticRadicalBoxElement.innerHTML = '';
+                console.log('Hiding mobile-radical-box, computed display:', window.getComputedStyle(mobilePhoneticRadicalBoxElement).display);
+            }
         } else {
-            if (mobileKunyomiBoxElement) mobileKunyomiBoxElement.style.display = '';
-            if (mobileOnyomiBoxElement) mobileOnyomiBoxElement.style.display = '';
-            if (mobileMeaningRadicalBoxElement) mobileMeaningRadicalBoxElement.style.display = '';
-            if (mobilePhoneticRadicalBoxElement) mobilePhoneticRadicalBoxElement.style.display = '';
+            // Show and update boxes for kanji
+            if (mobileKunyomiBoxElement) {
+                mobileKunyomiBoxElement.style.display = '';
+                mobileKunyomiBoxElement.style.minHeight = '';
+                mobileKunyomiBoxElement.style.padding = '';
+                mobileKunyomiBoxElement.innerHTML = "<span style='font-size:0.7em;'>Kun'yomi // </span><strong>" + kunyomiBoxElement.innerHTML + "</strong>";
+                console.log('Showing mobile-kunyomi-box with content:', mobileKunyomiBoxElement.innerHTML, 'computed display:', window.getComputedStyle(mobileKunyomiBoxElement).display);
+            }
+            if (mobileOnyomiBoxElement) {
+                mobileOnyomiBoxElement.style.display = '';
+                mobileOnyomiBoxElement.style.minHeight = '';
+                mobileOnyomiBoxElement.style.padding = '';
+                mobileOnyomiBoxElement.innerHTML = "<span style='font-size:0.7em;'>On'yomi // </span><strong>" + onyomiBoxElement.innerHTML + "</strong>";
+                console.log('Showing mobile-onyomi-box with content:', mobileOnyomiBoxElement.innerHTML, 'computed display:', window.getComputedStyle(mobileOnyomiBoxElement).display);
+            }
+            if (mobileMeaningRadicalBoxElement) {
+                mobileMeaningRadicalBoxElement.style.display = '';
+                mobileMeaningRadicalBoxElement.style.minHeight = '';
+                mobileMeaningRadicalBoxElement.style.padding = '';
+                mobileMeaningRadicalBoxElement.innerHTML = "<span style='font-size:0.7em;'>Meaning Radical // </span><strong><br>" + meaningRadicalBoxElement.innerHTML + "</strong>";
+                console.log('Showing mobile-meaningradical-box with content:', mobileMeaningRadicalBoxElement.innerHTML, 'computed display:', window.getComputedStyle(mobileMeaningRadicalBoxElement).display);
+            }
+            if (mobilePhoneticRadicalBoxElement) {
+                mobilePhoneticRadicalBoxElement.style.display = '';
+                mobilePhoneticRadicalBoxElement.style.minHeight = '';
+                mobilePhoneticRadicalBoxElement.style.padding = '';
+                mobilePhoneticRadicalBoxElement.innerHTML = "<span style='font-size:0.7em;'>Phonetic Radical // </span><strong>" + radicalBoxElement.innerHTML + "</strong>";
+                console.log('Showing mobile-radical-box with content:', mobilePhoneticRadicalBoxElement.innerHTML, 'computed display:', window.getComputedStyle(mobilePhoneticRadicalBoxElement).display);
+            }
         }
     
-        if (!isKana) {
-            mobileKunyomiBoxElement.innerHTML = "<span style='font-size:0.7em;'>Kun'yomi // </span><strong>" + kunyomiBoxElement.innerHTML + "</strong>";
-            mobileOnyomiBoxElement.innerHTML = "<span style='font-size:0.7em;'>On'yomi // </span><strong>" + onyomiBoxElement.innerHTML + "</strong>";
-            mobileMeaningRadicalBoxElement.innerHTML = "<span style='font-size:0.7em;'>Meaning Radical // </span><strong><br>" + meaningRadicalBoxElement.innerHTML + "</strong>";
-            mobilePhoneticRadicalBoxElement.innerHTML = "<span style='font-size:0.7em;'>Phonetic Radical // </span><strong>" + radicalBoxElement.innerHTML + "</strong>";
-        }
+        // Update English box (always shown)
         mobileEnglishBoxElement.innerHTML = englishBoxElement.innerHTML;
+        console.log('Updated mobile-english-box with content:', mobileEnglishBoxElement.innerHTML, 'computed display:', window.getComputedStyle(mobileEnglishBoxElement).display);
     }
 
     function getRandomKanji() {
