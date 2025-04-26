@@ -7,7 +7,8 @@ const phoneticRadicalDatabase =
                     { kanji: "化", reading: "カ" },
                     { kanji: "花", reading: "カ" },
                     { kanji: "貨", reading: "カ" },
-                    { kanji: "靴", reading: "カ" }
+                    { kanji: "靴", reading: "カ" },
+                    { kanji: "囮", reading: "カ" }
                 ],
                 modified: [],
                 exception: [],
@@ -19,6 +20,113 @@ const phoneticRadicalDatabase =
                 similarTo: null
             }
         },
+        "思": {
+    defaultReading: "シ",
+    derivedKanji: {
+        regular: [
+            { kanji: "思", reading: "シ" },
+            { kanji: "偲", reading: "シ" }
+        ],
+        modified: [
+            { kanji: "顋", reading: "サイ" }
+        ],
+        exception: [],
+        doublereading: [
+            { kanji: "鰓", reading: "サイ" }
+        ]
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
+        "備": {
+    defaultReading: "ビ",
+    derivedKanji: {
+        regular: [
+            { kanji: "備", reading: "ビ" },
+            { kanji: "糒", reading: "ビ" }
+        ],
+        modified: [],
+        exception: [
+            { kanji: "鞴", reading: "フク" },
+            { kanji: "憊", reading: "ハイ" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
+        "翏": {
+    defaultReading: "リョウ",
+    derivedKanji: {
+        regular: [
+            { kanji: "寥", reading: "リョウ" },
+            { kanji: "蓼", reading: "リョウ" }
+        ],
+        modified: [
+            { kanji: "膠", reading: "コウ" },
+            { kanji: "謬", reading: "ビュウ" },
+            { kanji: "戮", reading: "リク" }
+        ],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
+
+        "卑": {
+    defaultReading: "ヒ",
+    derivedKanji: {
+        regular: [
+            { kanji: "卑", reading: "ヒ" },
+            { kanji: "碑", reading: "ヒ" },
+            { kanji: "婢", reading: "ヒ" },
+            { kanji: "脾", reading: "ヒ" }
+        ],
+        modified: [
+            { kanji: "稗", reading: "ハイ" }
+        ],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
+        "貝": {
+    defaultReading: "バイ",
+    derivedKanji: {
+        regular: [
+            { kanji: "貝", reading: "バイ" },
+            { kanji: "買", reading: "バイ" },
+            { kanji: "唄", reading: "バイ" },
+            { kanji: "狽", reading: "バイ" }
+        ],
+        modified: [
+            { kanji: "敗", reading: "ハイ" }
+        ],
+        exception: [
+            { kanji: "負", reading: "フ" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
         "子": {
   defaultReading: "シ",
   derivedKanji: {
@@ -670,10 +778,14 @@ const phoneticRadicalDatabase =
     derivedKanji: {
         regular: [
             { kanji: "尉", reading: "イ" },
-            { kanji: "慰", reading: "イ" }
+            { kanji: "慰", reading: "イ" },
+            { kanji: "熨", reading: "イ" }
         ],
         modified: [],
-        exception: [],
+        exception: [
+            { kanji: "蔚", reading: "ウツ" }
+
+        ],
         doublereading: []
     },
     notes: {
@@ -709,7 +821,9 @@ const phoneticRadicalDatabase =
         modified: [
             { kanji: "背", reading: "ハイ" }
         ],
-        exception: [],
+        exception: [
+            { kanji: "乖", reading: "カイ" }
+        ],
         doublereading: []
     },
     notes: {
@@ -737,6 +851,25 @@ const phoneticRadicalDatabase =
         similarTo: null
     }
 },
+"戎": {
+    defaultReading: "ジュウ",
+    derivedKanji: {
+        regular: [
+            { kanji: "戎", reading: "ジュウ" },
+            { kanji: "絨", reading: "ジュウ" }
+        ],
+        modified: [],
+        exception: [
+            { kanji: "賊", reading: "ゾク" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
         "利": {
     defaultReading: "リ",
     derivedKanji: {
@@ -745,7 +878,9 @@ const phoneticRadicalDatabase =
             { kanji: "俐", reading: "リ" },
             { kanji: "莉", reading: "リ" },
             { kanji: "梨", reading: "リ" },
-            { kanji: "痢", reading: "リ" }
+            { kanji: "痢", reading: "リ" },
+            { kanji: "悧", reading: "リ" },
+            { kanji: "蜊", reading: "リ" }
         ],
         modified: [],
         exception: [],
@@ -781,7 +916,8 @@ const phoneticRadicalDatabase =
         regular: [
             { kanji: "侯", reading: "コウ" },
             { kanji: "喉", reading: "コウ" },
-            { kanji: "候", reading: "コウ" }
+            { kanji: "候", reading: "コウ" },
+            { kanji: "猴", reading: "コウ" }
         ],
         modified: [],
         exception: [],
@@ -924,8 +1060,52 @@ const phoneticRadicalDatabase =
         ]
     },
     notes: {
-        isContainedIn: "婁 or 娄（ロウ）、粦（リン）、粲（サン）",
+        isContainedIn: "婁 or 娄（ロウ）、粦（リン）、粲（サン）、粛（ショウ）",
         containsRadical: null,
+        similarTo: null
+    }
+},
+"叚": {
+    defaultReading: "カ",
+    derivedKanji: {
+        regular: [
+            { kanji: "假", reading: "カ" },
+            { kanji: "暇", reading: "カ" },
+            { kanji: "瑕", reading: "カ" },
+            { kanji: "蝦", reading: "カ" },
+            { kanji: "霞", reading: "カ" }
+        ],
+        modified: [],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
+"粛": {
+    defaultReading: "ショウ",
+    derivedKanji: {
+        regular: [
+            { kanji: "繍", reading: "シュウ" },
+            { kanji: "簫", reading: "ショウ" },
+            { kanji: "嘯", reading: "ショウ" },
+            { kanji: "蕭", reading: "ショウ" },
+            { kanji: "瀟", reading: "ショウ" }
+        ],
+        modified: [
+
+            { kanji: "粛", reading: "シュウ" }
+        ],
+        exception: [
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: "米（メイ）",
         similarTo: null
     }
 },
@@ -1125,6 +1305,33 @@ const phoneticRadicalDatabase =
             similarTo: null
         }
     },
+
+"乙 or 乚": {
+    defaultReading: "オツ",
+    derivedKanji: {
+        regular: [
+            { kanji: "乙", reading: "オツ" }
+        ],
+        modified: [
+            { kanji: "軋", reading: "アツ" }
+        ],
+        exception: [
+            { kanji: "札", reading: "サツ" },
+            { kanji: "紮", reading: "サツ" },
+            { kanji: "迄", reading: "キツ" },
+            { kanji: "乾", reading: "カン" },
+            { kanji: "乞", reading: "キ or キツ" }
+                        
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
+
 "夆": {
     defaultReading: "ホウ",
     derivedKanji: {
@@ -1334,7 +1541,7 @@ const phoneticRadicalDatabase =
             doublereading: []
         },
         notes: {
-            isContainedIn: "岡（コウ）",
+            isContainedIn: "岡（コウ）、豈（ガイ）",
             containsRadical: null,
             similarTo: null
         }
@@ -1489,26 +1696,30 @@ const phoneticRadicalDatabase =
                 similarTo: null
             }
         },
-        "義": {
-            defaultReading: "ギ",
-            derivedKanji: {
-                regular: [
-                    { kanji: "義", reading: "ギ" },
-                    { kanji: "議", reading: "ギ" },
-                    { kanji: "儀", reading: "ギ" },
-                    { kanji: "犠", reading: "ギ" },
-                    { kanji: "蟻", reading: "ギ" }
-                ],
-                modified: [],
-                exception: [],
-                doublereading: []
-            },
-            notes: {
-                isContainedIn: null,
-                containsRadical: "羊（ヨウ）",
-                similarTo: null
-            }
-        },
+"義": {
+    defaultReading: "ギ",
+    derivedKanji: {
+        regular: [
+            { kanji: "義", reading: "ギ" },
+            { kanji: "議", reading: "ギ" },
+            { kanji: "儀", reading: "ギ" },
+            { kanji: "犠", reading: "ギ" },
+            { kanji: "蟻", reading: "ギ" },
+            { kanji: "艤", reading: "ギ" },
+            { kanji: "羲", reading: "ギ" },
+            { kanji: "礒", reading: "ギ" },
+            { kanji: "嶬", reading: "ギ" }
+        ],
+        modified: [],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: "羊（ヨウ）",
+        similarTo: null
+    }
+},
         "及 or 刍": {
     defaultReading: "キュウ",
     derivedKanji: {
@@ -1691,6 +1902,23 @@ const phoneticRadicalDatabase =
                     similarTo: null
                 }
             },
+            "鹵": {
+    defaultReading: "ロ",
+    derivedKanji: {
+        regular: [
+            { kanji: "鹵", reading: "ロ" },
+            { kanji: "滷", reading: "ロ" }
+        ],
+        modified: [],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
             "エ": {
                 defaultReading: "コウ",
                 derivedKanji: {
@@ -1707,7 +1935,8 @@ const phoneticRadicalDatabase =
                         { kanji: "肛", reading: "コウ" },
                         { kanji: "虹", reading: "コウ" },
                         { kanji: "腔", reading: "コウ" },
-                        { kanji: "鴻", reading: "コウ" }
+                        { kanji: "鴻", reading: "コウ" },
+                        { kanji: "倥", reading: "コウ" }
 
                     ],
                     modified: [
@@ -1923,7 +2152,7 @@ const phoneticRadicalDatabase =
                     doublereading: []
                 },
                 notes: {
-                    isContainedIn: "壮（ソウ）",
+                    isContainedIn: null,
                     containsRadical: null,
                     similarTo: null
                 }
@@ -2670,8 +2899,13 @@ const phoneticRadicalDatabase =
                         { kanji: "張", reading: "チョウ" },
                         { kanji: "脹", reading: "チョウ" }
                     ],
-                    modified: [],
-                    exception: [],
+                    modified: [
+                        { kanji: "套", reading: "トウ" }
+                    ],
+                    exception: [
+                        { kanji: "肆", reading: "シ" }
+
+                    ],
                     doublereading: []
                 },
                 notes: {
@@ -2680,6 +2914,72 @@ const phoneticRadicalDatabase =
                     similarTo: null
                 }
             },
+            "益": {
+    defaultReading: "エキ",
+    derivedKanji: {
+        regular: [
+            { kanji: "益", reading: "エキ" }
+        ],
+        modified: [
+            { kanji: "搤", reading: "ヤク" }
+        ],
+        exception: [
+            { kanji: "隘", reading: "アイ" },
+            { kanji: "縊", reading: "イ" },
+            { kanji: "溢", reading: "イツ" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
+"兮": {
+    defaultReading: "ケイ",
+    derivedKanji: {
+        regular: [
+            { kanji: "兮", reading: "ケイ" },
+            { kanji: "盻", reading: "ケイ" }
+        ],
+        modified: [],
+        exception: [
+            { kanji: "諡", reading: "シ" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
+"屯": {
+    defaultReading: "トン",
+    derivedKanji: {
+        regular: [
+            { kanji: "屯", reading: "トン" },
+            { kanji: "頓", reading: "トン" },
+            { kanji: "沌", reading: "トン" },
+            { kanji: "飩", reading: "トン" },
+            { kanji: "噸", reading: "トン" },
+            { kanji: "瓲", reading: "トン" }
+        ],
+        modified: [
+            { kanji: "鈍", reading: "ドン" }
+        ],
+        exception: [
+            { kanji: "純", reading: "ジュン" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
             "氐": {
                 defaultReading: "テイ",
                 derivedKanji: {
@@ -2687,10 +2987,17 @@ const phoneticRadicalDatabase =
                         { kanji: "低", reading: "テイ" },
                         { kanji: "底", reading: "テイ" },
                         { kanji: "邸", reading: "テイ" },
+                        { kanji: "抵", reading: "テイ" },
                         { kanji: "抵", reading: "テイ" }
                     ],
                     modified: [],
-                    exception: [],
+                    exception: [
+                        { kanji: "砥", reading: "シ" },
+                        { kanji: "鴟", reading: "シ" },
+                        { kanji: "祗", reading: "シ" },
+                        { kanji: "胝", reading: "チ" }
+
+                    ],
                     doublereading: []
                 },
                 notes: {
@@ -2720,6 +3027,26 @@ const phoneticRadicalDatabase =
                     similarTo: "居（キョ）"
                 }
             },
+            "豈": {
+    defaultReading: "ガイ",
+    derivedKanji: {
+        regular: [
+            { kanji: "豈", reading: "ガイ" },
+            { kanji: "凱", reading: "ガイ" },
+            { kanji: "愷", reading: "ガイ" },
+            { kanji: "鎧", reading: "ガイ" },
+            { kanji: "磑", reading: "ガイ" }
+        ],
+        modified: [],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: "山（サン）、豆（トウ）",
+        similarTo: null
+    }
+},
             "豆": {
                 defaultReading: "トウ",
                 derivedKanji: {
@@ -2728,6 +3055,7 @@ const phoneticRadicalDatabase =
                         { kanji: "燈", reading: "トウ" },
                         { kanji: "闘", reading: "トウ" },
                         { kanji: "逗", reading: "トウ" },
+                        { kanji: "鄧", reading: "トウ" },
                     ],
                     modified: [
                         { kanji: "短", reading: "タン" },
@@ -2743,7 +3071,7 @@ const phoneticRadicalDatabase =
                     ]
                 },
                 notes: {
-                    isContainedIn: "喜（キ）",
+                    isContainedIn: "喜（キ）、豈（ガイ）",
                     containsRadical: null,
                     similarTo: null
                 }
@@ -2811,28 +3139,35 @@ const phoneticRadicalDatabase =
             }
         },
             "白": {
-                defaultReading: "ハク",
-                derivedKanji: {
-                    regular: [
-                        { kanji: "白", reading: "ハク" },
-                        { kanji: "伯", reading: "ハク" },
-                        { kanji: "拍", reading: "ハク" },
-                        { kanji: "泊", reading: "ハク" },
-                        { kanji: "迫", reading: "ハク" },
-                        { kanji: "舶", reading: "ハク" }
-                    ],
-                    modified: [
-                        { kanji: "百", reading: "ヒャク" }
-                    ],
-                    exception: [],
-                    doublereading: []
-                },
-                notes: {
-                    isContainedIn: "泉（セン）",
-                    containsRadical: null,
-                    similarTo: null
-                }
-            },
+    defaultReading: "ハク",
+    derivedKanji: {
+        regular: [
+            { kanji: "白", reading: "ハク" },
+            { kanji: "伯", reading: "ハク" },
+            { kanji: "拍", reading: "ハク" },
+            { kanji: "泊", reading: "ハク" },
+            { kanji: "迫", reading: "ハク" },
+            { kanji: "舶", reading: "ハク" },
+            { kanji: "魄", reading: "ハク" },
+            { kanji: "柏", reading: "ハク" },
+            { kanji: "箔", reading: "ハク" },
+            { kanji: "怕", reading: "ハク" },
+            { kanji: "粕", reading: "ハク" },
+            { kanji: "狛", reading: "ハク" }
+        ],
+        modified: [
+            { kanji: "百", reading: "ヒャク" },
+            { kanji: "碧", reading: "ヘキ" }
+        ],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: "泉（セン）",
+        containsRadical: null,
+        similarTo: null
+    }
+},
             "反": {
                 defaultReading: "ハン",
                 derivedKanji: {
@@ -2964,7 +3299,8 @@ const phoneticRadicalDatabase =
                     exception: [
                         { kanji: "幕", reading: "マク or バク" },
                         { kanji: "漠", reading: "バク" },
-                        { kanji: "膜", reading: "マク" }
+                        { kanji: "膜", reading: "マク" },
+                        { kanji: "貘", reading: "バク" }
                     ],
                     doublereading: [
                         { kanji: "模", reading: "モ" }
@@ -2976,31 +3312,60 @@ const phoneticRadicalDatabase =
                     similarTo: null,
                 }
             },
-            "包": {
-                defaultReading: "ホウ",
-                derivedKanji: {
-                    regular: [
-                        { kanji: "包", reading: "ホウ" },
-                        { kanji: "抱", reading: "ホウ" },
-                        { kanji: "泡", reading: "ホウ" },
-                        { kanji: "胞", reading: "ホウ" },
-                        { kanji: "砲", reading: "ホウ" },
-                        { kanji: "飽", reading: "ホウ" },
-                        { kanji: "袍", reading: "ホウ" },
-                        { kanji: "庖", reading: "ホウ" }
 
-
-                    ],
-                    modified: [],
-                    exception: [],
-                    doublereading: []
-                },
-                notes: {
-                    isContainedIn: null,
-                    containsRadical: null,
-                    similarTo: null
-                }
-            },
+            "畺": {
+    defaultReading: "キョウ",
+    derivedKanji: {
+        regular: [
+            { kanji: "畺", reading: "キョウ" },
+            { kanji: "彊", reading: "キョウ" },
+            { kanji: "疆", reading: "キョウ" },
+            { kanji: "僵", reading: "キョウ" },
+            { kanji: "橿", reading: "キョウ" },
+            { kanji: "薑", reading: "キョウ" }
+        ],
+        modified: [],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
+"包": {
+    defaultReading: "ホウ",
+    derivedKanji: {
+        regular: [
+            { kanji: "包", reading: "ホウ" },
+            { kanji: "抱", reading: "ホウ" },
+            { kanji: "泡", reading: "ホウ" },
+            { kanji: "胞", reading: "ホウ" },
+            { kanji: "砲", reading: "ホウ" },
+            { kanji: "飽", reading: "ホウ" },
+            { kanji: "袍", reading: "ホウ" },
+            { kanji: "庖", reading: "ホウ" },
+            { kanji: "苞", reading: "ホウ" },
+            { kanji: "疱", reading: "ホウ" },
+            { kanji: "鞄", reading: "ホウ" },
+            { kanji: "鉋", reading: "ホウ" },
+            { kanji: "皰", reading: "ホウ" },
+            { kanji: "鮑", reading: "ホウ" },
+            { kanji: "咆", reading: "ホウ" }
+        ],
+        modified: [],
+        exception: [
+            { kanji: "雹", reading: "ハク" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
             "厓": {
     defaultReading: "ガイ",
     derivedKanji: {
@@ -3134,6 +3499,29 @@ const phoneticRadicalDatabase =
                     similarTo: null
                 }
             },
+            "耑": {
+    defaultReading: "タン",
+    derivedKanji: {
+        regular: [
+            { kanji: "端", reading: "タン" },
+            { kanji: "湍", reading: "タン" },
+            { kanji: "猯", reading: "タン" }
+        ],
+        modified: [],
+        exception: [
+            { kanji: "揣", reading: "シ" },
+            { kanji: "瑞", reading: "ズイ" },
+            { kanji: "惴", reading: "ズイ" },
+            { kanji: "喘", reading: "ゼン" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
             "羊": {
                 defaultReading: "ヨウ",
                 derivedKanji: {
@@ -3440,13 +3828,42 @@ const phoneticRadicalDatabase =
                     similarTo: null
                 }
             },
+            "句": {
+    defaultReading: "ク",
+    derivedKanji: {
+        regular: [
+            { kanji: "句", reading: "ク" },
+            { kanji: "駒", reading: "ク" },
+            { kanji: "狗", reading: "ク" },
+            { kanji: "枸", reading: "ク" },
+            { kanji: "佝", reading: "ク" }
+        ],
+        modified: [
+            { kanji: "拘", reading: "コウ" },
+            { kanji: "鉤", reading: "コウ" },
+            { kanji: "苟", reading: "コウ" }
+        ],
+        exception: [
+            { kanji: "蒟", reading: "コン" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
             "果": {
                 defaultReading: "カ",
                 derivedKanji: {
                     regular: [
                         { kanji: "果", reading: "カ" },
                         { kanji: "課", reading: "カ" },
-                        { kanji: "菓", reading: "カ" }
+                        { kanji: "菓", reading: "カ" },
+                        { kanji: "踝", reading: "カ" },
+                        { kanji: "夥", reading: "カ" },
+                        { kanji: "顆", reading: "カ" }
                     ],
                     modified: [
                         { kanji: "裸", reading: "ラ" }],
@@ -3495,6 +3912,27 @@ const phoneticRadicalDatabase =
         similarTo: null
     }
 },
+"骨": {
+    defaultReading: "コツ",
+    derivedKanji: {
+        regular: [
+            { kanji: "骨", reading: "コツ" },
+            { kanji: "榾", reading: "コツ" },
+            { kanji: "鶻", reading: "コツ" }
+        ],
+        modified: [
+            { kanji: "滑", reading: "カツ" },
+            { kanji: "猾", reading: "カツ" }
+        ],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: "咼（カ）"
+    }
+},
             "咼": {
                 defaultReading: "カ",
                 derivedKanji: {
@@ -3511,7 +3949,7 @@ const phoneticRadicalDatabase =
                 notes: {
                     isContainedIn: null,
                     containsRadical: null,
-                    similarTo: null
+                    similarTo: "骨（コツ）"
                 }
             },
             "介": {
@@ -3519,7 +3957,10 @@ const phoneticRadicalDatabase =
                 derivedKanji: {
                     regular: [
                         { kanji: "介", reading: "カイ" },
-                        { kanji: "界", reading: "カイ" }
+                        { kanji: "界", reading: "カイ" },
+                        { kanji: "堺", reading: "カイ" },
+                        { kanji: "芥", reading: "カイ" },
+                        { kanji: "疥", reading: "カイ" }
                     ],
                     modified: [],
                     exception: [],
@@ -3660,9 +4101,15 @@ const phoneticRadicalDatabase =
                 derivedKanji: {
                     regular: [
                         { kanji: "間", reading: "カン" },
-                        { kanji: "簡", reading: "カン" }
+                        { kanji: "簡", reading: "カン" },
+                        { kanji: "澗", reading: "カン" },
+                        { kanji: "癇", reading: "カン" },
+                        { kanji: "嫺", reading: "カン" }
                     ],
-                    modified: [],
+                    modified: [
+                        { kanji: "燗", reading: "ラン" }
+
+                    ],
                     exception: [],
                     doublereading: []
                 },
@@ -3716,6 +4163,28 @@ const phoneticRadicalDatabase =
                     similarTo: null
                 }
             },
+            "千": {
+    defaultReading: "セン",
+    derivedKanji: {
+        regular: [
+            { kanji: "千", reading: "セン" },
+            { kanji: "仟", reading: "セン" },
+            { kanji: "阡", reading: "セン" }
+        ],
+        modified: [],
+        exception: [
+            { kanji: "粁", reading: "キロ" },
+            { kanji: "瓩", reading: "キロ" },
+            { kanji: "竏", reading: "キロ" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
             "奇": {
                 defaultReading: "キ",
                 derivedKanji: {
@@ -3725,9 +4194,13 @@ const phoneticRadicalDatabase =
                         { kanji: "崎", reading: "キ" },
                         { kanji: "騎", reading: "キ" },
                         { kanji: "綺", reading: "キ" },
-                        { kanji: "畸", reading: "キ" }
+                        { kanji: "畸", reading: "キ" },
+                        { kanji: "埼", reading: "キ" }
                     ],
-                    modified: [],
+                    modified: [
+                        { kanji: "椅", reading: "イ" }
+
+                    ],
                     exception: [],
                     doublereading: []
                 },
@@ -3915,7 +4388,8 @@ const phoneticRadicalDatabase =
                         { kanji: "夹", reading: "キョウ" },
                         { kanji: "峡", reading: "キョウ" },
                         { kanji: "狭", reading: "キョウ" },
-                        { kanji: "挟", reading: "キョウ" }
+                        { kanji: "挟", reading: "キョウ" },
+                        { kanji: "頬", reading: "キョウ" }
                     ],
                     modified: [],
                     exception: [],
@@ -4155,7 +4629,10 @@ const phoneticRadicalDatabase =
                         { kanji: "亢", reading: "コウ" },
                         { kanji: "航", reading: "コウ" },
                         { kanji: "坑", reading: "コウ" },
-                        { kanji: "抗", reading: "コウ" }
+                        { kanji: "抗", reading: "コウ" },
+                        { kanji: "伉", reading: "コウ" },
+                        { kanji: "杭", reading: "コウ" }
+
                     ],
                     modified: [],
                     exception: [],
@@ -4173,7 +4650,9 @@ const phoneticRadicalDatabase =
                     regular: [
                         { kanji: "斉", reading: "サイ" },
                         { kanji: "済", reading: "サイ" },
-                        { kanji: "斎", reading: "サイ" }
+                        { kanji: "斎", reading: "サイ" },
+                        { kanji: "臍", reading: "サイ" }
+
                     ],
                     modified: [
                         { kanji: "剤", reading: "ザイ" }
@@ -4797,14 +5276,21 @@ const phoneticRadicalDatabase =
                     similarTo: null
                 }
             },
-            "壮": {
+            "丬 or 爿": {
                 defaultReading: "ソウ",
                 derivedKanji: {
                     regular: [
                         { kanji: "壮", reading: "ソウ" },
                         { kanji: "荘", reading: "ソウ" }
                     ],
-                    modified: [],
+                    modified: [
+                        { kanji: "爿", reading: "ショウ" },
+                        { kanji: "牀", reading: "ショウ" },
+                        { kanji: "状", reading: "ジョウ" },
+
+
+
+                    ],
                     exception: [],
                     doublereading: [
                         { kanji: "装", reading: "ショウ" }
@@ -4812,7 +5298,7 @@ const phoneticRadicalDatabase =
                 },
                 notes: {
                     isContainedIn: null,
-                    containsRadical: "士（シ）",
+                    containsRadical: null,
                     similarTo: null
                 }
             },
@@ -4947,9 +5433,29 @@ const phoneticRadicalDatabase =
         doublereading: []
     },
     notes: {
-        isContainedIn: "頼（ライ）",
+        isContainedIn: "頼（ライ）、剌（ラツ）",
         containsRadical: null,
         similarTo: "東（トウ）"
+    }
+},
+
+"剌": {
+    defaultReading: "ラツ",
+    derivedKanji: {
+        regular: [
+            { kanji: "剌", reading: "ラツ" },
+            { kanji: "溂", reading: "ラツ" },
+            { kanji: "喇", reading: "ラツ" },
+            { kanji: "辣", reading: "ラツ" }
+        ],
+        modified: [],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: "束（ソク）",
+        similarTo: null
     }
 },
             "代": {
@@ -5075,6 +5581,91 @@ const phoneticRadicalDatabase =
     containsRadical: null,
     similarTo: "東（トウ）"
   }
+},
+"蒙": {
+    defaultReading: "モウ",
+    derivedKanji: {
+        regular: [
+            { kanji: "蒙", reading: "モウ" },
+            { kanji: "朦", reading: "モウ" },
+            { kanji: "濛", reading: "モウ" },
+            { kanji: "曚", reading: "モウ" },
+            { kanji: "矇", reading: "モウ" },
+            { kanji: "艨", reading: "モウ" },
+            { kanji: "檬", reading: "モウ" }
+        ],
+        modified: [],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: "豕（タク）",
+        similarTo: null
+    }
+},
+"豕": {
+    defaultReading: "タク",
+    derivedKanji: {
+        regular: [
+            { kanji: "啄", reading: "タク" },
+            { kanji: "琢", reading: "タク" }
+        ],
+        modified: [
+            { kanji: "逐", reading: "チク" }
+        ],
+        exception: [
+            { kanji: "豕", reading: "シ" },
+            { kanji: "豚", reading: "トン" }
+        ],
+        doublereading: [
+            { kanji: "豖", reading: "チク" }
+        ]
+    },
+    notes: {
+        isContainedIn: "蒙（モウ）、彖 or 彐[top]豕[bottom]（エン）",
+        containsRadical: null,
+        similarTo: null
+    }
+},
+"彖 or 彐[top]豕[bottom]": {
+    defaultReading: "エン",
+    derivedKanji: {
+        regular: [
+            { kanji: "縁", reading: "エン" },
+            { kanji: "掾", reading: "エン" }
+        ],
+        modified: [
+            { kanji: "篆", reading: "テン" }
+        ],
+        exception: [
+            { kanji: "彖", reading: "タン" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: "豕（タク）",
+        similarTo: null
+    }
+},
+"妟": {
+    defaultReading: "エン",
+    derivedKanji: {
+        regular: [
+            { kanji: "宴", reading: "エン" },
+            { kanji: "匽", reading: "エン" },
+            { kanji: "堰", reading: "エン" }
+        ],
+        modified: [],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
 },
             "東": {
                 defaultReading: "トウ",
@@ -5350,7 +5941,9 @@ const phoneticRadicalDatabase =
                         { kanji: "編", reading: "へン" },
                         { kanji: "偏", reading: "へン" },
                         { kanji: "遍", reading: "へン" },
-                        { kanji: "篇", reading: "へン" }
+                        { kanji: "篇", reading: "へン" },
+                        { kanji: "翩", reading: "へン" },
+                        { kanji: "蝙", reading: "へン" }
                     ],
                     modified: [],
                     exception: [],
@@ -5369,7 +5962,9 @@ const phoneticRadicalDatabase =
                         { kanji: "朋", reading: "ホウ" },
                         { kanji: "崩", reading: "ホウ" },
                         { kanji: "棚", reading: "ホウ" },
-                        { kanji: "繃", reading: "ホウ" }
+                        { kanji: "繃", reading: "ホウ" },
+                        { kanji: "鵬", reading: "ホウ" },
+                        { kanji: "硼", reading: "ホウ" }
                     ],
                     modified: [],
                     exception: [],
@@ -5915,8 +6510,29 @@ const phoneticRadicalDatabase =
         ]
     },
     notes: {
-        isContainedIn: "全（セン）、呈（テイ）、匡（キョウ）",
+        isContainedIn: "全（セン）、呈（テイ）、匡（キョウ）、玉（ギョク）",
         containsRadical: null,
+        similarTo: null
+    }
+},
+"玉": {
+    defaultReading: "ギョク",
+    derivedKanji: {
+        regular: [
+            { kanji: "玉", reading: "ギョク" }
+        ],
+        modified: [
+            { kanji: "国", reading: "コク" }
+        ],
+        exception: [
+            { kanji: "宝", reading: "ホウ" },
+            { kanji: "弄", reading: "ロウ" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: "王（オウ）",
         similarTo: null
     }
 },
@@ -5987,7 +6603,10 @@ const phoneticRadicalDatabase =
                         { kanji: "我", reading: "ガ" },
                         { kanji: "餓", reading: "ガ" },
                         { kanji: "蛾", reading: "ガ" },
-                        { kanji: "峨", reading: "ガ" }
+                        { kanji: "峨", reading: "ガ" },
+                        { kanji: "俄", reading: "ガ" },
+                        { kanji: "娥", reading: "ガ" },
+                        { kanji: "鵝", reading: "ガ" }
                     ],
                     modified: [],
                     exception: [],
@@ -6152,7 +6771,8 @@ const phoneticRadicalDatabase =
                 derivedKanji: {
                     regular: [
                         { kanji: "穫", reading: "カク" },
-                        { kanji: "獲", reading: "カク" }
+                        { kanji: "獲", reading: "カク" },
+                        { kanji: "蠖", reading: "カク" }
                     ],
                     modified: [],
                     exception: [
@@ -6481,22 +7101,28 @@ const phoneticRadicalDatabase =
                 }
             },
             "喬": {
-                defaultReading: "キョウ",
-                derivedKanji: {
-                    regular: [
-                        { kanji: "橋", reading: "キョウ" },
-                        { kanji: "矯", reading: "キョウ" }
-                    ],
-                    modified: [],
-                    exception: [],
-                    doublereading: []
-                },
-                notes: {
-                    isContainedIn: null,
-                    containsRadical: null,
-                    similarTo: null
-                }
-            },
+    defaultReading: "キョウ",
+    derivedKanji: {
+        regular: [
+            { kanji: "喬", reading: "キョウ" },
+            { kanji: "橋", reading: "キョウ" },
+            { kanji: "矯", reading: "キョウ" },
+            { kanji: "僑", reading: "キョウ" },
+            { kanji: "蕎", reading: "キョウ" },
+            { kanji: "驕", reading: "キョウ" },
+            { kanji: "轎", reading: "キョウ" }
+        ],
+        modified: [],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: "高（コウ）"
+    }
+},
+
 "缶": {
     defaultReading: "カン",
     derivedKanji: {
@@ -6935,12 +7561,33 @@ const phoneticRadicalDatabase =
                     similarTo: null
                 }
             },
+            "嗇": {
+    defaultReading: "ショク",
+    derivedKanji: {
+        regular: [
+            { kanji: "嗇", reading: "ショク" },
+            { kanji: "穡", reading: "ショク" },
+            { kanji: "牆", reading: "ショウ" },
+            { kanji: "薔", reading: "ショウ" },
+            { kanji: "檣", reading: "ショウ" }
+        ],
+        modified: [],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
             "孝": {
                 defaultReading: "コウ",
                 derivedKanji: {
                     regular: [
                         { kanji: "孝", reading: "コウ" },
-                        { kanji: "酵", reading: "コウ" }
+                        { kanji: "酵", reading: "コウ" },
+                        { kanji: "哮", reading: "コウ" }
                     ],
                     modified: [],
                     exception: [
@@ -6976,6 +7623,25 @@ const phoneticRadicalDatabase =
                     similarTo: null
                 }
             },
+            "来 or 來": {
+    defaultReading: "ライ",
+    derivedKanji: {
+        regular: [
+            { kanji: "来", reading: "ライ" },
+            { kanji: "徠", reading: "ライ" },
+            { kanji: "莱", reading: "ライ" },
+            { kanji: "賚", reading: "ライ" }
+        ],
+        modified: [],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
             "高": {
                 defaultReading: "コウ",
                 derivedKanji: {
@@ -6984,7 +7650,9 @@ const phoneticRadicalDatabase =
                         { kanji: "稿", reading: "コウ" },
                         { kanji: "膏", reading: "コウ" },
                         { kanji: "縞", reading: "コウ" },
-                        { kanji: "藁", reading: "コウ" }
+                        { kanji: "藁", reading: "コウ" },
+                        { kanji: "塙", reading: "コウ" },
+                        { kanji: "縞", reading: "コウ" }
                     ],
                     modified: [ ],
                     exception: [
@@ -6997,9 +7665,27 @@ const phoneticRadicalDatabase =
                 notes: {
                     isContainedIn: null,
                     containsRadical: null,
-                    similarTo: null
+                    similarTo: "喬（キョウ）"
                 }
             },
+            "老": {
+    defaultReading: "ロウ",
+    derivedKanji: {
+        regular: [
+            { kanji: "老", reading: "ロウ" }
+        ],
+        modified: [],
+        exception: [
+            { kanji: "姥", reading: "ボ" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
             "合": {
   defaultReading: "ゴウ",
   derivedKanji: {
@@ -7052,6 +7738,28 @@ const phoneticRadicalDatabase =
     containsRadical: null,
     similarTo: null
   }
+},
+"見": {
+    defaultReading: "ケン",
+    derivedKanji: {
+        regular: [
+            { kanji: "見", reading: "ケン" },
+            { kanji: "硯", reading: "ケン" },
+            { kanji: "筧", reading: "ケン" },
+            { kanji: "蜆", reading: "ケン" }
+        ],
+        modified: [
+            { kanji: "現", reading: "ゲン" },
+            { kanji: "寛", reading: "カン" }
+        ],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
 },
             "告": {
                 defaultReading: "コク",
@@ -7189,9 +7897,13 @@ const phoneticRadicalDatabase =
                 derivedKanji: {
                     regular: [
                         { kanji: "参", reading: "サン" },
-                        { kanji: "惨", reading: "サン" }
+                        { kanji: "惨", reading: "サン" },
+                        { kanji: "驂", reading: "サン" }
                     ],
-                    modified: [],
+                    modified: [
+                        { kanji: "滲", reading: "サン" }
+
+                    ],
                     exception: [],
                     doublereading: []
                 },
@@ -7439,10 +8151,19 @@ const phoneticRadicalDatabase =
                 derivedKanji: {
                     regular: [
                         { kanji: "十", reading: "ジュウ" },
-                        { kanji: "汁", reading: "ジュウ" }
+                        { kanji: "汁", reading: "ジュウ" },
+                        { kanji: "什", reading: "ジュウ" }
                     ],
-                    modified: [],
-                    exception: [],
+                    modified: [
+
+                    ],
+                    exception: [
+                        { kanji: "針", reading: "シン" },
+                        { kanji: "叶", reading: "キョウ" },
+                        { kanji: "計", reading: "ケイ" }
+
+
+                    ],
                     doublereading: []
                 },
                 notes: {
@@ -7607,6 +8328,27 @@ const phoneticRadicalDatabase =
                     similarTo: null
                 }
             },
+            "庶": {
+    defaultReading: "ショ",
+    derivedKanji: {
+        regular: [
+            { kanji: "庶", reading: "ショ" },
+            { kanji: "蔗", reading: "ショ" }
+        ],
+        modified: [
+            { kanji: "遮", reading: "シャ" }
+        ],
+        exception: [
+            { kanji: "蹠", reading: "セキ" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
             "直": {
                 defaultReading: "ショク",
                 derivedKanji: {
@@ -7615,7 +8357,9 @@ const phoneticRadicalDatabase =
                         { kanji: "殖", reading: "ショク" }
                     ],
                     modified: [
-                        { kanji: "直", reading: "チョク" }
+                        { kanji: "直", reading: "チョク" },
+                        { kanji: "徳", reading: "ク" }
+
                     ],
                     exception: [
                         { kanji: "置", reading: "チ" },
@@ -7710,11 +8454,33 @@ const phoneticRadicalDatabase =
                     doublereading: []
                 },
                 notes: {
-                    isContainedIn: "雋（シュン）、邕 or 乡(left)隹(right)（ヨウ）",
+                    isContainedIn: "雋（シュン）、邕 or 乡(left)隹(right)（ヨウ）、羅（ラ）",
                     containsRadical: null,
                     similarTo: null
                 }
             },
+
+            "羅": {
+    defaultReading: "ラ",
+    derivedKanji: {
+        regular: [
+            { kanji: "羅", reading: "ラ" },
+            { kanji: "邏", reading: "ラ" },
+            { kanji: "蘿", reading: "ラ" },
+            { kanji: "鑼", reading: "ラ" }
+        ],
+        modified: [
+            { kanji: "罹", reading: "リ" }
+        ],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: "隹（スイ）",
+        similarTo: null
+    }
+},
             "制": {
                 defaultReading: "セイ",
                 derivedKanji: {
@@ -8007,9 +8773,9 @@ const phoneticRadicalDatabase =
                         { kanji: "尊", reading: "ソン" },
                         { kanji: "噂", reading: "ソン" },
                         { kanji: "樽", reading: "ソン" },
-                        { kanji: "鱒", reading: "ソン" }
-
-                         
+                        { kanji: "鱒", reading: "ソン" },
+                        { kanji: "忖", reading: "ソン" },
+                        { kanji: "蹲", reading: "ソン" }
                         
                     ],
                     modified: [
@@ -8021,6 +8787,8 @@ const phoneticRadicalDatabase =
                         { kanji: "耐", reading: "タイ" },
                         { kanji: "討", reading: "トウ" },
                         { kanji: "酎", reading: "チュウ" },
+                        { kanji: "厨", reading: "チュウ" },
+                        { kanji: "肘", reading: "チュウ" },
                         { kanji: "遵", reading: "ジュン" }
                         
                         
@@ -8028,7 +8796,7 @@ const phoneticRadicalDatabase =
                     doublereading: []
                 },
                 notes: {
-                    isContainedIn: "将（ショウ）、寺（ジ）、尋（ジン）",
+                    isContainedIn: "将（ショウ）、寺（ジ）、尋（ジン）、寿（チュウ）",
                     containsRadical: null,
                     similarTo: null
                 }
@@ -8251,12 +9019,35 @@ const phoneticRadicalDatabase =
                     similarTo: null
                 }
             },
+            "尼": {
+    defaultReading: "ニ",
+    derivedKanji: {
+        regular: [
+            { kanji: "尼", reading: "ニ" }
+        ],
+        modified: [
+            { kanji: "怩", reading: "ジ" }
+        ],
+        exception: [
+            { kanji: "泥", reading: "デイ" },
+            { kanji: "昵", reading: "ジツ" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
             "貞": {
                 defaultReading: "テイ",
                 derivedKanji: {
                     regular: [
                         { kanji: "貞", reading: "テイ" },
-                        { kanji: "偵", reading: "テイ" }
+                        { kanji: "偵", reading: "テイ" },
+                        { kanji: "禎", reading: "テイ" },
+                        { kanji: "幀", reading: "テイ" }
                     ],
                     modified: [],
                     exception: [],
@@ -8798,13 +9589,35 @@ const phoneticRadicalDatabase =
                     similarTo: "市（シ）"
                 }
             },
+            "甾": {
+    defaultReading: "シ",
+    derivedKanji: {
+        regular: [
+            { kanji: "輜", reading: "シ" },
+            { kanji: "淄", reading: "シ" },
+            { kanji: "鯔", reading: "シ" },
+            { kanji: "錙", reading: "シ" },
+            { kanji: "緇", reading: "シ" }
+        ],
+        modified: [],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
             "夫": {
                 defaultReading: "フ",
                 derivedKanji: {
                     regular: [
                         { kanji: "夫", reading: "フ" },
                         { kanji: "扶", reading: "フ" },
-                        { kanji: "趺", reading: "フ" }
+                        { kanji: "趺", reading: "フ" },
+                        { kanji: "芙", reading: "フ" },
+                        { kanji: "麩", reading: "フ" }
 
                     ],
                     modified: [],
@@ -8957,7 +9770,8 @@ const phoneticRadicalDatabase =
                 derivedKanji: {
                     regular: [
                         { kanji: "奉", reading: "ホウ" },
-                        { kanji: "俸", reading: "ホウ" }
+                        { kanji: "俸", reading: "ホウ" },
+                        { kanji: "捧", reading: "ホウ" }
                     ],
                     modified: [
                         { kanji: "棒", reading: "ボウ" },
@@ -9168,24 +9982,30 @@ const phoneticRadicalDatabase =
                 }
             },
             "毛": {
-                defaultReading: "モウ",
-                derivedKanji: {
-                    regular: [
-                        { kanji: "毛", reading: "モウ" },
-                        { kanji: "耗", reading: "モウ" }
-                    ],
-                    modified: [],
-                    exception: [
-                        { kanji: "尾", reading: "ビ" }
-                    ],
-                    doublereading: []
-                },
-                notes: {
-                    isContainedIn: null,
-                    containsRadical: null,
-                    similarTo: "乇（タク）"
-                }
-            },
+    defaultReading: "モウ",
+    derivedKanji: {
+        regular: [
+            { kanji: "毛", reading: "モウ" },
+            { kanji: "耗", reading: "モウ" },
+            { kanji: "耄", reading: "モウ" }
+        ],
+        modified: [
+            { kanji: "旄", reading: "ボウ" },
+            { kanji: "髦", reading: "ボウ" }
+        ],
+        exception: [
+            { kanji: "尾", reading: "ビ" },
+            { kanji: "梶", reading: "ビ" },
+            { kanji: "毳", reading: "ゼイ" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: "乇（タク）"
+    }
+},
             "文": {
                 defaultReading: "モン",
                 derivedKanji: {
@@ -9429,6 +10249,31 @@ const phoneticRadicalDatabase =
                     similarTo: null
                 }
             },
+            "木": {
+    defaultReading: "モク",
+    derivedKanji: {
+        regular: [
+            { kanji: "沐", reading: "モク" },
+            { kanji: "杢", reading: "モク" }
+        ],
+        modified: [],
+        exception: [
+            { kanji: "休", reading: "キュウ" },
+            { kanji: "閑", reading: "カン" },
+            { kanji: "困", reading: "コン" },
+            { kanji: "宋", reading: "ソウ" },
+            { kanji: "床", reading: "ショウ" }
+        ],
+        doublereading: [
+            { kanji: "木", reading: "ボク" }
+        ]
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
             "聿": {
                 defaultReading: "ヒツ",
                 derivedKanji: {
@@ -9436,10 +10281,13 @@ const phoneticRadicalDatabase =
                         { kanji: "筆", reading: "ヒツ" }
                     ],
                     modified: [
-                        { kanji: "律", reading: "リツ" }
+                        { kanji: "律", reading: "リツ" },
+                        { kanji: "聿", reading: "イツ" }
                     ],
                     exception: [
-                        { kanji: "津", reading: "シン" }
+                        { kanji: "津", reading: "シン" },
+                        { kanji: "書", reading: "ショ" }
+
                     ],
                     doublereading: []
                 },
@@ -9487,15 +10335,18 @@ const phoneticRadicalDatabase =
                 }
             },
             
-            "留": {
+            "留 or 卯": {
                 defaultReading: "リュウ",
                 derivedKanji: {
                     regular: [
                         { kanji: "溜", reading: "リュウ" },
                         { kanji: "瘤", reading: "リュウ" },
+                        { kanji: "柳", reading: "リュウ" }
                 ],
                 modified: [
-                        { kanji: "瑠", reading: "ル" }
+                        { kanji: "瑠", reading: "ル" },
+                        { kanji: "聊", reading: "リョウ" },
+
                 ],
                 exception: [],
                 doublereading: [
@@ -9539,7 +10390,9 @@ const phoneticRadicalDatabase =
                         { kanji: "諾", reading: "ダク" }
                     ],
                     exception: [
-                        { kanji: "匿", reading: "トク" }
+                        { kanji: "匿", reading: "トク" },
+                        { kanji: "慝", reading: "トク" }
+
                     ],
                     doublereading: [
                         { kanji: "若", reading: "ニャク" }
@@ -9738,9 +10591,13 @@ const phoneticRadicalDatabase =
                         { kanji: "午", reading: "ゴ" }
                     ],
                     modified: [
-                        { kanji: "許", reading: "キョ" }
+                        { kanji: "許", reading: "キョ" },
+                        { kanji: "滸", reading: "コ" }
                     ],
-                    exception: [],
+                    exception: [
+                        { kanji: "杵", reading: "ショ" }
+
+                    ],
                     doublereading: []
                 },
                 notes: {
@@ -9755,7 +10612,8 @@ const phoneticRadicalDatabase =
                 derivedKanji: {
                     regular: [
                         { kanji: "冥", reading: "メイ" },
-                        { kanji: "瞑", reading: "メイ" }
+                        { kanji: "瞑", reading: "メイ" },
+                        { kanji: "螟", reading: "メイ" }
                     ],
                     modified: [],
                     exception: [],
@@ -10101,9 +10959,13 @@ const phoneticRadicalDatabase =
                     ],
                     modified: [
                         { kanji: "曜", reading: "ヨウ" },
-                        { kanji: "濯", reading: "タク" }
+                        { kanji: "濯", reading: "タク" },
+                        { kanji: "耀", reading: "ヨウ" }
                     ],
-                    exception: [],
+                    exception: [
+                        { kanji: "擢", reading: "テキ" }
+
+                    ],
                     doublereading: []
                 },
                 notes: {
@@ -10157,6 +11019,10 @@ const phoneticRadicalDatabase =
                         { kanji: "差", reading: "サ" },
                         { kanji: "嵯", reading: "サ" },
                         { kanji: "瑳", reading: "サ" },
+                        { kanji: "磋", reading: "サ" },
+                        { kanji: "蹉", reading: "サ" },
+                        { kanji: "槎", reading: "サ" },
+                        { kanji: "嗟", reading: "サ" },
                         
                     ],
                     modified: [],
@@ -10412,13 +11278,33 @@ const phoneticRadicalDatabase =
                     similarTo: "咅（バイ）"
                 }
             },
+            "貌": {
+    defaultReading: "バク",
+    derivedKanji: {
+        regular: [
+            { kanji: "邈", reading: "バク" },
+            { kanji: "藐", reading: "バク" }
+        ],
+        modified: [],
+        exception: [
+            { kanji: "貌", reading: "ボウ" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
             "亲": {
                 defaultReading: "シン",
                 derivedKanji: {
                     regular: [
                         { kanji: "新", reading: "シン" },
                         { kanji: "親", reading: "シン" },
-                        { kanji: "薪", reading: "シン" }
+                        { kanji: "薪", reading: "シン" },
+                        { kanji: "襯", reading: "シン" }
                     ],
                     modified: [],
                     exception: [],
@@ -10590,18 +11476,40 @@ const phoneticRadicalDatabase =
         similarTo: null
     }
 },
-"寿": {
-    defaultReading: "ジュ",
+"力": {
+    defaultReading: "リョク",
     derivedKanji: {
-        regular: [
-            { kanji: "寿", reading: "ジュ" }
-        ],
+        regular: [],
         modified: [
-            { kanji: "鋳", reading: "チュウ" }
+            { kanji: "勒", reading: "ロク" },
+            { kanji: "肋", reading: "ロク" }
         ],
         exception: [
-            { kanji: "祷", reading: "トウ" }
+            { kanji: "筋", reading: "キン" }
         ],
+        doublereading: [
+            { kanji: "力", reading: "リク" }
+        ]
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
+"田": {
+    defaultReading: "デン",
+    derivedKanji: {
+        regular: [
+            { kanji: "田", reading: "デン" },
+            { kanji: "佃", reading: "デン" },
+            { kanji: "甸", reading: "デン" },
+            { kanji: "鈿", reading: "デン" }
+        ],
+        modified: [
+            { kanji: "男", reading: "ダン" }
+        ],
+        exception: [],
         doublereading: []
     },
     notes: {
@@ -10610,6 +11518,77 @@ const phoneticRadicalDatabase =
         similarTo: null
     }
 },
+"鳥": {
+    defaultReading: "チョウ",
+    derivedKanji: {
+        regular: [
+            { kanji: "鳥", reading: "チョウ" },
+            { kanji: "蔦", reading: "チョウ" },
+            { kanji: "梟", reading: "キョウ" }
+        ],
+        modified: [
+            { kanji: "島", reading: "トウ" },
+            { kanji: "搗", reading: "トウ" }
+        ],
+        exception: [
+            { kanji: "鳴", reading: "メイ" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: "烏（ウ）"
+    }
+},
+
+"烏": {
+    defaultReading: "ウ",
+    derivedKanji: {
+        regular: [
+            { kanji: "烏", reading: "ウ" }
+        ],
+        modified: [
+            { kanji: "嗚", reading: "オ" }
+        ],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: "鳥（チョウ）"
+    }
+},
+"寿": {
+    defaultReading: "チュウ",
+    derivedKanji: {
+        regular: [
+            { kanji: "鋳", reading: "チュウ" },
+            { kanji: "疇", reading: "チュウ" },
+            { kanji: "儔", reading: "チュウ" },
+            { kanji: "躊", reading: "チュウ" },
+            { kanji: "籌", reading: "チュウ" }
+        ],
+        modified: [
+            { kanji: "寿", reading: "ジュ" }
+
+        ],
+        exception: [
+            { kanji: "祷", reading: "トウ" },
+            { kanji: "濤", reading: "トウ" },
+            { kanji: "擣", reading: "トウ" },
+            { kanji: "檮", reading: "トウ" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: "寸（ソン）",
+        similarTo: null
+    }
+},
+
 "盍": {
     defaultReading: "コウ",
     derivedKanji: {
@@ -11131,14 +12110,17 @@ const phoneticRadicalDatabase =
                     similarTo: null
                 }
             },
-            "友": {
+            "友 or 犮": {
                 defaultReading: "ハツ",
                 derivedKanji: {
                     regular: [
                         { kanji: "髪", reading: "ハツ" }
                     ],
                     modified: [
-                        { kanji: "抜", reading: "バツ" }
+                        { kanji: "抜", reading: "バツ" },
+                        { kanji: "魃", reading: "バツ" },
+                        { kanji: "祓", reading: "フツ" },
+
                     ],
                     exception: [
                         { kanji: "友", reading: "ユウ" }
@@ -11167,7 +12149,7 @@ const phoneticRadicalDatabase =
                 },
                 notes: {
                     isContainedIn: null,
-                    containsRadical: "友（ハツ）",
+                    containsRadical: "友 or 犮（ハツ）",
                     similarTo: null
                 }
             },
@@ -11328,26 +12310,7 @@ const phoneticRadicalDatabase =
                 }
             },
 
-            "乙": {
-                defaultReading: "キツ",
-                derivedKanji: {
-                    regular: [
-                        { kanji: "迄", reading: "キツ" }
-                    ],
-                    modified: [],
-                    exception: [
-                        { kanji: "乾", reading: "カン" }
-                    ],
-                    doublereading: [
-                        { kanji: "乞", reading: "キ" }
-                    ]
-                },
-                notes: {
-                    isContainedIn: null,
-                    containsRadical: null,
-                    similarTo: null
-                }
-            },
+            
             "愛": {
                 defaultReading: "アイ",
                 derivedKanji: {
@@ -11508,7 +12471,10 @@ const phoneticRadicalDatabase =
                     ],
                     modified: [
                         { kanji: "笑", reading: "ショウ" },
-                        { kanji: "奏", reading: "ソウ" }
+                        { kanji: "奏", reading: "ソウ" },
+                        { kanji: "湊", reading: "ソウ" },
+                        { kanji: "輳", reading: "ソウ" }
+
                     ],
                     exception: [
                         { kanji: "添", reading: "テン" }
@@ -11520,7 +12486,7 @@ const phoneticRadicalDatabase =
                 notes: {
                     isContainedIn: null,
                     containsRadical: null,
-                    similarTo: null
+                    similarTo: "奉（ホウ）"
                 }
             },
             "委": {
@@ -11578,16 +12544,20 @@ const phoneticRadicalDatabase =
                 }
             },
         "易": {
-                defaultReading: "イ",
+                defaultReading: "エキ",
                 derivedKanji: {
-                    regular: [
-                        { kanji: "易", reading: "イ" }
-                    ],
+                    regular: [],
                     modified: [
+                        { kanji: "錫", reading: "シャク" },
+                        { kanji: "剔", reading: "テキ" }
+                    ],
+                    exception: [
+
                         { kanji: "賜", reading: "シ" }
                     ],
-                    exception: [],
-                    doublereading: []
+                    doublereading: [
+                        { kanji: "易", reading: "イ" }
+                    ]
                 },
                 notes: {
                     isContainedIn: null,
@@ -11775,7 +12745,10 @@ const phoneticRadicalDatabase =
                         regular: [
                             { kanji: "光", reading: "コウ" },
                             { kanji: "胱", reading: "コウ" },
-                            { kanji: "晃", reading: "コウ" }
+                            { kanji: "晃", reading: "コウ" },
+                            { kanji: "洸", reading: "コウ" },
+                            { kanji: "幌", reading: "コウ" },
+                            { kanji: "滉", reading: "コウ" }
                         ],
                         modified: [
                         ],
@@ -11853,6 +12826,47 @@ const phoneticRadicalDatabase =
                         similarTo: "里（リ）、童（ドウ）"
                     }
                 },
+                "叉": {
+    defaultReading: "サ",
+    derivedKanji: {
+        regular: [
+            { kanji: "叉", reading: "サ" },
+            { kanji: "扠", reading: "サ" }
+        ],
+        modified: [
+            { kanji: "靫", reading: "サイ" },
+            { kanji: "釵", reading: "サイ" }
+        ],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
+"胃": {
+    defaultReading: "イ",
+    derivedKanji: {
+        regular: [
+            { kanji: "胃", reading: "イ" },
+            { kanji: "謂", reading: "イ" },
+            { kanji: "蝟", reading: "イ" },
+            { kanji: "渭", reading: "イ" }
+        ],
+        modified: [
+            { kanji: "喟", reading: "キ" }
+        ],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
                 "周": {
                     defaultReading: ["シュウ", "チョウ"],
                     derivedKanji: {
@@ -11860,9 +12874,16 @@ const phoneticRadicalDatabase =
                             { kanji: "周", reading: "シュウ" },
                             { kanji: "週", reading: "シュウ" },
                             { kanji: "調", reading: "チョウ" },
-                            { kanji: "彫", reading: "チョウ" }
+                            { kanji: "彫", reading: "チョウ" },
+                            { kanji: "凋", reading: "チョウ" },
+                            { kanji: "蜩", reading: "チョウ" },
+                            { kanji: "雕", reading: "チョウ" },
+                            { kanji: "鯛", reading: "チョウ" }
                         ],
-                        modified: [],
+                        modified: [
+                            { kanji: "稠", reading: "チュウ" },
+                            { kanji: "惆", reading: "チュウ" }
+                        ],
                         exception: [],
                         doublereading: []
                     },
@@ -11873,28 +12894,60 @@ const phoneticRadicalDatabase =
                     }
                 },
                 "非": {
-                    defaultReading: ["ヒ", "ハイ"],
-                    derivedKanji: {
-                        regular: [
-                            { kanji: "非", reading: "ヒ" },
-                            { kanji: "悲", reading: "ヒ" },
-                            { kanji: "扉", reading: "ヒ" },
-                            { kanji: "排", reading: "ハイ" },
-                            { kanji: "俳", reading: "ハイ" },
-                            { kanji: "輩", reading: "ハイ" }
-                        ],
-                        modified: [
-                            { kanji: "罪", reading: "ザイ" }
-                        ],
-                        exception: [],
-                        doublereading: []
-                    },
-                    notes: {
-                        isContainedIn: null,
-                        containsRadical: null,
-                        similarTo: null
-                    }
-                },
+    defaultReading: ["ヒ", "ハイ"],
+    derivedKanji: {
+        regular: [
+            { kanji: "非", reading: "ヒ" },
+            { kanji: "悲", reading: "ヒ" },
+            { kanji: "扉", reading: "ヒ" },
+            { kanji: "排", reading: "ハイ" },
+            { kanji: "俳", reading: "ハイ" },
+            { kanji: "輩", reading: "ハイ" },
+            { kanji: "匪", reading: "ヒ" },
+            { kanji: "榧", reading: "ヒ" },
+            { kanji: "誹", reading: "ヒ" },
+            { kanji: "蜚", reading: "ヒ" },
+            { kanji: "斐", reading: "ヒ" },
+            { kanji: "琲", reading: "ヒ" },
+            { kanji: "腓", reading: "ヒ" },
+            { kanji: "菲", reading: "ヒ" },
+            { kanji: "緋", reading: "ヒ" },
+            { kanji: "翡", reading: "ヒ" }
+        ],
+        modified: [
+            { kanji: "罪", reading: "ザイ" },
+            { kanji: "靡", reading: "ビ" },
+            { kanji: "糜", reading: "ビ" }
+        ],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
+                "両": {
+    defaultReading: "リョウ",
+    derivedKanji: {
+        regular: [
+            { kanji: "両", reading: "リョウ" },
+            { kanji: "倆", reading: "リョウ" },
+            { kanji: "輛", reading: "リョウ" },
+            { kanji: "裲", reading: "リョウ" },
+            { kanji: "魎", reading: "リョウ" }
+        ],
+        modified: [],
+        exception: [],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: null,
+        similarTo: null
+    }
+},
                 "方": {
     defaultReading: "ホウ",
     derivedKanji: {
@@ -12084,6 +13137,28 @@ const phoneticRadicalDatabase =
         similarTo: null
     }
 },
+"寧": {
+    defaultReading: "ネイ",
+    derivedKanji: {
+        regular: [
+            { kanji: "寧", reading: "ネイ" },
+            { kanji: "嚀", reading: "ネイ" },
+            { kanji: "檸", reading: "ネイ" },
+            { kanji: "濘", reading: "ネイ" }
+        ],
+        modified: [],
+        exception: [
+            { kanji: "獰", reading: "ドウ" }
+        ],
+        doublereading: []
+    },
+    notes: {
+        isContainedIn: null,
+        containsRadical: "丁（チョウ or テイ）",
+        similarTo: null
+    }
+},
+
                 "丁": {
                     defaultReading: ["チョウ", "テイ"],
                     derivedKanji: {
@@ -12102,6 +13177,9 @@ const phoneticRadicalDatabase =
                         ],
                         modified: [
                             { kanji: "貯", reading: "チョ" },
+                            { kanji: "佇", reading: "チョ" },
+                            { kanji: "紵", reading: "チョ" },
+                            { kanji: "苧", reading: "チョ" },
 
                         ],
                         exception: [
@@ -12112,7 +13190,7 @@ const phoneticRadicalDatabase =
                         doublereading: []
                     },
                     notes: {
-                        isContainedIn: null,
+                        isContainedIn: "寧（ネイ）",
                         containsRadical: null,
                         similarTo: null
                     }
@@ -12157,14 +13235,21 @@ const phoneticRadicalDatabase =
                             { kanji: "単", reading: "タン" },
                             { kanji: "箪", reading: "タン" },
                             { kanji: "戦", reading: "セン" },
-                            { kanji: "蝉", reading: "セン" }
+                            { kanji: "蝉", reading: "セン" },
+                            { kanji: "簞", reading: "タン" },
+                            { kanji: "憚", reading: "タン" },
+                            { kanji: "嬋", reading: "セン" },
+                            { kanji: "蟬", reading: "セン" },
                         ],
                         modified: [
                             { kanji: "弾", reading: "ダン" },
                             { kanji: "彈", reading: "ダン" },
                             { kanji: "禅", reading: "ゼン" }
                         ],
-                        exception: [],
+                        exception: [
+                            { kanji: "獣", reading: "ジュウ" }
+
+                        ],
                         doublereading: []
                     },
                     notes: {
