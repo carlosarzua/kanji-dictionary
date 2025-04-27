@@ -80,7 +80,6 @@ button:hover {
     background-color: #0077b6; /* Darker blue on hover */
 }
 
-
 /* Ensure the container does not center its content unnecessarily */
 .container {
     display: flex;
@@ -134,7 +133,6 @@ button:hover {
     color: #00b4d8;
 }
 
-
 /* New classes for kanji and reading */
 .kanji-highlight {
     background-color: #00b4d8; /* Same bright blue as h1 */
@@ -149,7 +147,6 @@ button:hover {
     padding: 2px 4px;
     color: #333333;
 }
-
 
 /* Media query for mobile devices (screens smaller than 768px) */
 @media (max-width: 1035px) {
@@ -207,7 +204,6 @@ button:hover {
         margin-top: 5px;
     }
 
-
     h2 {
         text-align: center;
         font-size: 1.5rem;
@@ -240,7 +236,6 @@ button:hover {
         width: 95%;
     }
 
-    
     .mobile-box {
         position: relative;
         padding: 0px;
@@ -253,7 +248,6 @@ button:hover {
         border-radius: 10px;
         margin-bottom: 10px;
     }
-    
 
     /* Ensure the first box is a square */
     #mobile-displayKanjiContainer {
@@ -338,8 +332,7 @@ button:hover {
     p {
         margin-block-start: 0.5px;
         margin-block-end: 0.5px;
-      }
-
+    }
 
     #mobile-displayKanji {
         display: flex;
@@ -403,9 +396,6 @@ button:hover {
         left: 65px; /* Shift right to avoid overlap (65px + 30px width + 5px gap) */
     }
 }
-
-
-
 
 /* Quiz Box */
 .quiz-box {
@@ -477,6 +467,7 @@ button:hover {
 .retry-button:hover {
     background-color: #0077b6;
 }
+
 /* Kanji Box Section */
 .kanji-box-section {
     margin-top: 30px;
@@ -488,6 +479,7 @@ button:hover {
     width: 100%; /* Ensure it takes full width */
     text-align: center; /* Prevent inherited text-align: center */
 }
+
 /* Kanji Display Section */
 .kanji-display-section {
     display: flex !important;
@@ -522,8 +514,6 @@ button:hover {
     max-width: 100%; /* Ensure text fits within the container */
 }
 
-
-
 .blue-reading-box {
     background-color: #00b4d8; /* Same color as the small blue box */
     color: #ffffff; /* White text */
@@ -539,7 +529,6 @@ button:hover {
     overflow: hidden;
     text-overflow: ellipsis; /* Add ellipsis for overflow */
 }
-
 
 /* Small Blue Box */
 .small-blue-box {
@@ -560,7 +549,7 @@ button:hover {
 
 /* Small White Box */
 .small-white-box {
-    background-color:rgba(255, 255, 255, 0.9);
+    background-color: rgba(255, 255, 255, 0.9);
     width: 150px;
     height: 35px;
     border-radius: 5px;
@@ -586,8 +575,6 @@ button:hover {
 .small-white-box p {
     color: black; /* Set text color to black for better contrast in white boxes */
 }
-
-
 
 /* White Box */
 .kanji-box {
@@ -620,7 +607,6 @@ button:hover {
     color: #ffffff;
     font-size: 1.2rem;
     z-index: 1000;
-
 }
 
 .level-bubble.n1, #mobile-levelBubble.level-bubble.n1 {
@@ -652,7 +638,6 @@ button:hover {
     background-color: grey; /* Add background-color here too */
     color: white; /* Ensure text is visible */
 }
-
 
 /* English Box */
 #english-box {
@@ -706,9 +691,6 @@ button:hover {
     padding: 10px; /* Add padding if necessary */
     height: 100%; /* Ensure full height for alignment */
 }
-
-
-
 
 /* Specific CSS for meaningradical-box */
 #meaningradical-box {
@@ -825,7 +807,6 @@ button:hover {
     }
 }
 
-
 /* Specific CSS for radical-box */
 #radical-box {
     font-size: 1.25rem !important; /* Force the font size */
@@ -836,13 +817,12 @@ button:hover {
     border: 2px solid white;
 }
 
-
-
 /* Define the original background color */
 .original-info {
     background-color: #fff; /* Set this to the original background color */
     color: #000; /* Set this to the original text color */
 }
+
 .inline-level-bubble {
     display: inline-block;
     padding: 2px 4px;
@@ -898,7 +878,6 @@ button:hover {
     color: #000000;
     padding: 0 15px; /* Add padding on the left and right */
     box-sizing: border-box; /* Include padding and border in the element's total width and height */
-
 }
 
 /* Style for vocab-entry */
@@ -926,6 +905,7 @@ button:hover {
     display: inline-block;
     width: 50%;
     vertical-align: top;
+    color: #00b4d8; /* Blue for part of speech and extra info */
 }
 
 /* Style for English meanings */
@@ -1009,7 +989,6 @@ button:hover {
     font-size: 1.5rem;
     z-index: 1000;
     background-color: #00b4d8;
-
 }
 
 .nav-button:hover {
@@ -1043,7 +1022,6 @@ button:hover {
     color: #007bff; /* Change color on hover to indicate clickability */
 }
 
-
 #loading-bar {
     width: 100%;
     max-width: 500px;
@@ -1062,7 +1040,6 @@ button:hover {
     color: #333;
 }
 
-
 /* Override display: inline-block !important for hidden mobile boxes */
 #mobile-kunyomi-box[style*="display: none"],
 #mobile-onyomi-box[style*="display: none"],
@@ -1071,4 +1048,121 @@ button:hover {
     display: none !important;
     min-height: 0 !important;
     padding: 0 !important;
+}
+
+/* Vocabulary Entry with Sentence Expansion */
+.vocab-entry {
+    position: relative;
+    background-color: white;
+    border: 1px solid #00b4d8;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.vocab-entry:hover {
+    border-color: #90e0ef;
+    box-shadow: 0 0 10px rgba(0, 180, 216, 0.3);
+}
+
+/* Expand indicator triangle */
+.vocab-entry::after {
+    content: "▼";
+    position: absolute;
+    bottom: 5px;
+    right: 17px;
+    font-size: 2em;
+    color: #00b4d8;
+    transition: transform 0.3s ease;
+}
+
+.vocab-entry.expanded::after {
+    transform: rotate(180deg);
+    color: #00b4d8;
+}
+
+/* Sentences container */
+.sentences-container {
+    display: none;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #90e0ef;
+}
+
+.vocab-entry.expanded .sentences-container {
+    display: block;
+}
+
+/* Individual sentence items */
+.sentence-item {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #90e0ef;
+}
+
+.sentence-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.sentence-japanese {
+    font-size: 1em;
+    color: black;
+    line-height: 1.5;
+    margin-bottom: 5px;
+}
+
+.sentence-english {
+    font-size: 0.92em;
+    font-style: italic;
+    color: #00b4d8; /* Updated to match requested blue */
+    line-height: 1.4;
+}
+
+/* Loading and error states */
+.sentences-loading {
+    color: #90e0ef;
+    font-style: italic;
+    padding: 10px 0;
+}
+
+.sentences-error {
+    color: #ff6b6b;
+    padding: 10px 0;
+}
+
+.no-sentences {
+    color: #888;
+    font-style: italic;
+    padding: 10px 0;
+}
+
+/* Highlight matching text in sentences */
+.highlight {
+    background-color: rgba(0, 180, 216, 0.3);
+    padding: 2px 3px;
+    border-radius: 3px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .vocab-entry {
+        padding: 12px;
+    }
+    
+    .sentence-japanese {
+        font-size: 1em;
+    }
+    
+    .sentence-english {
+        font-size: 0.9em;
+    }
+    
+    .vocab-entry::after {
+        bottom: 8px;
+        right: 8px;
+    }
 }
