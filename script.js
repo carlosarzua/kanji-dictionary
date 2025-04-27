@@ -6298,9 +6298,9 @@ const phoneticRadicalDatabase =
         doublereading: []
     },
     notes: {
-        isContainedIn: "量（リョウ）、童（ドウ）",
+        isContainedIn: "量（リョウ）、童（ドウ）、菫（キン）",
         containsRadical: null,
-        similarTo: "菫（キン）"
+        similarTo: null,
     }
 },
             "尞": {
@@ -9342,24 +9342,6 @@ const phoneticRadicalDatabase =
         modified: [],
         exception: [],
         doublereading: []
-    },
-    notes: {
-        isContainedIn: null,
-        containsRadical: null,
-        similarTo: null
-    }
-},
-"勤": {
-    defaultReading: "キン",
-    derivedKanji: {
-        regular: [
-            { kanji: "勤", reading: "キン" }
-        ],
-        modified: [],
-        exception: [],
-        doublereading: [
-            { kanji: "懃", reading: "ギン" }
-        ]
     },
     notes: {
         isContainedIn: null,
@@ -12813,12 +12795,14 @@ const phoneticRadicalDatabase =
                     derivedKanji: {
                         regular: [
                             { kanji: "勤", reading: "キン" },
-　　　　　　　　　　　　　　　　　　 { kanji: "謹", reading: "キン" }
+                            { kanji: "菫", reading: "キン" },
+                            { kanji: "謹", reading: "キン" }
                         ],
-                        modified: [],
+                        modified: [
+                            { kanji: "懃", reading: "ギン"}
+                        ],
                         exception: [],
-                        doublereading: [
-                        ]
+                        doublereading: []
                     },
                     notes: {
                         isContainedIn: null,
@@ -14434,11 +14418,11 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
         .map(({ radical, data }) => {
             const radicalSpan = `<span class="kanji-highlight">${radical}</span>`;
             const allDerivedKanji = [
-                ...data.derivedKanji.regular,
-                ...data.derivedKanji.modified,
-                ...data.derivedKanji.exception,
-                ...data.derivedKanji.doublereading
-            ];
+                ...(data.derivedKanji.regular || []),
+                ...(data.derivedKanji.modified || []),
+                ...(data.derivedKanji.exception || []),
+                ...(data.derivedKanji.doublereading || [])
+            ];            
             const sortedDerivedKanji = sortByJLPT(allDerivedKanji);
             const derivedKanjiList = sortedDerivedKanji.map(k => getKanjiWithJLPT(k.kanji)).join("、 "); // Always use comma separator
             return `${radicalSpan}（${derivedKanjiList || "none"}）`;
@@ -14447,11 +14431,12 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
 
     function calculateRadicalScore(data) {
         const allDerivedKanji = [
-            ...data.derivedKanji.regular,
-            ...data.derivedKanji.modified,
-            ...data.derivedKanji.exception,
-            ...data.derivedKanji.doublereading
+            ...(data.derivedKanji.regular || []),
+            ...(data.derivedKanji.modified || []),
+            ...(data.derivedKanji.exception || []),
+            ...(data.derivedKanji.doublereading || [])
         ];
+        
         const jlptCounts = { N5: 0, N4: 0, N3: 0, N2: 0, N1: 0 };
         allDerivedKanji.forEach(k => {
             const level = getJLPTLevel(k.kanji);
