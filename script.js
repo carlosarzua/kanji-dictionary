@@ -14345,7 +14345,7 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
         const level = getJLPTLevel(kanji);
         return level ? 
             `<span class="kanji-highlight clickable-kanji jlpt-${level.toLowerCase()}">${kanji}</span>` : 
-            `<span class="kanji-highlight clickable-kanji">${kanji}</span>`;
+            `<span class="clickable-kanji">${kanji}</span>`; // Non-JLPT kanji are clickable but not highlighted
     }
 
     function sortByJLPT(kanjiList) {
@@ -14417,6 +14417,55 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
                    `a few have double readings. The most common ones are:\n` +
                    `周（シュウ or チョウ）、非（ヒ or ハイ）\n`+
                    `正（セイ or ショウ）、丁（チョウ or テイ）\n\n`;
+    }
+
+    // Add the new text for phonetic radicals with the same reading
+    const phoneticRadicalsWithSameReading = Object.entries(phoneticRadicalDatabase)
+        .filter(([r, data]) => r !== radical && data.defaultReading === radicalReading)
+        .map(([r, data]) => ({
+            radical: r,
+            data,
+            score: calculateRadicalScore(data) // Add score for sorting
+        }))
+        .sort((a, b) => a.score - b.score) // Sort by score (lower is better)
+        .map(({ radical, data }) => {
+            const radicalSpan = `<span class="kanji-highlight">${radical}</span>`;
+            const allDerivedKanji = [
+                ...data.derivedKanji.regular,
+                ...data.derivedKanji.modified,
+                ...data.derivedKanji.exception,
+                ...data.derivedKanji.doublereading
+            ];
+            const sortedDerivedKanji = sortByJLPT(allDerivedKanji);
+            const derivedKanjiList = sortedDerivedKanji.map(k => getKanjiWithJLPT(k.kanji)).join(separator);
+            return `${radicalSpan}（${derivedKanjiList || "none"}）`;
+        })
+        .join("\n");
+
+    function calculateRadicalScore(data) {
+        const allDerivedKanji = [
+            ...data.derivedKanji.regular,
+            ...data.derivedKanji.modified,
+            ...data.derivedKanji.exception,
+            ...data.derivedKanji.doublereading
+        ];
+        const jlptCounts = { N5: 0, N4: 0, N3: 0, N2: 0, N1: 0 };
+        allDerivedKanji.forEach(k => {
+            const level = getJLPTLevel(k.kanji);
+            if (level) jlptCounts[level]++;
+        });
+        // Lower score is better; prioritize N5 count, then N4, etc.
+        return (
+            -jlptCounts.N5 * 1000000 + // High weight for N5
+            -jlptCounts.N4 * 10000 +  // Lower weight for N4
+            -jlptCounts.N3 * 100 +    // Lower weight for N3
+            -jlptCounts.N2 * 10 +     // Lower weight for N2
+            -jlptCounts.N1            // Lowest weight for N1
+        );
+    }
+
+    if (phoneticRadicalsWithSameReading) {
+        message += `\nOther phonetic radical(s) that are also read ${radicalReadingElement} are:\n${phoneticRadicalsWithSameReading}\n`;
     }
 
     return message;
