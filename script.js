@@ -14326,11 +14326,14 @@ let currentInput = "";
 // Function to format the output (unchanged, included for context)
 function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes) {
     let message = "";
+    const isMobile = window.innerWidth < 768; // Detect mobile device
+    const separator = isMobile ? "\n" : "、 "; // Use newline for mobile, comma for desktop
+
     const kanjiElement = `<span class="kanji-highlight clickable-kanji">${kanji}</span>`;
     const kanjiReadingElement = Array.isArray(kanjiReadings) ? 
         kanjiReadings.map(reading => `<span class="reading-highlight">${reading}</span>`).join(" or ") : 
         `<span class="reading-highlight">${kanjiReadings}</span>`;
-    const radicalElement = `<span class="kanji-highlight">${radical}</span>`; // No clickable-kanji here
+    const radicalElement = `<span class="kanji-highlight">${radical}</span>`;
     const radicalReadingElement = Array.isArray(radicalReading) ? 
         radicalReading.map(reading => `<span class="reading-highlight">${reading}</span>`).join(" or ") : 
         `<span class="reading-highlight">${radicalReading}</span>`;
@@ -14346,12 +14349,8 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
     }
 
     function sortByJLPT(kanjiList) {
-        // Filter out invalid items *before* sorting
         const validKanjiList = kanjiList.filter(item => item && item.kanji);
-    
-        // Sort only the valid items
         return validKanjiList.sort((a, b) => {
-            // Now we know 'a' and 'b' are valid objects with a 'kanji' property
             const levelA = getJLPTLevel(a.kanji) || "Z";
             const levelB = getJLPTLevel(b.kanji) || "Z";
             const order = { "N5": 1, "N4": 2, "N3": 3, "N2": 4, "N1": 5, "Z": 6 };
@@ -14381,23 +14380,23 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
 
     if (regular.length > 0) {
         const sortedRegular = sortByJLPT([...regular]);
-        const regularKanjiList = sortedRegular.map(k => `${getKanjiWithJLPT(k.kanji)} （${k.reading}）`).join("、 ");
+        const regularKanjiList = sortedRegular.map(k => `${getKanjiWithJLPT(k.kanji)} （${k.reading}）`).join(separator);
         message += `Other kanji that contain the ${Array.isArray(defaultReading) ? "double-reading phonetic" : "phonetic"} radical ${radicalElement} are:\n`;
         message += `Kanji read like their phonetic radical:\n${regularKanjiList}\n`;
     }
     if (doublereading.length > 0) {
         const sortedDouble = sortByJLPT([...doublereading]);
-        const doublereadingKanjiList = sortedDouble.map(k => `${getKanjiWithJLPT(k.kanji)} （${radicalReadingElement} & ${k.reading}）`).join("、 ");
+        const doublereadingKanjiList = sortedDouble.map(k => `${getKanjiWithJLPT(k.kanji)} （${radicalReadingElement} & ${k.reading}）`).join(separator);
         message += `Kanji with two readings (the default reading & a modified reading):\n${doublereadingKanjiList}\n`;
     }
     if (modified.length > 0) {
         const sortedModified = sortByJLPT([...modified]);
-        const modifiedKanjiList = sortedModified.map(k => `${getKanjiWithJLPT(k.kanji)} （${k.reading}）`).join("、 ");
+        const modifiedKanjiList = sortedModified.map(k => `${getKanjiWithJLPT(k.kanji)} （${k.reading}）`).join(separator);
         message += `Kanji whose reading is similar to their phonetic radical's:\n${modifiedKanjiList}\n`;
     }
     if (exception.length > 0) {
         const sortedException = sortByJLPT([...exception]);
-        const exceptionKanjiList = sortedException.map(k => `${getKanjiWithJLPT(k.kanji)} （${k.reading}）`).join("、 ");
+        const exceptionKanjiList = sortedException.map(k => `${getKanjiWithJLPT(k.kanji)} （${k.reading}）`).join(separator);
         message += `Kanji whose reading is an exception:\n${exceptionKanjiList}\n`;
     }
 
@@ -14517,6 +14516,9 @@ function formatMeaningRadicalMessage(kanji) {
         }
     });
 
+    const isMobile = window.innerWidth < 768; // Detect mobile device
+    const separator = isMobile ? "\n" : "、 "; // Use newline for mobile, comma for desktop
+
     let message = `The character <span class="kanji-highlight clickable-kanji">${kanji}</span> means <span class="reading-highlight">${englishMeaning}</span>,<br>` +
                   `as it contains the meaning radical <span class="kanji-highlight">${meaningRadical}</span> (<span class="reading-highlight">${meaningRadicalTranslation}</span>).<br><br>` +
                   `Other kanji that contain the meaning radical <span class="kanji-highlight">${meaningRadical}</span> are:<br>`;
@@ -14526,7 +14528,7 @@ function formatMeaningRadicalMessage(kanji) {
         if (kanjiGroups[level].length > 0) {
             const levelLabel = level !== 'NotInJLPT' ? `${level} Kanji:` : 'Not in JLPT:';
             const levelColorClass = level !== 'NotInJLPT' ? `inline-level-bubble ${level.toLowerCase()}` : 'inline-level-bubble notinjlpt';
-            message += `<div><span class="${levelColorClass}">${levelLabel}</span><br>${kanjiGroups[level].join("、 ")}</div><br>`;
+            message += `<div><span class="${levelColorClass}">${levelLabel}</span><br>${kanjiGroups[level].join(separator)}</div><br>`;
         }
     }
 
@@ -14534,14 +14536,14 @@ function formatMeaningRadicalMessage(kanji) {
         const moonRadical = meaningRadicalDatabase["月 (moon)"].kanjiList;
         const meatRadical = meaningRadicalDatabase["月 (meat)"].kanjiList;
         message += `<br><br>Careful! The meaning radical meat (<span class="kanji-highlight">月</span>) looks exactly the same as the meaning radical moon (<span class="kanji-highlight">月</span>).<br>` +
-                   `Characters with the meat radical:<br>${meatRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join("、 ")}<br>` +
-                   `Characters with the moon radical:<br>${moonRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join("、 ")}`;
+                   `Characters with the meat radical:<br>${meatRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join(separator)}<br>` +
+                   `Characters with the moon radical:<br>${moonRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join(separator)}`;
     } else if (meaningRadical.startsWith("阝")) {
         const hillsRadical = meaningRadicalDatabase["阝 (hills)"].kanjiList;
         const cityRadical = meaningRadicalDatabase["阝 (city)"].kanjiList;
         message += `<br><br>Careful! The meaning radical hills (<span class="kanji-highlight">阝</span>) looks exactly the same as the meaning radical city (<span class="kanji-highlight">阝</span>).<br>` +
-                   `Characters with the hills radical:<br>${hillsRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join("、 ")}<br>` +
-                   `Characters with the city radical:<br>${cityRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join("、 ")}`;
+                   `Characters with the hills radical:<br>${hillsRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join(separator)}<br>` +
+                   `Characters with the city radical:<br>${cityRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join(separator)}`;
     }
 
     return message;
