@@ -14437,7 +14437,7 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
                 ...data.derivedKanji.doublereading
             ];
             const sortedDerivedKanji = sortByJLPT(allDerivedKanji);
-            const derivedKanjiList = sortedDerivedKanji.map(k => getKanjiWithJLPT(k.kanji)).join(separator);
+            const derivedKanjiList = sortedDerivedKanji.map(k => getKanjiWithJLPT(k.kanji)).join("、 "); // Always use comma separator
             return `${radicalSpan}（${derivedKanjiList || "none"}）`;
         })
         .join("\n");
@@ -14813,7 +14813,7 @@ window.addEventListener('resize', function() {
         checkButton.style.width = '25%';
         randomButton.style.width = '25%';
     } else {
-        checkButton.innerHTML = 'Check Kanji';
+        checkButton.innerHTML = 'Check';
         randomButton.innerHTML = 'Random Kanji';
         checkButton.style.width = 'auto';
         randomButton.style.width = 'auto';
@@ -14831,7 +14831,7 @@ window.addEventListener('load', function() {
         checkButton.style.width = '25%';
         randomButton.style.width = '25%';
     } else {
-        checkButton.innerHTML = 'Check Kanji';
+        checkButton.innerHTML = 'Check';
         randomButton.innerHTML = 'Random Kanji';
         checkButton.style.width = 'auto';
         randomButton.style.width = 'auto';
