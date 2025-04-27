@@ -15071,10 +15071,10 @@ async function updateVocabDisplay(input) {
                     if (!r || !r.text) return '';
                     const color = r.common ? 'black' : 'gray';
                     const appliesTo = (r.appliesToKanji && r.appliesToKanji[0] !== '*' && entry.kanji?.length > 1)
-                        ? ` <i style="font-size:0.8em; opacity: 0.6;">(${r.appliesToKanji.join(',')})</i>`
+                        ? `<i style="font-size:0.8em; opacity: 0.6;">(${r.appliesToKanji.join(',')})</i>`
                         : '';
-                    return `<span style="color: ${color}; margin-right: 0.5em;">${r.text}</span>${appliesTo}`;
-                }).join('');
+                    return `<span style="color: ${color};">${r.text}</span>${appliesTo}`; // Removed margin-right
+                }).join('、'); // Join with Japanese comma for clarity
             }
             if (kanjiHtml.trim()) {
                 word.innerHTML = `${kanjiHtml.trim()}（${kanaHtml.trim()}）`;
