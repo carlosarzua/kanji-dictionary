@@ -13317,6 +13317,7 @@ let vocabulary = [];
 let isSupabaseReady = false;
 let isVocabularyFetched = false;
 let searchVocabulary;
+let supabaseClient;
 
 // Function to wait for the supabase global to be defined
 function waitForSupabase(callback, timeout = 10000) {
@@ -13344,8 +13345,10 @@ function waitForSupabase(callback, timeout = 10000) {
 waitForSupabase(() => {
     const supabaseUrl = 'https://mrghpqzhcacgrsjojvrq.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yZ2hwcXpoY2FjZ3Jzam9qdnJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzNjI1MDgsImV4cCI6MjA1OTkzODUwOH0.IxZCGHnW4KTkBvXgUgiWhDMQspd-gRtoNwEAbRBzTnE';
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+    supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
     console.log('Supabase client initialized:', supabaseClient);
+    console.log('supabaseClient after initialization:', supabaseClient);
+
 
     searchVocabulary = async function (searchTerm) {
         console.log(`Searching vocabulary for term: ${searchTerm}`);
@@ -14868,65 +14871,92 @@ function getJLPTDatabase() {
 
 
 
-function analyzeDatabases() {
-    const phoneticRadicals = Object.keys(phoneticRadicalDatabase);
-    const phoneticRadicalCount = phoneticRadicals.length;
-    
-    const phoneticKanjiSet = new Set();
-    phoneticRadicals.forEach(radical => {
-        const { derivedKanji } = phoneticRadicalDatabase[radical];
-        derivedKanji.regular.forEach(item => phoneticKanjiSet.add(item.kanji));
-        derivedKanji.modified.forEach(item => phoneticKanjiSet.add(item.kanji));
-        derivedKanji.exception.forEach(item => phoneticKanjiSet.add(item.kanji));
-        derivedKanji.doublereading.forEach(item => phoneticKanjiSet.add(item.kanji));
-    });
-    const phoneticKanjiCount = phoneticKanjiSet.size;
+function countRadicalsAndKanji(phoneticRadicalDatabase) {
+    console.log('Starting countRadicalsAndKanji...');
 
-    const meaningRadicals = Object.keys(meaningRadicalDatabase);
-    const meaningRadicalCount = meaningRadicals.length;
+    // Validate input
+    if (!phoneticRadicalDatabase || typeof phoneticRadicalDatabase !== 'object') {
+        console.error('Error: phoneticRadicalDatabase is undefined or not an object');
+        return null;
+    }
 
-    const meaningKanjiSet = new Set();
-    meaningRadicals.forEach(radical => {
-        meaningRadicalDatabase[radical].kanjiList.forEach(kanji => meaningKanjiSet.add(kanji));
-    });
+    try {
+        let totalRadicals = 0;
+        let totalRegular = 0;
+        let totalModified = 0;
+        let totalException = 0;
+        let totalDoubleReading = 0;
+        const phoneticKanjiSet = new Set();
 
-    const nonOverlappingMeaningKanjiSet = new Set([...meaningKanjiSet].filter(kanji => !phoneticKanjiSet.has(kanji)));
-    const nonOverlappingMeaningKanjiCount = nonOverlappingMeaningKanjiSet.size;
+        // Iterate over radicals
+        const radicals = Object.keys(phoneticRadicalDatabase);
+        totalRadicals = radicals.length;
+        console.log(`Total Radicals: ${totalRadicals}`);
 
-    const jlptKanjiSet = new Set();
-    const jlptDatabase = getJLPTDatabase();
-    Object.values(jlptDatabase).forEach(levelList => {
-        levelList.forEach(kanji => jlptKanjiSet.add(kanji));
-    });
+        radicals.forEach(radical => {
+            const radicalData = phoneticRadicalDatabase[radical];
+            if (!radicalData || typeof radicalData !== 'object') {
+                console.warn(`Warning: Invalid data for radical ${radical}`);
+                return;
+            }
 
-    const nonOverlappingJLPTKanjiSet = new Set([...jlptKanjiSet].filter(kanji => !phoneticKanjiSet.has(kanji) && !meaningKanjiSet.has(kanji)));
-    const nonOverlappingJLPTKanjiCount = nonOverlappingJLPTKanjiSet.size;
+            const derivedKanji = radicalData.derivedKanji;
+            if (!derivedKanji || typeof derivedKanji !== 'object') {
+                console.warn(`Warning: derivedKanji missing for radical ${radical}`);
+                return;
+            }
 
-    const readingsKanjiSet = new Set(readings.map(reading => reading.kanji));
-    const nonOverlappingReadingsKanjiSet = new Set([...readingsKanjiSet].filter(kanji => !phoneticKanjiSet.has(kanji) && !meaningKanjiSet.has(kanji) && !jlptKanjiSet.has(kanji)));
-    const nonOverlappingReadingsKanjiCount = nonOverlappingReadingsKanjiSet.size;
+            // Process each category
+            ['regular', 'modified', 'exception', 'doublereading'].forEach(type => {
+                const items = derivedKanji[type];
+                if (Array.isArray(items)) {
+                    // Add to counts
+                    if (type === 'regular') totalRegular += items.length;
+                    if (type === 'modified') totalModified += items.length;
+                    if (type === 'exception') totalException += items.length;
+                    if (type === 'doublereading') totalDoubleReading += items.length;
 
-    const totalUniqueKanjiSet = new Set([
-        ...phoneticKanjiSet,
-        ...meaningKanjiSet,
-        ...jlptKanjiSet,
-        ...readingsKanjiSet
-    ]);
-    const totalUniqueKanjiCount = totalUniqueKanjiSet.size;
+                    // Add kanji to set
+                    items.forEach(item => {
+                        if (item && typeof item === 'object' && item.kanji) {
+                            phoneticKanjiSet.add(item.kanji);
+                        } else {
+                            console.warn(`Warning: Invalid item in ${type} for radical ${radical}:`, item);
+                        }
+                    });
+                } else {
+                    console.warn(`Warning: ${type} is not an array for radical ${radical}`);
+                }
+            });
+        });
 
-    return {
-        phoneticRadicalCount,
-        phoneticKanjiCount,
-        meaningRadicalCount,
-        nonOverlappingMeaningKanjiCount,
-        nonOverlappingJLPTKanjiCount,
-        nonOverlappingReadingsKanjiCount,
-        totalUniqueKanjiCount
-    };
+        const result = {
+            totalRadicals,
+            totalRegular,
+            totalModified,
+            totalException,
+            totalDoubleReading,
+            totalUniqueKanji: phoneticKanjiSet.size
+        };
+        console.log('Result:', result);
+        return result;
+    } catch (error) {
+        console.error('Error in countRadicalsAndKanji:', error);
+        return null;
+    }
 }
 
-const result = analyzeDatabases();
-console.log(result);
+// Execute and log result
+try {
+    const counts = countRadicalsAndKanji(phoneticRadicalDatabase);
+    if (counts) {
+        console.log('Counts:', counts);
+    } else {
+        console.error('No counts returned from countRadicalsAndKanji');
+    }
+} catch (error) {
+    console.error('Error executing countRadicalsAndKanji:', error);
+}
 
 async function updateVocabDisplay(input) {
     console.log('updateVocabDisplay called with input:', input);
@@ -15087,10 +15117,11 @@ async function updateVocabDisplay(input) {
 
     // 7. Render the Sorted Vocabulary
     let wordsToShow = 5;
-    function renderWords(limit) {
+   function renderWords(limit) {
         vocabBox.innerHTML = '';
         const entriesToRender = rankedVocab.slice(0, limit);
         console.log(`Rendering ${entriesToRender.length} words (limit: ${limit})`);
+        
         if (entriesToRender.length === 0) {
             if (rankedVocab.length > 0) {
                 console.warn("Attempted to render 0 words, but rankedVocab has entries. Check slicing/limit logic.");
@@ -15100,76 +15131,96 @@ async function updateVocabDisplay(input) {
             }
             return;
         }
+    
         entriesToRender.forEach((entry) => {
             const box = document.createElement('div');
             box.classList.add('vocab-entry');
+            
+            // Set data-term attribute to the primary kanji or reading
+            const primaryTerm = entry.kanji?.[0]?.text || entry.reading?.[0]?.text || '';
+            box.setAttribute('data-term', primaryTerm); // Add data-term attribute
+    
+            // Word and reading section
             const word = document.createElement('div');
             word.classList.add('word');
             let kanjiHtml = '';
+            
             if (entry.kanji && entry.kanji.length > 0) {
                 kanjiHtml = entry.kanji.map(k => {
                     if (!k || !k.text) return '';
                     const span = document.createElement('span');
                     span.textContent = k.text;
-                    span.style.color = k.common ? 'black' : 'gray';
+                    span.style.color = k.common ? '#000000' : '#aaaaaa';
                     span.style.marginRight = '0.2em';
                     return span.outerHTML;
                 }).join('');
             }
+            
             let kanaHtml = '';
             if (entry.reading && entry.reading.length > 0) {
                 kanaHtml = entry.reading.map(r => {
                     if (!r || !r.text) return '';
-                    const color = r.common ? 'black' : 'gray';
+                    const color = r.common ? '#000000' : '#aaaaaa';
                     const appliesTo = (r.appliesToKanji && r.appliesToKanji[0] !== '*' && entry.kanji?.length > 1)
                         ? `<i style="font-size:0.8em; opacity: 0.6;">(${r.appliesToKanji.join(',')})</i>`
                         : '';
-                    return `<span style="color: ${color};">${r.text}</span>${appliesTo}`; // Removed margin-right
-                }).join('、'); // Join with Japanese comma for clarity
+                    return `<span style="color: ${color};">${r.text}</span>${appliesTo}`;
+                }).join('、');
             }
+            
             if (kanjiHtml.trim()) {
                 word.innerHTML = `${kanjiHtml.trim()}（${kanaHtml.trim()}）`;
             } else {
                 word.innerHTML = kanaHtml.trim();
             }
             box.appendChild(word);
+    
+            // Sense/definition section
             entry.sense?.forEach((s) => {
                 if (!s || !s.text) return;
                 const senseContainer = document.createElement('div');
                 senseContainer.classList.add('sense-container');
+                
                 const grammar = document.createElement('div');
                 grammar.classList.add('grammar');
                 let posText = Array.isArray(s.partOfSpeech) ? s.partOfSpeech.join(', ') : (s.partOfSpeech || '');
                 let extraInfoText = Array.isArray(s.extraInfo) ? s.extraInfo.join('; ') : (s.extraInfo || '');
                 extraInfoText = extraInfoText.replace(/^; |^, |; $|, $/g, '').trim();
+                
                 let grammarHtml = posText;
                 if (posText && extraInfoText) {
                     grammarHtml += '; ';
                 }
                 if (extraInfoText) {
-                    grammarHtml += `<i>${extraInfoText}</i>`;
+                    grammarHtml += `<style="color: #00b4d8;">${extraInfoText}</i>`;
                 }
                 grammar.innerHTML = grammarHtml;
+                
                 if (grammar.innerHTML.trim()) {
                     senseContainer.appendChild(grammar);
                 }
+                
                 const english = document.createElement('div');
                 english.classList.add('english-meaning');
+                
                 function boldInputWord(text, inputWord, isJpInput) {
                     if (!text || !inputWord || isJpInput) return text;
                     try {
                         const escapedInput = inputWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                         const regex = new RegExp(`\\b(${escapedInput})\\b`, 'gi');
-                        return text.replace(regex, '<b>$1</b>');
+                        return text.replace(regex, '<b style="color: #00b4d8;">$1</b>');
                     } catch (e) {
                         console.error("Regex error in boldInputWord:", e);
                         return text;
                     }
                 }
+                
                 english.innerHTML = boldInputWord(s.text, input, isJapanese);
                 senseContainer.appendChild(english);
                 box.appendChild(senseContainer);
             });
+    
+            // JLPT bubble
             if (entry.jlpt) {
                 const cleanedJlptKey = entry.jlpt.toLowerCase().replace('jlpt ', '').trim();
                 if (cleanedJlptKey) {
@@ -15179,11 +15230,179 @@ async function updateVocabDisplay(input) {
                     box.appendChild(jlptBubble);
                 }
             }
+    
+            // Sentence expansion functionality
+            box.addEventListener('click', async function(e) {
+                // Prevent toggling when clicking "Display More Sentences"
+                if (e.target.classList.contains('show-more-sentences')) return;
+                
+                console.log('Box clicked, expanding:', this);
+                this.classList.toggle('expanded');
+            
+                if (this.classList.contains('expanded')) {
+                    if (!this.querySelector('.sentences-container')) {
+                        const loadingDiv = document.createElement('div');
+                        loadingDiv.classList.add('sentences-loading');
+                        loadingDiv.textContent = 'Loading example sentences...';
+            
+                        const sentencesContainer = document.createElement('div');
+                        sentencesContainer.classList.add('sentences-container');
+                        sentencesContainer.appendChild(loadingDiv);
+                        this.appendChild(sentencesContainer);
+            
+                        try {
+                            // Get the search term from the box's data-term attribute
+                            let searchTerm = this.getAttribute('data-term') || '';
+                            
+                            // Fallback to input only if no term is found
+                            if (!searchTerm && input && typeof input === 'string') {
+                                searchTerm = input.trim();
+                            }
+            
+                            console.log('Fetching sentences for searchTerm:', searchTerm);
+                            console.log('searchTerm (raw):', JSON.stringify(searchTerm));
+            
+                            if (!searchTerm) {
+                                sentencesContainer.innerHTML = '<div class="no-sentences">No example sentences found.</div>';
+                                return;
+                            }
+            
+                            console.log('Supabase URL:', supabaseClient.supabaseUrl);
+                            
+                            // Check table contents
+                            console.log('Checking sentences table contents');
+                            const { data: allSentences, error: tableError } = await supabaseClient
+                                .from('sentences')
+                                .select('*')
+                                .limit(10);
+                            console.log('First 10 sentences:', allSentences, 'Error:', tableError);
+                            if (tableError || !allSentences?.length) {
+                                console.warn('Sentences table is empty or inaccessible');
+                                sentencesContainer.innerHTML = '<div class="sentences-error">Sentences table is empty or inaccessible.</div>';
+                                return;
+                            }
+            
+                            // Main query
+                            let sentences = [];
+                            let error = null;
+                            const { data: orData, error: orError } = await supabaseClient
+                                .from('sentences')
+                                .select('*')
+                                .or(`japanese.ilike.%${searchTerm}%,english.ilike.%${searchTerm}%`);
+                            console.log('Or query result:', orData, 'Error:', orError);
+            
+                            if (orError) {
+                                console.error('Or query error:', orError);
+                                error = orError;
+                            } else if (orData && orData.length > 0) {
+                                sentences = orData;
+                            } else {
+                                console.log('Falling back to individual ilike queries');
+                                const { data: japaneseMatches, error: japaneseError } = await supabaseClient
+                                    .from('sentences')
+                                    .select('*')
+                                    .ilike('japanese', `%${searchTerm}%`);
+                                console.log('Japanese matches:', japaneseMatches, 'Error:', japaneseError);
+            
+                                const { data: englishMatches, error: englishError } = await supabaseClient
+                                    .from('sentences')
+                                    .select('*')
+                                    .ilike('english', `%${searchTerm}%`);
+                                console.log('English matches:', englishMatches, 'Error:', englishError);
+            
+                                if (japaneseError || englishError) {
+                                    error = japaneseError || englishError;
+                                } else {
+                                    sentences = [...(japaneseMatches || []), ...(englishMatches || [])];
+                                    sentences = Array.from(new Map(sentences.map(s => [s.sentence_id, s])).values());
+                                }
+                            }
+            
+                            console.log('Final sentences:', sentences, 'Error:', error);
+                            if (error) throw error;
+            
+                            sentencesContainer.innerHTML = '';
+                            console.log('Number of sentences:', sentences?.length);
+                            
+                            // Store all sentences in the box for later use
+                            box.sentences = sentences;
+                            box.sentencesDisplayed = 0;
+                            
+                            // Function to render sentences
+                            function renderSentences(startIndex, count) {
+                                const endIndex = Math.min(startIndex + count, sentences.length);
+                                for (let i = startIndex; i < endIndex; i++) {
+                                    const sentence = sentences[i];
+                                    const sentenceItem = document.createElement('div');
+                                    sentenceItem.classList.add('sentence-item');
+            
+                                    const japaneseDiv = document.createElement('div');
+                                    japaneseDiv.classList.add('sentence-japanese');
+                                    let japaneseText = sentence.japanese || '';
+                                    if (japaneseText && searchTerm) {
+                                        japaneseText = japaneseText.replace(
+                                            new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+                                            `<span class="highlight">${searchTerm}</span>`
+                                        );
+                                    }
+                                    japaneseDiv.innerHTML = japaneseText;
+            
+                                    const englishDiv = document.createElement('div');
+                                    englishDiv.classList.add('sentence-english');
+                                    let englishText = sentence.english || '';
+                                    if (englishText && searchTerm) {
+                                        const regex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+                                        englishText = englishText.replace(
+                                            regex,
+                                            `<span class="highlight">$&</span>`
+                                        );
+                                    }
+                                    englishDiv.innerHTML = englishText;
+            
+                                    sentenceItem.appendChild(japaneseDiv);
+                                    sentenceItem.appendChild(englishDiv);
+                                    sentencesContainer.appendChild(sentenceItem);
+                                }
+                                box.sentencesDisplayed = endIndex;
+                                
+                                // Add "Display More Sentences" link if there are more sentences
+                                const existingMoreLink = sentencesContainer.querySelector('.show-more-sentences');
+                                if (existingMoreLink) existingMoreLink.remove();
+                                
+                                if (box.sentencesDisplayed < sentences.length) {
+                                    const showMoreSentences = document.createElement('div');
+                                    showMoreSentences.classList.add('show-more-sentences');
+                                    showMoreSentences.innerHTML = `Display More Sentences (${sentences.length - box.sentencesDisplayed} remaining)`;
+                                    showMoreSentences.addEventListener('click', (e) => {
+                                        e.stopPropagation(); // Prevent box click event
+                                        renderSentences(box.sentencesDisplayed, 5);
+                                    });
+                                    sentencesContainer.appendChild(showMoreSentences);
+                                }
+                            }
+            
+                            if (sentences && sentences.length > 0) {
+                                // Render first 5 sentences (or all if fewer than 5)
+                                renderSentences(0, 5);
+                            } else {
+                                sentencesContainer.innerHTML = '<div class="no-sentences">No example sentences found.</div>';
+                            }
+                        } catch (error) {
+                            console.error('Error fetching sentences:', error);
+                            sentencesContainer.innerHTML = '<div class="sentences-error">Error loading sentences.</div>';
+                        }
+                    }
+                }
+            });
+            
             vocabBox.appendChild(box);
         });
+    
+        // Show more button
         if (rankedVocab.length > limit) {
             const existingButton = vocabBox.querySelector('.show-more');
             if (existingButton) existingButton.remove();
+            
             const showMore = document.createElement('div');
             showMore.classList.add('show-more');
             showMore.innerHTML = `Show more (${rankedVocab.length - limit} remaining)`;
@@ -15193,7 +15412,7 @@ async function updateVocabDisplay(input) {
             }, { once: true });
             vocabBox.appendChild(showMore);
         }
-    }
+    } 
 
     // 8. Initial Render Call
     renderWords(wordsToShow);
