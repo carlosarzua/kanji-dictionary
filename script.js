@@ -14281,18 +14281,6 @@ function checkMeaningRadical(kanji) {
         }
     }
 
-    if (!foundRadical) {
-        // Special check for multiple entries with same character
-        if (kanji === '月' || kanji === '阝') {
-            for (const [radical, data] of Object.entries(meaningRadicalDatabase)) {
-                if (data.radical === kanji) {
-                    updateMeaningRadicalBox(radical, data.radical); // Swap parameters
-                    foundRadical = true;
-                    break;
-                }
-            }
-        }
-    }
 
     if (!foundRadical) {
         updateMeaningRadicalBox("", ""); // Clear the box if not found
@@ -14571,7 +14559,7 @@ function formatMeaningRadicalMessage(kanji) {
 
     if (meaningRadical.startsWith("月")) {
         const moonRadical = meaningRadicalDatabase["月 (moon)"].kanjiList;
-        const meatRadical = meaningRadicalDatabase["月 (meat)"].kanjiList;
+        const meatRadical = meaningRadicalDatabase["月 / 肉 / ⺼"].kanjiList;
         message += `<br><br>Careful! The meaning radical meat (<span class="kanji-highlight">月</span>) looks exactly the same as the meaning radical moon (<span class="kanji-highlight">月</span>).<br>` +
                    `Characters with the meat radical:<br>${meatRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join(separator)}<br>` +
                    `Characters with the moon radical:<br>${moonRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join(separator)}`;
