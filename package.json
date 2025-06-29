@@ -1,0 +1,17 @@
+{
+  "name": "radical-kanji-dictionary",
+  "version": "7.0.0",
+  "description": "Radical. Kanji Dictionary - Kanji Made Radically Easier",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": ["kanji", "japanese", "dictionary", "radicals", "learning"],
+  "author": "Carlos Ramos Fuentes <carlosarzua@usal.es>",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
