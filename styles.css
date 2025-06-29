@@ -176,7 +176,7 @@ button:hover {
         padding: 10px 20px; /* Button padding */
         margin-left: 5px; /* Space between buttons */
         width: auto; /* Ensure buttons fit content */
-        flex: 0; /* Ensure buttons don’t take extra space */
+        flex: 0; /* Ensure buttons don't take extra space */
     }
 
     /* Hide the kanji square, JLPT level bubble, and light blue rows */
@@ -238,15 +238,16 @@ button:hover {
 
     .mobile-box {
         position: relative;
-        padding: 0px;
+        padding: 10px; /* Add padding for better text spacing */
         background-color: #00b4d8;
         display: flex;
         flex-direction: column; /* Arrange elements in a column */
-        justify-content: center;
+        justify-content: flex-start; /* Align content to top */
         font-size: 1rem;
         color: white;
         border-radius: 10px;
         margin-bottom: 10px;
+        text-align: left; /* Left align text content */
     }
 
     /* Ensure the first box is a square */
@@ -260,6 +261,8 @@ button:hover {
         flex-shrink: 0; /* Prevent shrinking */
         color: black;
         font-size: 50px;
+        text-align: center; /* Keep kanji centered in the square */
+        padding: 0; /* Remove padding for the kanji square */
     }
 
     #mobile-displayKanji {
@@ -293,6 +296,9 @@ button:hover {
         margin-left: 10px; /* Add space between the square and rectangle */
         border: 3px solid #00b4d8;
         font-size: 40px;
+        text-align: center; /* Keep English meaning centered */
+        padding: 0; /* Remove padding to maintain centering */
+        justify-content: center; /* Keep content centered */
     }
 
     .row-2, .row-3 {
@@ -309,6 +315,9 @@ button:hover {
         font-size: 20px;
         display: inline-block !important;
         margin-block-end: 10px !important;
+        padding: 10px; /* Add padding for better text spacing */
+        text-align: left; /* Left align the kanji lists */
+        justify-content: flex-start; /* Align content to start */
     }
 
     #mobile-kunyomi-box,
@@ -321,6 +330,24 @@ button:hover {
     #mobile-meaningradical-box,
     #mobile-radical-box {
         border: 1px solid #ffffff;
+    }
+
+    /* Special styling for category headers within mobile boxes */
+    #mobile-meaningradical-box .category-header,
+    #mobile-radical-box .category-header,
+    #mobile-kunyomi-box .category-header,
+    #mobile-onyomi-box .category-header {
+        text-align: center; /* Keep category headers centered */
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    /* Ensure kanji lists are left-aligned */
+    #mobile-meaningradical-box .kanji-list,
+    #mobile-radical-box .kanji-list,
+    #mobile-kunyomi-box .kanji-list,
+    #mobile-onyomi-box .kanji-list {
+        text-align: left; /* Left align kanji lists */
     }
     
     .kanji-display {
@@ -474,7 +501,7 @@ button:hover {
     margin-bottom: 40px;
     display: flex;
     align-items: center;
-    justify-content: flex-start !important; /* Add !important to ensure it’s applied */
+    justify-content: flex-start !important; /* Add !important to ensure it's applied */
     position: relative;
     width: 100%; /* Ensure it takes full width */
     text-align: center; /* Prevent inherited text-align: center */
@@ -484,7 +511,7 @@ button:hover {
 .kanji-display-section {
     display: flex !important;
     align-items: center;
-    justify-content: flex-start !important; /* Add !important to ensure it’s applied */
+    justify-content: flex-start !important; /* Add !important to ensure it's applied */
     position: relative;
     margin-left: 0; /* Ensure no left margin causes offset */
     width: auto; /* Prevent stretching */
@@ -687,9 +714,10 @@ button:hover {
     flex: 1;
     display: flex;
     align-items: center; /* Center items vertically */
-    justify-content: center; /* Center items horizontally */
+    justify-content: flex-start; /* Left align content in reading boxes */
     padding: 10px; /* Add padding if necessary */
     height: 100%; /* Ensure full height for alignment */
+    text-align: left; /* Left align text in reading boxes */
 }
 
 /* Specific CSS for meaningradical-box */
@@ -700,10 +728,11 @@ button:hover {
     font-size: 1rem !important; /* Force the font size */
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start; /* Left align content */
     min-height: 40px;
     box-sizing: border-box; /* Ensures consistent box sizing */
     border: 2px solid white;
+    text-align: left; /* Left align text */
 }
 
 /* Specific CSS for onyomi-box */
@@ -711,10 +740,11 @@ button:hover {
     font-size: 1.25rem !important; /* Force the font size */
     display: flex; /* Ensure it's consistent with other boxes */
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start; /* Left align content */
     min-height: 40px; /* Ensure consistent height */
     box-sizing: border-box; /* Ensures consistent box sizing */
     width: 250px;
+    text-align: left; /* Left align text */
 }
 
 /* Specific CSS for kunyomi-box */
@@ -722,11 +752,12 @@ button:hover {
     font-size: 1.1rem !important; /* Force the font size */
     display: flex; /* Ensure it's consistent with other boxes */
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start; /* Left align content */
     min-height: 40px; /* Ensure consistent height */
     box-sizing: border-box; /* Ensures consistent box sizing */
     width: 350px; /* Adjust the width as needed */
     position: relative; /* Ensure relative positioning for absolute elements */
+    text-align: left; /* Left align text */
 }
 
 /* Ensuring the parent container is positioned relative */
@@ -738,13 +769,14 @@ button:hover {
 .reading-box {
     display: flex;
     align-items: center; /* Center vertically */
-    justify-content: center; /* Center horizontally */
+    justify-content: flex-start; /* Left align content */
     width: 200px; /* Adjust the width as needed */
     height: 40px; /* Adjust the height as needed */
     border-radius: 5px;
     margin: 0 15px; /* Space between elements */
     font-size: 2rem; /* Twice as big as the other boxes */
     border: 2px solid #00b4d8;
+    text-align: left; /* Left align text */
 }
 
 .white-reading-box {
@@ -763,13 +795,14 @@ button:hover {
         text-overflow: unset;
         display: flex;
         align-items: flex-start; /* Changed to flex-start for top alignment */
-        justify-content: center;
+        justify-content: flex-start; /* Left align content */
         min-height: 40px; /* Minimum height for single line */
         max-height: 50px; /* Maximum height within 80px row */
         box-sizing: border-box;
         padding: 5px;
         position: relative;
         transition: max-height 0.3s ease;
+        text-align: left; /* Left align text */
     }
 
     /* Always show fade effect when overflowing */
@@ -804,6 +837,7 @@ button:hover {
         margin-inline-end: 0px;
         unicode-bidi: isolate;
         white-space: pre-wrap;
+        text-align: left; /* Left align text */
     }
 }
 
@@ -812,9 +846,10 @@ button:hover {
     font-size: 1.25rem !important; /* Force the font size */
     display: flex; /* Ensure it's consistent with other boxes */
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start; /* Left align content */
     min-height: 40px; /* Ensure consistent height */
     border: 2px solid white;
+    text-align: left; /* Left align text */
 }
 
 /* Define the original background color */
