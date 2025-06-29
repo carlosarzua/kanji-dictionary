@@ -176,7 +176,7 @@ button:hover {
         padding: 10px 20px; /* Button padding */
         margin-left: 5px; /* Space between buttons */
         width: auto; /* Ensure buttons fit content */
-        flex: 0; /* Ensure buttons don't take extra space */
+        flex: 0; /* Ensure buttons don’t take extra space */
     }
 
     /* Hide the kanji square, JLPT level bubble, and light blue rows */
@@ -321,12 +321,6 @@ button:hover {
     #mobile-meaningradical-box,
     #mobile-radical-box {
         border: 1px solid #ffffff;
-        /* Left-align content in mobile radical boxes */
-        justify-content: flex-start !important;
-        align-items: flex-start !important;
-        text-align: left !important;
-        padding-left: 10px !important;
-        padding-top: 10px !important;
     }
     
     .kanji-display {
@@ -480,7 +474,7 @@ button:hover {
     margin-bottom: 40px;
     display: flex;
     align-items: center;
-    justify-content: flex-start !important; /* Add !important to ensure it's applied */
+    justify-content: flex-start !important; /* Add !important to ensure it’s applied */
     position: relative;
     width: 100%; /* Ensure it takes full width */
     text-align: center; /* Prevent inherited text-align: center */
@@ -490,7 +484,7 @@ button:hover {
 .kanji-display-section {
     display: flex !important;
     align-items: center;
-    justify-content: flex-start !important; /* Add !important to ensure it's applied */
+    justify-content: flex-start !important; /* Add !important to ensure it’s applied */
     position: relative;
     margin-left: 0; /* Ensure no left margin causes offset */
     width: auto; /* Prevent stretching */
