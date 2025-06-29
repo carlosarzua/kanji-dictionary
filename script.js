@@ -14537,7 +14537,7 @@ function formatMeaningRadicalMessage(kanji) {
         const reading = readings.find(r => r.kanji === k);
         const level = getJLPTLevel(k) || 'NotInJLPT';
         if (reading) {
-            kanjiGroups[level].push(`<span class="kanji-highlight clickable-kanji">${k}</span> (${reading.english || "No Translation"})`);
+            kanjiGroups[level].push({ kanji: k, english: reading.english || "No Translation" });
         }
     });
 
@@ -14553,22 +14553,27 @@ function formatMeaningRadicalMessage(kanji) {
         if (kanjiGroups[level].length > 0) {
             const levelLabel = level !== 'NotInJLPT' ? `${level} Kanji:` : 'Not in JLPT:';
             const levelColorClass = level !== 'NotInJLPT' ? `inline-level-bubble ${level.toLowerCase()}` : 'inline-level-bubble notinjlpt';
-            message += `<div><span class="${levelColorClass}">${levelLabel}</span><br>${kanjiGroups[level].join(separator)}</div><br>`;
+            const kanjiList = kanjiGroups[level].map(k => `<span class="kanji-highlight clickable-kanji">${k.kanji}</span> (${k.english})`).join(separator);
+            message += `<div class="kanji-list"><div class="jlpt-header"><span class="${levelColorClass}">${levelLabel}</span></div>${kanjiList}</div><br>`;
         }
     }
 
     if (meaningRadical.startsWith("月")) {
         const moonRadical = meaningRadicalDatabase["月 (moon)"].kanjiList;
         const meatRadical = meaningRadicalDatabase["月 / 肉 / ⺼"].kanjiList;
-        message += `<br><br>Careful! The meaning radical meat (<span class="kanji-highlight">月</span>) looks exactly the same as the meaning radical moon (<span class="kanji-highlight">月</span>).<br>` +
-                   `Characters with the meat radical:<br>${meatRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join(separator)}<br>` +
-                   `Characters with the moon radical:<br>${moonRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join(separator)}`;
+        const meatKanjiList = meatRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join(separator);
+        const moonKanjiList = moonRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join(separator);
+        message += `<br><br><div class="kanji-list">Careful! The meaning radical meat (<span class="kanji-highlight">月</span>) looks exactly the same as the meaning radical moon (<span class="kanji-highlight">月</span>).<br>` +
+                   `<div class="jlpt-header">Characters with the meat radical:</div>${meatKanjiList}</div><br>` +
+                   `<div class="kanji-list"><div class="jlpt-header">Characters with the moon radical:</div>${moonKanjiList}</div>`;
     } else if (meaningRadical.startsWith("阝")) {
         const hillsRadical = meaningRadicalDatabase["阝 (hills)"].kanjiList;
         const cityRadical = meaningRadicalDatabase["阝 (city)"].kanjiList;
-        message += `<br><br>Careful! The meaning radical hills (<span class="kanji-highlight">阝</span>) looks exactly the same as the meaning radical city (<span class="kanji-highlight">阝</span>).<br>` +
-                   `Characters with the hills radical:<br>${hillsRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join(separator)}<br>` +
-                   `Characters with the city radical:<br>${cityRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join(separator)}`;
+        const hillsKanjiList = hillsRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join(separator);
+        const cityKanjiList = cityRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join(separator);
+        message += `<br><br><div class="kanji-list">Careful! The meaning radical hills (<span class="kanji-highlight">阝</span>) looks exactly the same as the meaning radical city (<span class="kanji-highlight">阝</span>).<br>` +
+                   `<div class="jlpt-header">Characters with the hills radical:</div>${hillsKanjiList}</div><br>` +
+                   `<div class="kanji-list"><div class="jlpt-header">Characters with the city radical:</div>${cityKanjiList}</div>`;
     }
 
     return message;
