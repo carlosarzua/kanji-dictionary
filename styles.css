@@ -1165,4 +1165,14 @@ button:hover {
         bottom: 8px;
         right: 8px;
     }
+
+    .result-box .kanji-list {
+        text-align: left !important;
+        margin-left: 50px !important; /* Adds a 30px indent to the left-aligned kanji lists */
+    }
+    .result-box .jlpt-header {
+        text-align: center !important;
+        margin-left: -50px !important;
+    }
+    
 }
