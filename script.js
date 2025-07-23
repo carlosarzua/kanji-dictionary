@@ -13364,7 +13364,7 @@ waitForSupabase(() => {
             console.log('Making Supabase request for search term:', searchTerm);
 
             const { data, error } = await supabaseClient
-                .from('vocabulary-test')
+                .from('vocabulary_test')
                 .select('id, jlpt, kanji, reading, sense')
                 .or(
                     `kanji_text.ilike.%${searchTerm}%,reading_text.ilike.%${searchTerm}%,sense_text.ilike.%${searchTerm}%`
