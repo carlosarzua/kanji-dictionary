@@ -15732,6 +15732,7 @@ const phoneticRadicalDatabase =
         containsRadical: null,
         similarTo: null
     },
+},
             "丞": {
     defaultReading: "ジョウ",
     derivedKanji: {
@@ -16827,7 +16828,7 @@ const phoneticRadicalDatabase =
 },
 
 
-            "刀": {
+"刀": {
     defaultReading: "トウ",
     derivedKanji: {
         regular: [
@@ -18573,7 +18574,7 @@ const phoneticRadicalDatabase =
                 },
 
             }
-    }
+    
 
 // Define vocabulary-related variables in the global scope
 let vocabulary = [];
