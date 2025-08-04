@@ -876,25 +876,6 @@ const phoneticRadicalDatabase =
         similarTo: null
     }
 },
-        "太": {
-    defaultReading: "タ",
-    derivedKanji: {
-        regular: [
-            { kanji: "汰", reading: "タ" }
-        ],
-        modified: [],
-        exception: [],
-        doublereading: [
-            { kanji: "太", reading: "タイ" },
-            { kanji: "駄", reading: "ダ" }
-        ]
-    },
-    notes: {
-        isContainedIn: null,
-        containsRadical: null,
-        similarTo: null
-    }
-},
 "戎": {
     defaultReading: "ジュウ",
     derivedKanji: {
@@ -9787,8 +9768,8 @@ const phoneticRadicalDatabase =
         ],
         exception: [],
         doublereading: [
-            { kanji: "大", readings: "ダイ" },
-            { kanji: "太", readings: "タ" }
+            { kanji: "大", reading: "ダイ" },
+            { kanji: "太", reading: "タ" }
         ]
     },
     notes: {
