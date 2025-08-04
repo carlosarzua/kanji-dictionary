@@ -1,3 +1,4 @@
+
 const phoneticRadicalDatabase = 
     {
         "化": {
@@ -13207,7 +13208,7 @@ const phoneticRadicalDatabase =
                 }
             },
             
-    "亜 or 亞（ア）": {
+    "亜 or 亞": {
         defaultReading: "ア",
         derivedKanji: {
             regular: [
@@ -13218,7 +13219,7 @@ const phoneticRadicalDatabase =
                 { kanji: "堊", reading: "ア" }
             ],
             modified: [
-                { kanji: "悪", reading: "アク" }
+                { kanji: "悪", reading: "アク or オ" }
             ],
             exception: [],
             doublereading: []
@@ -20280,21 +20281,25 @@ async function updateVocabDisplay(input) {
     }
 
     // 6. Rank and Sort Filtered Vocabulary
-    const jlptScoreMap = { "n5": 0, "n4": 0.1, "n3": 0.2, "n2": 0.3, "n1": 0.4, "": 0.5 };
+    const jlptScoreMap = { "n5": 0, "n4": 0.1, "n3": 0.2, "n2": 0.3, "n1": 0.4, "": 10 }; // Higher score for no JLPT
     function calculateRank(entry, searchInput, isJapaneseInput) {
         let score = 99;
         if (!entry) return score;
         const hasCommonKanji = entry.kanji?.some(k => k && k.common);
         const hasCommonReading = entry.reading?.some(r => r && r.common);
         let commonalityPenalty = 0;
-        if (entry.kanji?.length > 0 && !hasCommonKanji) {
-            commonalityPenalty += 1;
-        }
-        if (!hasCommonReading && (!hasCommonKanji || !entry.kanji || entry.kanji.length === 0)) {
-            commonalityPenalty += 1;
+        // Apply commonality penalty only if no JLPT tag
+        const hasJLPT = !!entry.jlpt;
+        if (!hasJLPT) {
+            if (entry.kanji?.length > 0 && !hasCommonKanji) {
+                commonalityPenalty += 0.5;
+            }
+            if (!hasCommonReading && (!hasCommonKanji || !entry.kanji || entry.kanji.length === 0)) {
+                commonalityPenalty += 0.5;
+            }
         }
         const jlptKey = entry.jlpt ? entry.jlpt.toLowerCase().replace('jlpt ', '').trim() : "";
-        const levelScore = jlptScoreMap[jlptKey] ?? 0.5;
+        const levelScore = jlptScoreMap[jlptKey] ?? 10;
         if (isJapaneseInput) {
             let matchTypeScore = 99;
             let commonBonus = 0;
@@ -20353,6 +20358,12 @@ async function updateVocabDisplay(input) {
     }));
     const rankedVocab = rankedVocabWithScore.filter(entry => entry.rankScore < 90);
     rankedVocab.sort((a, b) => {
+        const aHasJLPT = !!a.jlpt;
+        const bHasJLPT = !!b.jlpt;
+        // Prioritize JLPT-tagged words
+        if (aHasJLPT && !bHasJLPT) return -1;
+        if (!aHasJLPT && bHasJLPT) return 1;
+        // If both have JLPT or neither have JLPT, sort by rankScore
         if (a.rankScore === b.rankScore) {
             const aIsCommon = a.kanji?.some(k => k.common) || a.reading?.some(r => r.common);
             const bIsCommon = b.kanji?.some(k => k.common) || b.reading?.some(r => r.common);
