@@ -18630,7 +18630,8 @@ waitForSupabase(() => {
                 .or(
                     `kanji_text.ilike.%${searchTerm}%,reading_text.ilike.%${searchTerm}%,sense_text.ilike.%${searchTerm}%`
                   )                  
-                .order('id', { ascending: true });
+                .order('id', { ascending: true })
+                .limit(50);
 
             if (error) {
                 console.error('Error searching vocabulary from Supabase:', error);
