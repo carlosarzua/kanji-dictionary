@@ -18730,7 +18730,6 @@ waitForSupabase(() => {
     console.log('Supabase client initialized:', supabaseClient);
     console.log('supabaseClient after initialization:', supabaseClient);
 
-
     searchVocabulary = async function (searchTerm) {
         console.log(`Searching vocabulary for term: ${searchTerm}`);
 
@@ -18740,15 +18739,8 @@ waitForSupabase(() => {
         const progressBarElement = document.getElementById('progress-bar');
         const progressTextElement = document.getElementById('progress-text');
 
-        console.log('Loading element:', loadingElement);
-        console.log('Error element:', errorElement);
-        console.log('Loading bar element:', loadingBarElement);
-
         if (!loadingElement || !errorElement || !loadingBarElement || !progressBarElement || !progressTextElement) {
             console.error('Loading, error, or loading bar elements not found in the DOM');
-            console.error('Loading element exists:', !!loadingElement);
-            console.error('Error element exists:', !!errorElement);
-            console.error('Loading bar element exists:', !!loadingBarElement);
             isVocabularyFetched = false;
             return;
         }
@@ -18760,14 +18752,26 @@ waitForSupabase(() => {
         try {
             console.log('Making Supabase request for search term:', searchTerm);
 
-            const { data, error } = await supabaseClient
+            // Your exact same search logic, but using the faster indexed text columns
+            let query = supabaseClient
                 .from('vocabulary_test')
-                .select('id, jlpt, kanji, reading, sense')
-                .or(
-                    `kanji_text.ilike.%${searchTerm}%,reading_text.ilike.%${searchTerm}%,sense_text.ilike.%${searchTerm}%`
-                  )                  
-                .order('id', { ascending: true })
-                .limit(250);
+                .select('id, jlpt, kanji, reading, sense');
+
+            // Detect if search term is Japanese or English and search accordingly (YOUR RULES)
+            const isJapanese = /[一-龯ぁ-んァ-ン]/.test(searchTerm);
+
+            if (isJapanese) {
+                // For Japanese input, prioritize kanji and reading columns (YOUR LOGIC)
+                // Using the faster indexed text columns instead of ilike on jsonb
+                query = query.or(`kanji_text.ilike.%${searchTerm}%,reading_text.ilike.%${searchTerm}%`);
+            } else {
+                // For English input, search primarily in sense (meaning) column (YOUR LOGIC)
+                query = query.ilike('sense_text', `%${searchTerm}%`);
+            }
+
+            const { data, error } = await query
+                .order('id', { ascending: true }) // YOUR ORDERING
+                .limit(150); // YOUR LIMIT
 
             if (error) {
                 console.error('Error searching vocabulary from Supabase:', error);
@@ -18785,6 +18789,7 @@ waitForSupabase(() => {
             progressBarElement.style.width = `${percentage}%`;
             progressTextElement.textContent = `${fetchedRows} results found`;
 
+            // Your exact same data mapping logic
             vocabulary = data.map(entry => {
                 const kanji = Array.isArray(entry.kanji) ? entry.kanji : [];
                 const reading = Array.isArray(entry.reading) ? entry.reading : [];
@@ -18827,22 +18832,22 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function getCharacterType(char) {
         const codePoint = char.charCodeAt(0);
-    
+
         if (codePoint >= 0x3040 && codePoint <= 0x309F) {
             const smallHiragana = ['ぁ', 'ぃ', 'ぅ', 'ぇ', 'ぉ', 'っ', 'ゃ', 'ゅ', 'ょ', 'ゎ'];
             const isSmall = smallHiragana.includes(char);
             return isSmall ? 'small-hiragana' : 'hiragana';
         }
-    
+
         if (codePoint >= 0x30A0 && codePoint <= 0x30FF) {
             const smallKatakana = ['ァ', 'ィ', 'ゥ', 'ェ', 'ォ', 'ッ', 'ャ', 'ュ', 'ョ', 'ヮ'];
             const isSmall = smallKatakana.includes(char);
             return isSmall ? 'small-katakana' : 'katakana';
         }
-    
+
         return 'other';
     }
-    
+
     const kanaPhoneticMap = {
         'あ': 'a', 'い': 'i', 'う': 'u', 'え': 'e', 'お': 'o',
         'か': 'ka', 'き': 'ki', 'く': 'ku', 'け': 'ke', 'こ': 'ko',
@@ -18879,11 +18884,11 @@ document.addEventListener("DOMContentLoaded", function() {
         'バ': 'ba', 'ビ': 'bi', 'ブ': 'bu', 'ベ': 'be', 'ボ': 'bo',
         'パ': 'pa', 'ピ': 'pi', 'プ': 'pu', 'ペ': 'pe', 'ポ': 'po'
     };
-    
+
     function getPhoneticValue(char) {
         return kanaPhoneticMap[char] || 'unknown';
     }
-    
+
     function updateMobileBoxes() {
         const displayKanjiElement = document.getElementById("displayKanji");
         const mobileDisplayKanjiElement = document.getElementById("mobile-displayKanji");
@@ -18902,13 +18907,13 @@ document.addEventListener("DOMContentLoaded", function() {
         const mobileMeaningRadicalBoxElement = document.getElementById('mobile-meaningradical-box');
         const radicalBoxElement = document.getElementById('radical-box');
         const mobilePhoneticRadicalBoxElement = document.getElementById('mobile-radical-box');
-    
+
         // Log call to detect multiple invocations
         console.log('updateMobileBoxes called at:', new Date().toISOString());
-    
+
         // Update kanji display
         mobileDisplayKanjiElement.textContent = displayKanjiElement.textContent;
-    
+
         // Update JLPT bubble
         const jlptClasses = ['n1', 'n2', 'n3', 'n4', 'n5', 'notinjlpt'];
         const currentClass = Array.from(levelBubbleElement.classList).find(className => jlptClasses.includes(className)) || 'notinjlpt';
@@ -18929,7 +18934,7 @@ document.addEventListener("DOMContentLoaded", function() {
             mobileLevelBubbleElement.style.display = '';
             mobileLevelBubbleElement.classList.add(currentClass);
         }
-    
+
         // Update navigation buttons
         let mobileNavButton = document.getElementById('mobile-navButton');
         let mobilePrevButton = document.getElementById('mobile-prevButton');
@@ -18951,16 +18956,16 @@ document.addEventListener("DOMContentLoaded", function() {
             mobilePrevButton.onclick = prevButton.onclick;
             mobileDisplayKanjiContainer.appendChild(mobilePrevButton);
         }
-    
+
         // Handle kana vs. kanji display
         const currentChar = displayKanjiElement.textContent;
         const charType = getCharacterType(currentChar);
-        const isKana = charType === 'hiragana' || charType === 'small-hiragana' || 
+        const isKana = charType === 'hiragana' || charType === 'small-hiragana' ||
                       charType === 'katakana' || charType === 'small-katakana';
-    
+
         // Log character and type
         console.log('updateMobileBoxes - Character:', currentChar, 'Type:', charType, 'isKana:', isKana);
-    
+
         if (isKana) {
             // Hide and clear boxes for kana
             if (mobileKunyomiBoxElement) {
@@ -19022,7 +19027,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 console.log('Showing mobile-radical-box with content:', mobilePhoneticRadicalBoxElement.innerHTML, 'computed display:', window.getComputedStyle(mobilePhoneticRadicalBoxElement).display);
             }
         }
-    
+
         // Update English box (always shown)
         mobileEnglishBoxElement.innerHTML = englishBoxElement.innerHTML;
         console.log('Updated mobile-english-box with content:', mobileEnglishBoxElement.innerHTML, 'computed display:', window.getComputedStyle(mobileEnglishBoxElement).display);
@@ -19033,31 +19038,31 @@ document.addEventListener("DOMContentLoaded", function() {
             console.error("Phonetic radical database is not available for getRandomKanji.");
             return null;
         }
-    
+
         const radicals = Object.values(phoneticRadicalDatabase);
         if (radicals.length === 0) {
             console.warn("No radicals found in phoneticRadicalDatabase.");
             return null;
         }
-    
+
         let attempts = 10;
         let randomKanjiInfo = null;
-    
+
         while (attempts > 0 && !randomKanjiInfo) {
             const randomRadical = radicals[Math.floor(Math.random() * radicals.length)];
-    
+
             if (!randomRadical || !randomRadical.derivedKanji) {
                 attempts--;
                 continue;
             }
-    
+
             const allKanjiEntries = [
                 ...(randomRadical.derivedKanji.regular || []),
                 ...(randomRadical.derivedKanji.modified || []),
                 ...(randomRadical.derivedKanji.exception || []),
                 ...(randomRadical.derivedKanji.doublereading || [])
             ].filter(entry => entry && typeof entry === 'object' && entry.kanji);
-    
+
             if (allKanjiEntries.length > 0) {
                 randomKanjiInfo = allKanjiEntries[Math.floor(Math.random() * allKanjiEntries.length)];
                 if (!randomKanjiInfo.kanji) {
@@ -19066,7 +19071,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
             attempts--;
         }
-    
+
         if (randomKanjiInfo && randomKanjiInfo.kanji) {
             console.log("Selected random kanji:", randomKanjiInfo.kanji);
             return randomKanjiInfo.kanji;
@@ -19592,8 +19597,15 @@ if (kanjiBoxSection) {
     console.warn("Element with ID 'kanjiBoxSection' not found for touch listeners.");
 }
 
-// Initial Load
-processKanjiInput("紅");
+// Initial Load - wait for Supabase to be ready
+function initialLoad() {
+    if (isSupabaseReady) {
+        processKanjiInput("紅");
+    } else {
+        setTimeout(initialLoad, 100);
+    }
+}
+initialLoad();
 
 // Function to check if kanji belongs to single or multiple reading phonetic radical
 function checkKanjiReadingGroup(kanji) {
@@ -19675,12 +19687,12 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
     const separator = isMobile ? "\n" : "、 "; // Use newline for mobile, comma for desktop
 
     const kanjiElement = `<span class="kanji-highlight clickable-kanji">${kanji}</span>`;
-    const kanjiReadingElement = Array.isArray(kanjiReadings) ? 
-        kanjiReadings.map(reading => `<span class="reading-highlight">${reading}</span>`).join(" or ") : 
+    const kanjiReadingElement = Array.isArray(kanjiReadings) ?
+        kanjiReadings.map(reading => `<span class="reading-highlight">${reading}</span>`).join(" or ") :
         `<span class="reading-highlight">${kanjiReadings}</span>`;
     const radicalElement = `<span class="kanji-highlight">${radical}</span>`;
-    const radicalReadingElement = Array.isArray(radicalReading) ? 
-        radicalReading.map(reading => `<span class="reading-highlight">${reading}</span>`).join(" or ") : 
+    const radicalReadingElement = Array.isArray(radicalReading) ?
+        radicalReading.map(reading => `<span class="reading-highlight">${reading}</span>`).join(" or ") :
         `<span class="reading-highlight">${radicalReading}</span>`;
 
     const { defaultReading, derivedKanji } = phoneticRadicalDatabase[radical] || {};
@@ -19688,8 +19700,8 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
 
     function getKanjiWithJLPT(kanji) {
         const level = getJLPTLevel(kanji);
-        return level ? 
-            `<span class="kanji-highlight clickable-kanji jlpt-${level.toLowerCase()}">${kanji}</span>` : 
+        return level ?
+            `<span class="kanji-highlight clickable-kanji jlpt-${level.toLowerCase()}">${kanji}</span>` :
             `<span class="clickable-kanji">${kanji}</span>`; // Non-JLPT kanji are clickable but not highlighted
     }
 
@@ -19710,17 +19722,17 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
         message = `The character ${kanjiElement} is read ${kanjiReadingElement}.\n` +
                   `It's a modified reading,\n` +
                   `as kanji that contain the ${Array.isArray(defaultReading) ? "double-reading phonetic" : "phonetic"} radical ${radicalElement}\n` +
-                  `are usually read ${radicalReadingElement}.\n\n`;  
+                  `are usually read ${radicalReadingElement}.\n\n`;
     } else if (type === "exception") {
         message = `The character ${kanjiElement} is read ${kanjiReadingElement}.\n` +
                   `It's an exception,\n` +
                   `as kanji that contain the ${Array.isArray(defaultReading) ? "double-reading phonetic" : "phonetic"} radical ${radicalElement}\n` +
-                  `are usually read ${radicalReadingElement}.\n\n`;  
+                  `are usually read ${radicalReadingElement}.\n\n`;
     } else if (type === "doublereading") {
         message = `The character ${kanjiElement} has two readings.\n` +
                   `It may be read ${radicalReadingElement},\n` +
                   `as it contains the ${Array.isArray(defaultReading) ? "double-reading phonetic" : "phonetic"} radical ${radicalElement},\n` +
-                  `but also ${kanjiReadingElement}.\n\n`;  
+                  `but also ${kanjiReadingElement}.\n\n`;
     }
 
     if (regular.length > 0) {
@@ -19780,7 +19792,7 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
                 ...(data.derivedKanji.modified || []),
                 ...(data.derivedKanji.exception || []),
                 ...(data.derivedKanji.doublereading || [])
-            ];            
+            ];
             const sortedDerivedKanji = sortByJLPT(allDerivedKanji);
             const derivedKanjiList = sortedDerivedKanji.map(k => getKanjiWithJLPT(k.kanji)).join("、 "); // Always use comma separator
             return `${radicalSpan}（${derivedKanjiList || "none"}）`;
@@ -19794,7 +19806,7 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
             ...(data.derivedKanji.exception || []),
             ...(data.derivedKanji.doublereading || [])
         ];
-        
+
         const jlptCounts = { N5: 0, N4: 0, N3: 0, N2: 0, N1: 0 };
         allDerivedKanji.forEach(k => {
             const level = getJLPTLevel(k.kanji);
@@ -19885,7 +19897,7 @@ function updateReadingBoxes(onyomiReading = "", radical = "", radicalReading = "
 function formatMeaningRadicalMessage(kanji) {
     const kanjiReading = readings.find(reading => reading.kanji === kanji);
     const englishMeaning = kanjiReading ? kanjiReading.english : "unknown m.";
-    
+
     const meaningRadicalInfo = Object.entries(meaningRadicalDatabase).find(([radical, data]) => data.kanjiList.includes(kanji));
     const meaningRadical = meaningRadicalInfo ? meaningRadicalInfo[0] : "Unknown";
     const meaningRadicalTranslation = meaningRadicalInfo ? meaningRadicalInfo[1].radical : "Unknown";
@@ -20157,7 +20169,7 @@ console.log(`Total Derived Kanji: ${counts.totalDerivedKanji}`);
 window.addEventListener('resize', function() {
     const checkButton = document.getElementById('checkButton');
     const randomButton = document.getElementById('randomButton');
-    
+
     if (window.innerWidth <= 768) {
         checkButton.innerHTML = 'Check';
         randomButton.innerHTML = 'Random';
@@ -20175,7 +20187,7 @@ window.addEventListener('resize', function() {
 window.addEventListener('load', function() {
     const checkButton = document.getElementById('checkButton');
     const randomButton = document.getElementById('randomButton');
-    
+
     if (window.innerWidth <= 768) {
         checkButton.innerHTML = 'Check';
         randomButton.innerHTML = 'Random';
@@ -20479,7 +20491,7 @@ async function updateVocabDisplay(input) {
         vocabBox.innerHTML = '';
         const entriesToRender = rankedVocab.slice(0, limit);
         console.log(`Rendering ${entriesToRender.length} words (limit: ${limit})`);
-        
+
         if (entriesToRender.length === 0) {
             if (rankedVocab.length > 0) {
                 console.warn("Attempted to render 0 words, but rankedVocab has entries. Check slicing/limit logic.");
@@ -20489,20 +20501,20 @@ async function updateVocabDisplay(input) {
             }
             return;
         }
-    
+
         entriesToRender.forEach((entry) => {
             const box = document.createElement('div');
             box.classList.add('vocab-entry');
-            
+
             // Set data-term attribute to the primary kanji or reading
             const primaryTerm = entry.kanji?.[0]?.text || entry.reading?.[0]?.text || '';
             box.setAttribute('data-term', primaryTerm); // Add data-term attribute
-    
+
             // Word and reading section
             const word = document.createElement('div');
             word.classList.add('word');
             let kanjiHtml = '';
-            
+
             if (entry.kanji && entry.kanji.length > 0) {
                 kanjiHtml = entry.kanji.map(k => {
                     if (!k || !k.text) return '';
@@ -20513,7 +20525,7 @@ async function updateVocabDisplay(input) {
                     return span.outerHTML;
                 }).join('');
             }
-            
+
             let kanaHtml = '';
             if (entry.reading && entry.reading.length > 0) {
                 kanaHtml = entry.reading.map(r => {
@@ -20525,26 +20537,26 @@ async function updateVocabDisplay(input) {
                     return `<span style="color: ${color};">${r.text}</span>${appliesTo}`;
                 }).join('、');
             }
-            
+
             if (kanjiHtml.trim()) {
                 word.innerHTML = `${kanjiHtml.trim()}（${kanaHtml.trim()}）`;
             } else {
                 word.innerHTML = kanaHtml.trim();
             }
             box.appendChild(word);
-    
+
             // Sense/definition section
             entry.sense?.forEach((s) => {
                 if (!s || !s.text) return;
                 const senseContainer = document.createElement('div');
                 senseContainer.classList.add('sense-container');
-                
+
                 const grammar = document.createElement('div');
                 grammar.classList.add('grammar');
                 let posText = Array.isArray(s.partOfSpeech) ? s.partOfSpeech.join(', ') : (s.partOfSpeech || '');
                 let extraInfoText = Array.isArray(s.extraInfo) ? s.extraInfo.join('; ') : (s.extraInfo || '');
                 extraInfoText = extraInfoText.replace(/^; |^, |; $|, $/g, '').trim();
-                
+
                 let grammarHtml = posText;
                 if (posText && extraInfoText) {
                     grammarHtml += '; ';
@@ -20553,14 +20565,14 @@ async function updateVocabDisplay(input) {
                     grammarHtml += `<style="color: #00b4d8;">${extraInfoText}</i>`;
                 }
                 grammar.innerHTML = grammarHtml;
-                
+
                 if (grammar.innerHTML.trim()) {
                     senseContainer.appendChild(grammar);
                 }
-                
+
                 const english = document.createElement('div');
                 english.classList.add('english-meaning');
-                
+
                 function boldInputWord(text, inputWord, isJpInput) {
                     if (!text || !inputWord || isJpInput) return text;
                     try {
@@ -20572,12 +20584,12 @@ async function updateVocabDisplay(input) {
                         return text;
                     }
                 }
-                
+
                 english.innerHTML = boldInputWord(s.text, input, isJapanese);
                 senseContainer.appendChild(english);
                 box.appendChild(senseContainer);
             });
-    
+
             // JLPT bubble
             if (entry.jlpt) {
                 const cleanedJlptKey = entry.jlpt.toLowerCase().replace('jlpt ', '').trim();
@@ -20588,45 +20600,45 @@ async function updateVocabDisplay(input) {
                     box.appendChild(jlptBubble);
                 }
             }
-    
+
             // Sentence expansion functionality
             box.addEventListener('click', async function(e) {
                 // Prevent toggling when clicking "Display More Sentences"
                 if (e.target.classList.contains('show-more-sentences')) return;
-                
+
                 console.log('Box clicked, expanding:', this);
                 this.classList.toggle('expanded');
-            
+
                 if (this.classList.contains('expanded')) {
                     if (!this.querySelector('.sentences-container')) {
                         const loadingDiv = document.createElement('div');
                         loadingDiv.classList.add('sentences-loading');
                         loadingDiv.textContent = 'Loading example sentences...';
-            
+
                         const sentencesContainer = document.createElement('div');
                         sentencesContainer.classList.add('sentences-container');
                         sentencesContainer.appendChild(loadingDiv);
                         this.appendChild(sentencesContainer);
-            
+
                         try {
                             // Get the search term from the box's data-term attribute
                             let searchTerm = this.getAttribute('data-term') || '';
-                            
+
                             // Fallback to input only if no term is found
                             if (!searchTerm && input && typeof input === 'string') {
                                 searchTerm = input.trim();
                             }
-            
+
                             console.log('Fetching sentences for searchTerm:', searchTerm);
                             console.log('searchTerm (raw):', JSON.stringify(searchTerm));
-            
+
                             if (!searchTerm) {
                                 sentencesContainer.innerHTML = '<div class="no-sentences">No example sentences found.</div>';
                                 return;
                             }
-            
+
                             console.log('Supabase URL:', supabaseClient.supabaseUrl);
-                            
+
                             // Check table contents
                             console.log('Checking sentences table contents');
                             const { data: allSentences, error: tableError } = await supabaseClient
@@ -20639,7 +20651,7 @@ async function updateVocabDisplay(input) {
                                 sentencesContainer.innerHTML = '<div class="sentences-error">Sentences table is empty or inaccessible.</div>';
                                 return;
                             }
-            
+
                             // Main query
                             let sentences = [];
                             let error = null;
@@ -20648,7 +20660,7 @@ async function updateVocabDisplay(input) {
                                 .select('*')
                                 .or(`japanese.ilike.%${searchTerm}%,english.ilike.%${searchTerm}%`);
                             console.log('Or query result:', orData, 'Error:', orError);
-            
+
                             if (orError) {
                                 console.error('Or query error:', orError);
                                 error = orError;
@@ -20661,13 +20673,13 @@ async function updateVocabDisplay(input) {
                                     .select('*')
                                     .ilike('japanese', `%${searchTerm}%`);
                                 console.log('Japanese matches:', japaneseMatches, 'Error:', japaneseError);
-            
+
                                 const { data: englishMatches, error: englishError } = await supabaseClient
                                     .from('sentences')
                                     .select('*')
                                     .ilike('english', `%${searchTerm}%`);
                                 console.log('English matches:', englishMatches, 'Error:', englishError);
-            
+
                                 if (japaneseError || englishError) {
                                     error = japaneseError || englishError;
                                 } else {
@@ -20675,17 +20687,17 @@ async function updateVocabDisplay(input) {
                                     sentences = Array.from(new Map(sentences.map(s => [s.sentence_id, s])).values());
                                 }
                             }
-            
+
                             console.log('Final sentences:', sentences, 'Error:', error);
                             if (error) throw error;
-            
+
                             sentencesContainer.innerHTML = '';
                             console.log('Number of sentences:', sentences?.length);
-                            
+
                             // Store all sentences in the box for later use
                             box.sentences = sentences;
                             box.sentencesDisplayed = 0;
-                            
+
                             // Function to render sentences
                             function renderSentences(startIndex, count) {
                                 const endIndex = Math.min(startIndex + count, sentences.length);
@@ -20693,7 +20705,7 @@ async function updateVocabDisplay(input) {
                                     const sentence = sentences[i];
                                     const sentenceItem = document.createElement('div');
                                     sentenceItem.classList.add('sentence-item');
-            
+
                                     const japaneseDiv = document.createElement('div');
                                     japaneseDiv.classList.add('sentence-japanese');
                                     let japaneseText = sentence.japanese || '';
@@ -20704,7 +20716,7 @@ async function updateVocabDisplay(input) {
                                         );
                                     }
                                     japaneseDiv.innerHTML = japaneseText;
-            
+
                                     const englishDiv = document.createElement('div');
                                     englishDiv.classList.add('sentence-english');
                                     let englishText = sentence.english || '';
@@ -20716,17 +20728,17 @@ async function updateVocabDisplay(input) {
                                         );
                                     }
                                     englishDiv.innerHTML = englishText;
-            
+
                                     sentenceItem.appendChild(japaneseDiv);
                                     sentenceItem.appendChild(englishDiv);
                                     sentencesContainer.appendChild(sentenceItem);
                                 }
                                 box.sentencesDisplayed = endIndex;
-                                
+
                                 // Add "Display More Sentences" link if there are more sentences
                                 const existingMoreLink = sentencesContainer.querySelector('.show-more-sentences');
                                 if (existingMoreLink) existingMoreLink.remove();
-                                
+
                                 if (box.sentencesDisplayed < sentences.length) {
                                     const showMoreSentences = document.createElement('div');
                                     showMoreSentences.classList.add('show-more-sentences');
@@ -20738,7 +20750,7 @@ async function updateVocabDisplay(input) {
                                     sentencesContainer.appendChild(showMoreSentences);
                                 }
                             }
-            
+
                             if (sentences && sentences.length > 0) {
                                 // Render first 5 sentences (or all if fewer than 5)
                                 renderSentences(0, 5);
@@ -20752,15 +20764,15 @@ async function updateVocabDisplay(input) {
                     }
                 }
             });
-            
+
             vocabBox.appendChild(box);
         });
-    
+
         // Show more button
         if (rankedVocab.length > limit) {
             const existingButton = vocabBox.querySelector('.show-more');
             if (existingButton) existingButton.remove();
-            
+
             const showMore = document.createElement('div');
             showMore.classList.add('show-more');
             showMore.innerHTML = `Show more (${rankedVocab.length - limit} remaining)`;
@@ -20770,7 +20782,7 @@ async function updateVocabDisplay(input) {
             }, { once: true });
             vocabBox.appendChild(showMore);
         }
-    } 
+    }
 
     // 8. Initial Render Call
     renderWords(wordsToShow);
@@ -20786,3 +20798,4 @@ document.getElementById('checkButton').addEventListener('click', async () => {
 // Call this function when the user looks up a kanji
 // Initial display
 updateVocabDisplay('');})
+
