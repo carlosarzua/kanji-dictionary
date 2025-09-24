@@ -18701,7 +18701,7 @@ let searchVocabulary;
 let supabaseClient;
 
 // Function to wait for the supabase global to be defined
-function waitForSupabase(callback, timeout = 10000) {
+function waitForSupabase(callback, timeout = 1000) {
     const startTime = Date.now();
     function check() {
         if (typeof supabase !== 'undefined') {
