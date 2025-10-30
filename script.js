@@ -18840,6 +18840,245 @@ waitForSupabase(() => {
     isSupabaseReady = true;
 });
 
+// Device detection function
+function detectDevice() {
+    const userAgent = navigator.userAgent.toLowerCase();
+    
+    return {
+        isAndroid: /android/i.test(userAgent),
+        isIOS: /iphone|ipad|ipod/i.test(userAgent),
+        isMobile: /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent),
+        isDesktop: !/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent)
+    };
+}
+
+// Create and show download banner
+function showDownloadBanner() {
+    const device = detectDevice();
+    const googlePlayUrl = 'https://play.google.com/store/apps/details?id=com.kanji.radical'; // REPLACE WITH YOUR ACTUAL URL
+    
+    // Don't show banner if already dismissed in this session
+    if (sessionStorage.getItem('bannerDismissed')) {
+        return;
+    }
+    
+    // Create banner container
+    const banner = document.createElement('div');
+    banner.id = 'download-banner';
+    banner.style.cssText = `
+    position:fixed;top:0;left:0;right:0;
+    background:linear-gradient(135deg,#00b4d8 0%,#0096c7 100%);
+    color:white;
+    padding:8px 12px;               /* was 15px 20px */
+    box-shadow:0 2px 6px rgba(0,0,0,.2);
+    z-index:9999;
+    display:flex;align-items:center;justify-content:space-between;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    animation:slideDown .35s ease-out;
+    gap:10px;                       /* new – keeps close button close */
+    line-height:1.3;                /* tighter text */
+`;
+    
+    // Content container
+    const content = document.createElement('div');
+    content.style.cssText = 'flex: 1; display: flex; align-items: center; gap: 15px;';
+    
+    if (device.isAndroid) {
+        // Android: Show download button
+        content.innerHTML = `
+            <div style="flex: 1;">
+                <div style="font-weight: bold; font-size: 16px; margin-bottom: 4px;">
+                    📱 Get the Full Radical Experience!
+                </div>
+                <div style="font-size: 13px; opacity: 0.95;">
+                    Vocabulary lists, custom quizzes, kana charts & progress tracking
+                </div>
+            </div>
+            <a href="${googlePlayUrl}" 
+               target="_blank"
+               rel="noopener noreferrer"
+               style="background: white; color: #00b4d8; padding: 12px 24px; 
+                      border-radius: 8px; text-decoration: none; font-weight: bold;
+                      white-space: nowrap; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"
+               onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)';"
+               onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)';">
+                Download on Google Play
+            </a>
+        `;
+    } else if (device.isIOS) {
+        // iOS: Show coming soon message
+        content.innerHTML = `
+            <div style="flex: 1;">
+                <div style="font-weight: bold; font-size: 16px; margin-bottom: 4px;">
+                    🍎 iOS Version Coming Soon!
+                </div>
+                <div style="font-size: 13px; opacity: 0.95;">
+                    Radical is currently only available for Android. Stay tuned for the iOS release!
+                </div>
+            </div>
+        `;
+    } else if (device.isDesktop) {
+        // Desktop: Show QR code message
+        content.innerHTML = `
+            <div style="flex: 1;">
+                <div style="font-weight: bold; font-size: 16px; margin-bottom: 4px;">
+                    📱 Radical Works Best on Mobile!
+                </div>
+                <div style="font-size: 13px; opacity: 0.95;">
+                    Get vocabulary lists, custom quizzes, kana charts & progress tracking
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div id="qr-code-container" style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                    <!-- QR code will be inserted here -->
+                </div>
+                <a href="${googlePlayUrl}" 
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   style="background: white; color: #00b4d8; padding: 12px 24px; 
+                          border-radius: 8px; text-decoration: none; font-weight: bold;
+                          white-space: nowrap; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"
+                   onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)';"
+                   onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)';">
+                    View on Google Play
+                </a>
+            </div>
+        `;
+    }
+    
+    // Close button
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '✕';
+    closeBtn.style.cssText = `
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0;
+        margin-left: 15px;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s;
+    `;
+    closeBtn.onmouseover = () => {
+        closeBtn.style.background = 'rgba(255, 255, 255, 0.3)';
+        closeBtn.style.transform = 'scale(1.1)';
+    };
+    closeBtn.onmouseout = () => {
+        closeBtn.style.background = 'rgba(255, 255, 255, 0.2)';
+        closeBtn.style.transform = 'scale(1)';
+    };
+    closeBtn.onclick = () => {
+        banner.style.animation = 'slideUp 0.3s ease-out';
+        setTimeout(() => {
+            banner.remove();
+            document.body.classList.remove('has-banner');
+        }, 300);
+        sessionStorage.setItem('bannerDismissed', 'true');
+    };
+    
+    // Assemble banner
+    banner.appendChild(content);
+    banner.appendChild(closeBtn);
+    
+    // Add animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+        }
+        
+        /* Adjust body padding to account for banner */
+        body.has-banner {
+            padding-top: 90px !important;
+        }
+        
+        body.has-banner .container {
+            margin-top: 0 !important;
+        }
+        
+        @media (max-width: 768px) {
+            #download-banner {
+                flex-direction: column;
+                align-items: stretch !important;
+                padding: 7px 10px;
+                gap: 10px;
+            }
+            #download-banner > div:first-child {
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 10px;
+            }
+            #download-banner a {
+                width: 100%;
+                text-align: center;
+                margin-top: 0;
+            }
+            #qr-code-container {
+                display: none !important;
+            }
+            body.has-banner {
+                padding-top: 160px !important;
+            }
+            #download-banner .close-btn {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+            }
+        }
+    `;
+    
+    // Insert into page
+    if (!document.getElementById('banner-styles')) {
+        style.id = 'banner-styles';
+        document.head.appendChild(style);
+    }
+    document.body.insertBefore(banner, document.body.firstChild);
+    document.body.classList.add('has-banner');
+    
+    // Generate QR code for desktop
+    if (device.isDesktop) {
+        generateQRCode(googlePlayUrl);
+    }
+}
+
+// Generate QR code using Google Charts API (no library needed!)
+function generateQRCode(url) {
+    const container = document.getElementById('qr-code-container');
+    if (container) {
+        const qrImg = document.createElement('img');
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(url)}`;
+        qrImg.alt = 'Scan to download Radical';
+        qrImg.title = 'Scan with your phone to download';
+        qrImg.style.display = 'block';
+        qrImg.style.width = '100px';
+        qrImg.style.height = '100px';
+        container.appendChild(qrImg);
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function() {
     // Global variables for kanji navigation
     let currentInput = "";
@@ -20814,5 +21053,11 @@ document.getElementById('checkButton').addEventListener('click', async () => {
 
 // Call this function when the user looks up a kanji
 // Initial display
-updateVocabDisplay('');})
+updateVocabDisplay('');
+
+setTimeout(showDownloadBanner, 1500);
+
+})
+
+
 
