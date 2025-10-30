@@ -18730,8 +18730,8 @@ waitForSupabase(() => {
     console.log('Supabase client initialized:', supabaseClient);
     console.log('supabaseClient after initialization:', supabaseClient);
 
-    searchVocabulary = async function (searchTerm) {
-        console.log(`Searching vocabulary for term: ${searchTerm}`);
+    searchVocabulary = async function (searchTerm, retryCount = 0, maxRetries = 3) {
+        console.log(`Searching vocabulary for term: ${searchTerm} (attempt ${retryCount + 1}/${maxRetries + 1})`);
 
         const loadingElement = document.getElementById('loading');
         const errorElement = document.getElementById('error');
@@ -18752,34 +18752,36 @@ waitForSupabase(() => {
         try {
             console.log('Making Supabase request for search term:', searchTerm);
 
-            // Your exact same search logic, but using the faster indexed text columns
             let query = supabaseClient
                 .from('vocabulary_test')
                 .select('id, jlpt, kanji, reading, sense');
 
-            // Detect if search term is Japanese or English and search accordingly (YOUR RULES)
             const isJapanese = /[一-龯ぁ-んァ-ン]/.test(searchTerm);
 
             if (isJapanese) {
-                // For Japanese input, prioritize kanji and reading columns (YOUR LOGIC)
-                // Using the faster indexed text columns instead of ilike on jsonb
                 query = query.or(`kanji_text.ilike.%${searchTerm}%,reading_text.ilike.%${searchTerm}%`);
             } else {
-                // For English input, search primarily in sense (meaning) column (YOUR LOGIC)
                 query = query.ilike('sense_text', `%${searchTerm}%`);
             }
 
-            const { data, error } = await query
-                .order('id', { ascending: true }) // YOUR ORDERING
-                .limit(150); // YOUR LIMIT
+            // Add a timeout promise to prevent indefinite hanging
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000)
+            );
+
+            const queryPromise = query
+                .order('id', { ascending: true })
+                .limit(800);
+
+            // Race between the query and the timeout
+            const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
 
             if (error) {
-                console.error('Error searching vocabulary from Supabase:', error);
-                errorElement.textContent = 'Failed to load vocabulary. Please try again later.';
-                errorElement.style.display = 'block';
-                loadingBarElement.style.display = 'none';
-                isVocabularyFetched = false;
-                return;
+                throw error;
+            }
+
+            if (!data) {
+                throw new Error('No data returned from query');
             }
 
             console.log('Search results:', data);
@@ -18789,7 +18791,7 @@ waitForSupabase(() => {
             progressBarElement.style.width = `${percentage}%`;
             progressTextElement.textContent = `${fetchedRows} results found`;
 
-            // Your exact same data mapping logic
+            // Map data to vocabulary format
             vocabulary = data.map(entry => {
                 const kanji = Array.isArray(entry.kanji) ? entry.kanji : [];
                 const reading = Array.isArray(entry.reading) ? entry.reading : [];
@@ -18807,18 +18809,33 @@ waitForSupabase(() => {
             window.vocabulary = vocabulary;
             console.log("Total vocabulary entries fetched:", vocabulary.length);
             console.log("Sample vocabulary entry:", vocabulary[0] || 'No results');
+            
             isVocabularyFetched = true;
+            errorElement.style.display = 'none';
+
         } catch (err) {
-            console.error('Unexpected error in searchVocabulary:', err);
-            errorElement.textContent = 'An unexpected error occurred. Please try again later.';
+            console.error(`Error in searchVocabulary (attempt ${retryCount + 1}):`, err);
+
+            // Retry logic: if we haven't exceeded max retries, try again
+            if (retryCount < maxRetries) {
+                console.log(`Retrying in 1 second... (${retryCount + 1}/${maxRetries})`);
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+                return searchVocabulary(searchTerm, retryCount + 1, maxRetries); // Recursive retry
+            }
+
+            // If all retries exhausted, show error
+            errorElement.textContent = 'Failed to load vocabulary after multiple attempts. Please check your connection and try again.';
             errorElement.style.display = 'block';
             loadingBarElement.style.display = 'none';
             isVocabularyFetched = false;
+
         } finally {
             loadingElement.style.display = 'none';
             loadingBarElement.style.display = 'none';
         }
     };
+
+    window.searchVocabulary = searchVocabulary;
 
     isSupabaseReady = true;
 });
