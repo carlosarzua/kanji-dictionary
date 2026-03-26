@@ -500,7 +500,6 @@ const meaningRadicalDatabase = {
             "絮",
             "絛",
             "綮",
-            "纛",
             "糸",
             "系",
             "紊",
@@ -1802,7 +1801,7 @@ const meaningRadicalDatabase = {
     "⻌ / 辶": {
         radical: "way",
         kanjiList: [
-            
+
             "迚",
             "迥",
             "迢",
@@ -2950,7 +2949,7 @@ const meaningRadicalDatabase = {
             "鑿"
         ]
     },
-    "刀": {
+    "刀 / ⺉": {
         radical: "sword",
         kanjiList: [
             "刀",
@@ -2965,12 +2964,7 @@ const meaningRadicalDatabase = {
             "剪",
             "劒",
             "剱",
-            "劈"
-        ]
-    },
-    "⺉": {
-        radical: "sword",
-        kanjiList: [
+            "劈",
             "刊",
             "刑",
             "列",
@@ -2995,13 +2989,37 @@ const meaningRadicalDatabase = {
             "副",
             "割",
             "創",
-            "劇"
-        ]
-    },
+            "劇",
+                "劃",
+                "剃",
+                "剥",
+                "劉",
+                "刋",
+                "刔",
+                "刎",
+                "刪",
+                "刮",
+                "刳",
+                "剏",
+                "剄",
+                "剋",
+                "剌",
+                "剞",
+                "剔",
+                "剴",
+                "剩",
+                "剳",
+                "剿",
+                "剽",
+                "劍",
+                "劔",
+                "劑"
+            ]
+        },
     "阝 (hills)": {
         radical: "hills",
         kanjiList: [
-            
+
             "阿",
             "隈",
             "陀",
@@ -3041,7 +3059,6 @@ const meaningRadicalDatabase = {
             "限",
             "院",
             "陥",
-            "降",
             "除",
             "陣",
             "陛",
@@ -3327,7 +3344,7 @@ const meaningRadicalDatabase = {
     "衣 / 衤": {
         radical: "clothing",
         kanjiList: [
-            
+
             "袷",
             "襖",
             "衿",
@@ -3674,7 +3691,7 @@ const meaningRadicalDatabase = {
             "廰"
         ]
     },
-    "攵": {
+    "攵 / 攴": {
         radical: "hand with stick",
         kanjiList: [
             "改",
@@ -3707,7 +3724,10 @@ const meaningRadicalDatabase = {
             "敝",
             "數",
             "斂",
-            "斃"
+            "斃",
+            "攴",
+            "敍",
+            "敲"
         ]
     },
     "犬 / 犭": {
@@ -3796,7 +3816,8 @@ const meaningRadicalDatabase = {
             "丞",
             "丐",
             "丕",
-            "丗"
+            "丗",
+            "百",
         ]
     },
     "大": {
@@ -4454,7 +4475,7 @@ const meaningRadicalDatabase = {
     "阝 (city)": {
         radical: "city",
         kanjiList: [
-            
+
             "郁",
             "鄭",
             "邑",
@@ -4590,7 +4611,7 @@ const meaningRadicalDatabase = {
     "足 / 𧾷 / ⺪": {
         radical: "foot",
         kanjiList: [
-            
+
             "跨",
             "蹟",
             "蹄",
@@ -5219,18 +5240,6 @@ const meaningRadicalDatabase = {
             "曷"
         ]
     },
-    "罒": {
-        radical: "net",
-        kanjiList: [
-            "罪",
-            "署",
-            "置",
-            "罰",
-            "罵",
-            "罷",
-            "羅"
-        ]
-    },
     "羊 / ⺷ / ⺶": {
         radical: "sheep",
         kanjiList: [
@@ -5332,7 +5341,8 @@ const meaningRadicalDatabase = {
             "卩",
             "卻",
             "卷",
-            "危"
+            "危",
+            "卮"
         ]
     },
     "戸 / 戶": {
@@ -5527,7 +5537,7 @@ const meaningRadicalDatabase = {
         ]
     },
     "彡": {
-        radical: "hair",
+        radical: "hair/bristle",
         kanjiList: [
             "形",
             "彩",
@@ -5585,7 +5595,6 @@ const meaningRadicalDatabase = {
         radical: "white",
         kanjiList: [
             "白",
-            "百",
             "的",
             "皆",
             "皇",
@@ -5795,19 +5804,14 @@ const meaningRadicalDatabase = {
             "壽"
         ]
     },
-    "小": {
+    "小 / ⺌": {
         radical: "little",
         kanjiList: [
             "小",
             "少",
             "尖",
             "尓",
-            "尠"
-        ]
-    },
-    "⺌": {
-        radical: "little",
-        kanjiList: [
+            "尠",
             "当",
             "尚"
         ]
@@ -6005,15 +6009,18 @@ const meaningRadicalDatabase = {
             "匏"
         ]
     },
-    "夂": {
+    "夂 / 夊": {
         radical: "foot arriving late",
         kanjiList: [
             "冬",
             "変",
             "夏",
-            "夂"
+            "夂",
+            "夊",
+            "夐"
         ]
     },
+
     "川 / 巛": {
         radical: "river",
         kanjiList: [
@@ -6241,7 +6248,7 @@ const meaningRadicalDatabase = {
         ]
     },
     "几": {
-        radical: "wind",
+        radical: "table/wind",
         kanjiList: [
             "凡",
             "処",
@@ -6527,17 +6534,10 @@ const meaningRadicalDatabase = {
             "韈"
         ]
     },
-    "麦": {
-        radical: "wheat",
-        kanjiList: [
-            "麦",
-            "麺"
-        ]
-    },
     "黒 / 黑": {
         radical: "black",
         kanjiList: [
-            
+
             "黛",
             "默",
             "黔",
@@ -6562,11 +6562,24 @@ const meaningRadicalDatabase = {
             "斎"
         ]
     },
-    "歯": {
+    "歯 / 齒": {
         radical: "tooth",
         kanjiList: [
             "歯",
-            "齢"
+            "齢",
+            "齒",
+            "齔",
+            "齣",
+            "齟",
+            "齠",
+            "齡",
+            "齦",
+            "齧",
+            "齬",
+            "齪",
+            "齷",
+            "齲",
+            "齶"
         ]
     },
     "豸": {
@@ -6644,7 +6657,7 @@ const meaningRadicalDatabase = {
             "无"
         ]
     },
-    
+
     "比": {
         radical: "to compare",
         kanjiList: [
@@ -6902,7 +6915,7 @@ const meaningRadicalDatabase = {
         ]
     },
     "髟": {
-        radical: "hair",
+        radical: "long hair",
         kanjiList: [
             "髪",
             "髭",
@@ -6963,7 +6976,7 @@ const meaningRadicalDatabase = {
             "龜"
         ]
     },
-    "言 / 訁 / 亠": {
+    "言": {
         radical: "to say",
         kanjiList: [
             "言",
@@ -7127,51 +7140,27 @@ const meaningRadicalDatabase = {
             "讖",
             "讙",
             "讚",
-            "亥",
-            "亨",
-            "享",
-            "京",
-            "交",
-            "亭",
-            "亡",
-            "亦",
-            "亮",
-            "亠",
-            "亢",
-            "亰",
-            "亳",
-            "亶"
         ]
     },
-    "刂": {
-        radical: "sword",
-        kanjiList: [
-            "劃",
-            "剃",
-            "剥",
-            "劉",
-            "刋",
-            "刔",
-            "刎",
-            "刪",
-            "刮",
-            "刳",
-            "剏",
-            "剄",
-            "剋",
-            "剌",
-            "剞",
-            "剔",
-            "剴",
-            "剩",
-            "剳",
-            "剿",
-            "剽",
-            "劍",
-            "劔",
-            "劑"
-        ]
-    },
+    "亠": {
+            radical: "lid/top",
+            kanjiList: [
+                "亥",
+                "亨",
+                "享",
+                "京",
+                "交",
+                "亭",
+                "亡",
+                "亦",
+                "亮",
+                "亠",
+                "亢",
+                "亰",
+                "亳",
+                "亶"
+            ]
+        },
     "竹 / ⺮": {
         radical: "bamboo",
         kanjiList: [
@@ -7298,7 +7287,7 @@ const meaningRadicalDatabase = {
         ]
     },
     "黍": {
-        radical: "hand",
+        radical: "millet",
         kanjiList: [
             "黍",
             "黎",
@@ -7307,34 +7296,15 @@ const meaningRadicalDatabase = {
         ]
     },
     "禸": {
-        radical: "to eat",
+        radical: "rump",
         kanjiList: [
             "禽",
             "禹",
             "禺"
         ]
     },
-    "⺲": {
-        radical: "net",
-        kanjiList: [
-            "罫",
-            "罹",
-            "罘",
-            "罟",
-            "罠",
-            "罨",
-            "罩",
-            "罧",
-            "罸",
-            "羂",
-            "羆",
-            "羃",
-            "羈",
-            "羇"
-        ]
-    },
     "鹵": {
-        radical: "cow",
+        radical: "salt",
         kanjiList: [
             "鹸",
             "鹵",
@@ -7342,17 +7312,20 @@ const meaningRadicalDatabase = {
             "鹽"
         ]
     },
-    "麥": {
-        radical: "water",
+    "麦 / 麥": {
+        radical: "wheat",
         kanjiList: [
             "麹",
             "麥",
             "麩",
             "麸",
             "麪",
-            "麭"
+            "麭",
+            "麦",
+            "麺"
         ]
     },
+
     "疋": {
         radical: "bolt of cloth",
         kanjiList: [
@@ -7360,37 +7333,16 @@ const meaningRadicalDatabase = {
         ]
     },
     "匸": {
-        radical: "to eat",
+        radical: "hiding enclosure",
         kanjiList: [
             "匸",
             "區"
-        ]
-    },
-    "㔾": {
-        radical: "cliff",
-        kanjiList: [
-            "卮"
-        ]
-    },
-    "夊": {
-        radical: "fire",
-        kanjiList: [
-            "夊",
-            "夐"
         ]
     },
     "彐": {
         radical: "snout",
         kanjiList: [
             "彗"
-        ]
-    },
-    "攴": {
-        radical: "hand with a stick",
-        kanjiList: [
-            "攴",
-            "敍",
-            "敲"
         ]
     },
     "爿": {
@@ -7417,12 +7369,33 @@ const meaningRadicalDatabase = {
             "鬲"
         ]
     },
-    "网 / ⺳": {
+    "⺲ / 网 / ⺳": {
         radical: "net",
         kanjiList: [
             "网",
             "罕",
-            "罔"
+            "罔",
+            "罪",
+            "署",
+            "置",
+            "罰",
+            "罵",
+            "罷",
+            "羅",
+            "罫",
+            "罹",
+            "罘",
+            "罟",
+            "罠",
+            "罨",
+            "罩",
+            "罧",
+            "罸",
+            "羂",
+            "羆",
+            "羃",
+            "羈",
+            "羇"
         ]
     },
     "鬥": {
@@ -7458,24 +7431,6 @@ const meaningRadicalDatabase = {
             "黽",
             "鼇",
             "鼈"
-        ]
-    },
-    "齒": {
-        radical: "even",
-        kanjiList: [
-            "齒",
-            "齔",
-            "齣",
-            "齟",
-            "齠",
-            "齡",
-            "齦",
-            "齧",
-            "齬",
-            "齪",
-            "齷",
-            "齲",
-            "齶"
         ]
     },
     "龠": {
