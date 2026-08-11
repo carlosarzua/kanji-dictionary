@@ -19425,6 +19425,668 @@ let isSupabaseReady = false;
 let isVocabularyFetched = false;
 let searchVocabulary;
 let supabaseClient;
+let latestVocabularySearchRequest = 0;
+let lastFetchedVocabularyTerm = '';
+let lastFetchedVocabularyTermAtMs = 0;
+
+const VOCAB_PAGE_SIZE = 1000;
+const STANDARD_VOCAB_FETCH_TOTAL = 2000;
+const KANA_ONLY_VOCAB_FETCH_TOTAL = 1000;
+const KANA_PREFIX_BUCKET_MAX_EXTRA = 1;
+const SINGLE_KANJI_VOCAB_PAGE_SIZE = 180;
+const SINGLE_KANJI_INITIAL_BUCKET_PAGE_SIZE = 50;
+const DEFAULT_VOCAB_PAGE_TIMEOUT_MS = 10000;
+const SINGLE_KANJI_PAGE_RETRY_LIMIT = 1;
+const SINGLE_KANJI_PAGE_RETRY_DELAY_MS = 400;
+const DUPLICATE_SEARCH_REUSE_WINDOW_MS = 30000;
+const LOOKUP_DEDUP_WINDOW_MS = 250;
+const WEBVIEW_LOG = Object.freeze({
+    perf: true,
+    debug: false
+});
+
+window.rankedVocabulary = [];
+
+function perfLog(...args) {
+    if (WEBVIEW_LOG.perf) {
+        console.log(...args);
+    }
+}
+
+function debugLog(...args) {
+    if (WEBVIEW_LOG.debug) {
+        console.log(...args);
+    }
+}
+
+function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, (char) => {
+        const escapeMap = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        };
+        return escapeMap[char] || char;
+    });
+}
+
+function describeSearchError(err) {
+    if (!err) {
+        return 'Unknown error';
+    }
+    if (typeof err === 'string') {
+        return err;
+    }
+
+    const parts = [];
+    if (err.message) parts.push(err.message);
+    if (err.details) parts.push(`details=${err.details}`);
+    if (err.hint) parts.push(`hint=${err.hint}`);
+    if (err.code) parts.push(`code=${err.code}`);
+    if (err.status) parts.push(`status=${err.status}`);
+    if (err.statusText) parts.push(`statusText=${err.statusText}`);
+
+    if (parts.length > 0) {
+        return parts.join(' | ');
+    }
+
+    try {
+        return JSON.stringify(err);
+    } catch (_) {
+        return String(err);
+    }
+}
+
+function isStatementTimeoutError(err) {
+    const description = describeSearchError(err).toLowerCase();
+    return description.includes('statement timeout') ||
+        description.includes('canceling statement due to statement timeout') ||
+        String(err?.code || '').trim() === '57014';
+}
+
+function isJapaneseSearchTerm(searchTerm) {
+    return /[一-龯ぁ-んァ-ン]/.test(searchTerm || '');
+}
+
+function isKanjiCharacter(char) {
+    return /^[一-龯々〆ヵヶ]$/.test(char || '');
+}
+
+function isKanaOnlySearchTerm(searchTerm) {
+    const trimmedTerm = typeof searchTerm === 'string' ? searchTerm.trim() : '';
+    return trimmedTerm.length > 0 && /^[ぁ-んァ-ンー・]+$/.test(trimmedTerm);
+}
+
+function isSingleKanjiSearchTerm(searchTerm) {
+    const trimmedTerm = typeof searchTerm === 'string' ? searchTerm.trim() : '';
+    return Array.from(trimmedTerm).length === 1 && isKanjiCharacter(trimmedTerm);
+}
+
+function containsKana(text) {
+    return /[ぁ-んァ-ンー・]/.test(text || '');
+}
+
+function containsKanji(text) {
+    return /[一-龯々〆ヵヶ]/.test(text || '');
+}
+
+function isAllKanjiText(text) {
+    const trimmedText = typeof text === 'string' ? text.trim() : '';
+    return trimmedText.length > 0 && /^[一-龯々〆ヵヶ]+$/.test(trimmedText);
+}
+
+function getTextLength(text) {
+    return Array.from(text || '').length;
+}
+
+function getEntryText(item) {
+    if (typeof item === 'string') {
+        return item.trim();
+    }
+    return (item && item.text ? item.text : '').trim();
+}
+
+function getEntryKanjiTokens(entry) {
+    if (!entry || !Array.isArray(entry.kanji)) {
+        return [];
+    }
+    return entry.kanji.map(getEntryText).filter(Boolean);
+}
+
+function getEntryReadingTokens(entry) {
+    if (!entry || !Array.isArray(entry.reading)) {
+        return [];
+    }
+    return entry.reading.map(getEntryText).filter(Boolean);
+}
+
+function getVocabularyStageDescription(mode, stageLabel) {
+    if (mode === 'kana-only') {
+        if (stageLabel === 'kana bucket +0') return 'Searching exact readings...';
+        if (stageLabel === 'kana bucket +1') return 'Searching nearby readings...';
+        return 'Searching matching readings...';
+    }
+
+    if (mode === 'single-kanji') {
+        if (stageLabel && stageLabel.includes('exact')) return 'Searching exact matches...';
+        if (stageLabel && stageLabel.includes('+1')) return 'Searching short words...';
+        if (stageLabel && stageLabel.includes('2+')) return 'Searching longer words...';
+        if (stageLabel && stageLabel.includes('later')) return 'Searching compounds and later matches...';
+        return 'Searching matching words...';
+    }
+
+    if (mode === 'english') {
+        return 'Searching English meanings...';
+    }
+
+    if (mode === 'general-japanese') {
+        return 'Searching matching words and readings...';
+    }
+
+    return 'Searching words...';
+}
+
+const MOBILE_DICTIONARY_BREAKPOINT = 780;
+
+function isMobileDictionaryLayout() {
+    const viewportWidth = Math.min(
+        window.innerWidth || Number.MAX_SAFE_INTEGER,
+        document.documentElement?.clientWidth || Number.MAX_SAFE_INTEGER
+    );
+    return viewportWidth <= MOBILE_DICTIONARY_BREAKPOINT;
+}
+
+function setVocabularyLoadingUi({
+    visible = false,
+    text = '',
+    detail = '',
+    progress = null,
+    indeterminate = false
+} = {}) {
+    const loadingElement = document.getElementById('loading');
+    const loadingBarElement = document.getElementById('loading-bar');
+    const progressBarElement = document.getElementById('progress-bar');
+    const progressTextElement = document.getElementById('progress-text');
+
+    if (!loadingElement || !loadingBarElement || !progressBarElement || !progressTextElement) {
+        return;
+    }
+
+    if (!visible) {
+        loadingElement.style.display = 'none';
+        loadingBarElement.style.display = 'none';
+        progressBarElement.style.width = '0%';
+        progressTextElement.textContent = '';
+        return;
+    }
+
+    loadingElement.textContent = text || 'Loading words...';
+    loadingElement.style.display = 'none';
+    loadingBarElement.style.display = 'block';
+    progressBarElement.style.width = indeterminate
+        ? '100%'
+        : `${Math.max(0, Math.min(100, Number.isFinite(progress) ? progress : 0))}%`;
+    progressTextElement.textContent = detail || '';
+}
+
+function renderVocabularyStatusCard({ kicker = 'Dictionary', title = '', detail = '' } = {}) {
+    return `
+        <div class="vocab-status-card">
+            <div class="vocab-status-kicker">${escapeHtml(kicker)}</div>
+            <div class="vocab-status-title">${escapeHtml(title)}</div>
+            <p class="vocab-status-detail">${escapeHtml(detail)}</p>
+        </div>
+    `;
+}
+
+function showVocabularyIdlePlaceholder() {
+    const vocabBoxElement = document.getElementById('vocab-box');
+    if (!vocabBoxElement) {
+        return;
+    }
+
+    vocabBoxElement.innerHTML = renderVocabularyStatusCard({
+        kicker: 'Dictionary',
+        title: 'Results will appear here',
+        detail: 'Search in English, kana, or kanji to load matching vocabulary and example sentences.'
+    });
+}
+
+function showVocabularyLoadingPlaceholder(searchTerm, detail = '') {
+    const vocabBoxElement = document.getElementById('vocab-box');
+    if (!vocabBoxElement) {
+        return;
+    }
+    // Keep vocab-box empty during loading so the progress bar is the only loader.
+    vocabBoxElement.innerHTML = '';
+}
+
+function showVocabularyNoResultsPlaceholder(searchTerm = '') {
+    const vocabBoxElement = document.getElementById('vocab-box');
+    if (!vocabBoxElement) {
+        return;
+    }
+
+    const normalizedTerm = (searchTerm || '').trim();
+    vocabBoxElement.innerHTML = renderVocabularyStatusCard({
+        kicker: 'No matches',
+        title: normalizedTerm ? `Nothing matched "${normalizedTerm}"` : 'No matching vocabulary found',
+        detail: 'Try a different spelling, a shorter search term, or switch between English, kana, and kanji.'
+    });
+}
+
+function showVocabularyUnavailablePlaceholder(message = 'Vocabulary data unavailable. Try again in a moment.') {
+    const vocabBoxElement = document.getElementById('vocab-box');
+    if (!vocabBoxElement) {
+        return;
+    }
+    vocabBoxElement.innerHTML = renderVocabularyStatusCard({
+        kicker: 'Unavailable',
+        title: 'Vocabulary service not available',
+        detail: message
+    });
+}
+
+function getBannerOffset() {
+    const banner = document.getElementById('download-banner');
+    return banner ? banner.offsetHeight + 16 : 24;
+}
+
+function scrollToElementWithOffset(element) {
+    if (!element) {
+        return;
+    }
+
+    const y = window.scrollY + element.getBoundingClientRect().top - getBannerOffset();
+    window.scrollTo({
+        top: Math.max(0, y),
+        behavior: 'smooth'
+    });
+}
+
+function scrollToDetailAnchor(anchorId) {
+    const target = document.getElementById(anchorId);
+    if (target) {
+        scrollToElementWithOffset(target);
+    }
+}
+
+function scrollDictionaryToTop() {
+    const topTarget = document.getElementById('dictionaryTop') || document.querySelector('.container');
+    if (topTarget) {
+        scrollToElementWithOffset(topTarget);
+    }
+}
+
+function buildMeaningRadicalChip(value) {
+    const normalizedValue = typeof value === 'string' ? value.trim() : '';
+    if (!normalizedValue) {
+        return '';
+    }
+
+    return `<span class="meaning-radical-chip">${escapeHtml(normalizedValue)}</span>`;
+}
+
+function buildPhoneticRadicalChip(value) {
+    const normalizedValue = typeof value === 'string' ? value.trim() : '';
+    if (!normalizedValue) {
+        return '';
+    }
+
+    return `<span class="phonetic-radical-chip">${escapeHtml(normalizedValue)}</span>`;
+}
+
+function formatAndroidMobileRelatedKanjiList(items) {
+    // Wrap in a .kanji-list block so the phonetic-radical list matches the
+    // meaning-radical list structure and can share the same left margin (P8).
+    // Each item is a nowrap unit so a kanji and its （reading）never split
+    // across lines and a parenthesis is never orphaned (N11).
+    return `<div class="kanji-list mobile-related-kanji-list">${items
+        .map((it) => `<span class="related-kanji-item">${it}</span>`)
+        .join('\n')}</div>`;
+}
+
+let dictionaryToastTimeoutId = null;
+
+function ensureDictionaryToastElement() {
+    let toastElement = document.getElementById('dictionary-toast');
+    if (toastElement) {
+        return toastElement;
+    }
+
+    toastElement = document.createElement('div');
+    toastElement.id = 'dictionary-toast';
+    toastElement.setAttribute('role', 'status');
+    toastElement.setAttribute('aria-live', 'polite');
+    document.body.appendChild(toastElement);
+    return toastElement;
+}
+
+function showDictionaryToast(message) {
+    const normalizedMessage = typeof message === 'string' ? message.trim() : '';
+    if (!normalizedMessage) {
+        return;
+    }
+
+    const toastElement = ensureDictionaryToastElement();
+    toastElement.textContent = normalizedMessage;
+    toastElement.classList.add('is-visible');
+
+    if (dictionaryToastTimeoutId) {
+        window.clearTimeout(dictionaryToastTimeoutId);
+    }
+
+    dictionaryToastTimeoutId = window.setTimeout(() => {
+        toastElement.classList.remove('is-visible');
+    }, 3400);
+}
+
+function elementCanShowHelpToast(element) {
+    if (!element) {
+        return false;
+    }
+
+    const computedStyle = window.getComputedStyle(element);
+    if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
+        return false;
+    }
+
+    const text = (element.textContent || '').replace(/\s+/g, ' ').trim();
+    return text.length > 0;
+}
+
+function bindDictionaryHelpToast(element, message) {
+    if (!element) {
+        return;
+    }
+
+    element.addEventListener('click', () => {
+        if (!elementCanShowHelpToast(element)) {
+            return;
+        }
+        showDictionaryToast(message);
+    });
+}
+
+function bindDictionaryHelpToasts() {
+    bindDictionaryHelpToast(
+        document.getElementById('displayKanji'),
+        'This is the kanji (or kana) you searched'
+    );
+    bindDictionaryHelpToast(
+        document.getElementById('mobile-displayKanji'),
+        'This is the kanji (or kana) you searched'
+    );
+    bindDictionaryHelpToast(
+        document.getElementById('levelBubble'),
+        'This is the JLPT level of the kanji'
+    );
+    bindDictionaryHelpToast(
+        document.getElementById('mobile-levelBubble'),
+        'This is the JLPT level of the kanji'
+    );
+    bindDictionaryHelpToast(
+        document.getElementById('english-box'),
+        'Meaning of the kanji'
+    );
+    bindDictionaryHelpToast(
+        document.getElementById('mobile-english-box'),
+        'Meaning of the kanji'
+    );
+    bindDictionaryHelpToast(
+        document.getElementById('kunyomi-box'),
+        "Reading of the kanji on its own or with hiragana"
+    );
+    bindDictionaryHelpToast(
+        document.getElementById('mobile-kunyomi-box'),
+        "Reading of the kanji on its own or with hiragana"
+    );
+    bindDictionaryHelpToast(
+        document.getElementById('onyomi-box'),
+        "Reading when this kanji is next to another kanji or with katakana"
+    );
+    bindDictionaryHelpToast(
+        document.getElementById('mobile-onyomi-box'),
+        "Reading when this kanji is next to another kanji or with katakana"
+    );
+    bindDictionaryHelpToast(
+        document.getElementById('meaningradical-box'),
+        'The meaning radical of the kanji gives you a hint about its meaning. The kanji 紅 means "crimson" because it contains the meaning radical 糸 (thread). Many kanji that refer to colors contain this radical, as threads have different colors.'
+    );
+    bindDictionaryHelpToast(
+        document.getElementById('mobile-meaningradical-box'),
+        'The meaning radical of the kanji gives you a hint about its meaning. The kanji 紅 means "crimson" because it contains the meaning radical 糸 (thread). Many kanji that refer to colors contain this radical, as threads have different colors.'
+    );
+    bindDictionaryHelpToast(
+        document.getElementById('radical-box'),
+        "The phonetic radical is the part of the kanji that gives you a hint about its on'yomi. The on'yomi of 紅 is コウ because it contains the phonetic radical 工（コウ）. Phonetic radicals do not hint at meaning or kun'yomi."
+    );
+    bindDictionaryHelpToast(
+        document.getElementById('mobile-radical-box'),
+        "The phonetic radical is the part of the kanji that gives you a hint about its on'yomi. The on'yomi of 紅 is コウ because it contains the phonetic radical 工（コウ）. Phonetic radicals do not hint at meaning or kun'yomi."
+    );
+}
+
+function elementHasMeaningfulContent(element) {
+    if (!element) {
+        return false;
+    }
+
+    const text = (element.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+    if (!text) {
+        return false;
+    }
+
+    const ignoredStates = new Set([
+        'no matching vocabulary found.',
+        'no primary kanji found',
+        'enter a kanji or english word.',
+        'no word found'
+    ]);
+
+    return !ignoredStates.has(text);
+}
+
+function syncResultContainerVisibility() {
+    const resultContainer = document.querySelector('.result-container');
+    if (!resultContainer) {
+        return;
+    }
+
+    const hasVisibleContent =
+        elementHasMeaningfulContent(document.getElementById('result-left')) ||
+        elementHasMeaningfulContent(document.getElementById('result'));
+
+    resultContainer.classList.toggle('is-empty', !hasVisibleContent);
+    if (!hasVisibleContent) {
+        resultContainer.style.display = 'none';
+        return;
+    }
+
+    resultContainer.style.display = 'flex';
+}
+
+function setRadicalBoxScrollBehavior(boxElement, anchorId, enabled) {
+    if (!boxElement) {
+        return;
+    }
+
+    if (enabled) {
+        boxElement.classList.add('is-clickable');
+        boxElement.title = 'Open the detailed radical notes';
+        boxElement.onclick = () => scrollToDetailAnchor(anchorId);
+        return;
+    }
+
+    boxElement.classList.remove('is-clickable');
+    boxElement.removeAttribute('title');
+    boxElement.onclick = null;
+}
+
+function applyRadicalBoxInteractions() {
+    setRadicalBoxScrollBehavior(
+        document.getElementById('meaningradical-box'),
+        'result-left',
+        elementHasMeaningfulContent(document.getElementById('meaningradical-box')) && elementHasMeaningfulContent(document.getElementById('result-left'))
+    );
+    setRadicalBoxScrollBehavior(
+        document.getElementById('radical-box'),
+        'result',
+        elementHasMeaningfulContent(document.getElementById('radical-box')) && elementHasMeaningfulContent(document.getElementById('result'))
+    );
+    setRadicalBoxScrollBehavior(
+        document.getElementById('mobile-meaningradical-box'),
+        'result-left',
+        elementHasMeaningfulContent(document.getElementById('mobile-meaningradical-box')) && elementHasMeaningfulContent(document.getElementById('result-left'))
+    );
+    setRadicalBoxScrollBehavior(
+        document.getElementById('mobile-radical-box'),
+        'result',
+        elementHasMeaningfulContent(document.getElementById('mobile-radical-box')) && elementHasMeaningfulContent(document.getElementById('result'))
+    );
+}
+
+function mergeVocabularyById(existingItems, incomingItems) {
+    const mergedById = new Map();
+
+    for (const item of existingItems || []) {
+        mergedById.set(item.id, item);
+    }
+    for (const item of incomingItems || []) {
+        mergedById.set(item.id, item);
+    }
+
+    return Array.from(mergedById.values());
+}
+
+function getJlptPriority(jlptValue) {
+    const jlptKey = jlptValue ? jlptValue.toLowerCase().replace('jlpt ', '').trim() : '';
+    const jlptPriorityMap = { n5: 0, n4: 1, n3: 2, n2: 3, n1: 4 };
+    return jlptPriorityMap[jlptKey] ?? Number.MAX_SAFE_INTEGER;
+}
+
+function extractFirstKanjiFromEntry(entry) {
+    for (const token of getEntryKanjiTokens(entry)) {
+        const match = token.match(/[一-龯々〆ヵヶ]/);
+        if (match) {
+            return match[0];
+        }
+    }
+
+    for (const token of getEntryReadingTokens(entry)) {
+        const match = token.match(/[一-龯々〆ヵヶ]/);
+        if (match) {
+            return match[0];
+        }
+    }
+
+    return '';
+}
+
+function getSearchVariations(term) {
+    const trimmedTerm = typeof term === 'string' ? term.trim().toLowerCase() : '';
+    if (!trimmedTerm) {
+        return [];
+    }
+
+    const variations = new Set([trimmedTerm]);
+    if (trimmedTerm.endsWith('ing') && trimmedTerm.length > 4) {
+        variations.add(trimmedTerm.slice(0, -3));
+    } else {
+        variations.add(`${trimmedTerm}ing`);
+    }
+
+    return Array.from(variations).filter(Boolean);
+}
+
+function getEnglishMeaningMatchRank(meaningText, searchVariations) {
+    if (!meaningText || !Array.isArray(searchVariations) || searchVariations.length === 0) {
+        return null;
+    }
+
+    const normalizedMeanings = String(meaningText)
+        .toLowerCase()
+        .split(/[,;]/)
+        .map((meaning) => meaning.trim())
+        .filter(Boolean);
+
+    let bestRank = null;
+
+    for (const meaning of normalizedMeanings) {
+        const words = meaning.split(/\s+/).filter(Boolean);
+
+        for (const variant of searchVariations) {
+            let currentRank = null;
+
+            if (meaning === variant) {
+                currentRank = 0;
+            } else if (words[0] === variant) {
+                currentRank = 1;
+            } else if (
+                words.length > 1 &&
+                (
+                    (words[0] === 'to' && words[1] === variant) ||
+                    ((words[0] === 'a' || words[0] === 'an') && words[1] === variant)
+                )
+            ) {
+                currentRank = 1;
+            } else if (words.includes(variant)) {
+                currentRank = 2;
+            } else if (meaning.includes(variant)) {
+                currentRank = 3;
+            }
+
+            if (currentRank !== null && (bestRank === null || currentRank < bestRank)) {
+                bestRank = currentRank;
+            }
+        }
+    }
+
+    return bestRank;
+}
+
+function getBestEnglishReadingMatch(searchTerm) {
+    const searchVariations = getSearchVariations(searchTerm);
+    if (searchVariations.length === 0 || !Array.isArray(readings)) {
+        return null;
+    }
+
+    const getJlptLevelForRanking = typeof window.getJLPTLevel === 'function'
+        ? window.getJLPTLevel
+        : () => null;
+
+    const candidates = readings
+        .map((reading) => {
+            const meaningRank = getEnglishMeaningMatchRank(reading?.english, searchVariations);
+            if (meaningRank === null) {
+                return null;
+            }
+
+            return {
+                reading,
+                meaningRank,
+                jlptPriority: getJlptPriority(getJlptLevelForRanking(reading.kanji))
+            };
+        })
+        .filter(Boolean)
+        .sort((a, b) => {
+            if (a.meaningRank !== b.meaningRank) {
+                return a.meaningRank - b.meaningRank;
+            }
+            if (a.jlptPriority !== b.jlptPriority) {
+                return a.jlptPriority - b.jlptPriority;
+            }
+            return (a.reading?.kanji || '').localeCompare(b.reading?.kanji || '');
+        });
+
+    if (candidates.length === 0) {
+        return null;
+    }
+    const best = candidates[0];
+    return { reading: best.reading, rank: best.meaningRank };
+}
 
 // Function to wait for the supabase global to be defined
 function waitForSupabase(callback, timeout = 1000) {
@@ -19456,8 +20118,326 @@ waitForSupabase(() => {
     console.log('Supabase client initialized:', supabaseClient);
     console.log('supabaseClient after initialization:', supabaseClient);
 
-    searchVocabulary = async function (searchTerm, retryCount = 0, maxRetries = 3) {
-        console.log(`Searching vocabulary for term: ${searchTerm} (attempt ${retryCount + 1}/${maxRetries + 1})`);
+    const createVocabularyBaseQuery = () => supabaseClient
+        .from('vocabulary_test')
+        .select('id, jlpt, kanji, reading, sense');
+
+    const mapToWebVocabulary = (rows) => (rows || []).map((entry) => {
+        const kanji = Array.isArray(entry.kanji) ? entry.kanji : [];
+        const reading = Array.isArray(entry.reading) ? entry.reading : [];
+        const sense = Array.isArray(entry.sense) ? entry.sense : [];
+
+        return {
+            id: entry.id,
+            jlpt: entry.jlpt || '',
+            kanji,
+            reading,
+            sense: sense.map((item) => typeof item === 'string' ? { text: item } : item),
+        };
+    });
+
+    const buildKanaReadingBucketFilter = (searchTerm, extraKanaCount) => {
+        const kanaWildcardSuffix = extraKanaCount > 0 ? '_'.repeat(extraKanaCount) : '';
+        const tokenPattern = `${searchTerm}${kanaWildcardSuffix}`;
+        return [
+            `reading_text.ilike.${tokenPattern}`,
+            `reading_text.ilike.${tokenPattern} *`,
+            `reading_text.ilike.* ${tokenPattern}`,
+            `reading_text.ilike.* ${tokenPattern} *`
+        ].join(',');
+    };
+
+    const buildSingleKanjiTokenFilter = (tokenPattern, includeLeadingToken) => (
+        includeLeadingToken
+            ? [
+                `kanji_text.ilike.* ${tokenPattern}`,
+                `kanji_text.ilike.* ${tokenPattern} *`
+            ]
+            : [
+                `kanji_text.ilike.${tokenPattern}`,
+                `kanji_text.ilike.${tokenPattern} *`
+            ]
+    ).join(',');
+
+    const buildSingleKanjiExactPrimaryFilter = (searchTerm) => (
+        buildSingleKanjiTokenFilter(searchTerm, false)
+    );
+
+    const buildSingleKanjiExactAlternateFilter = (searchTerm) => (
+        buildSingleKanjiTokenFilter(searchTerm, true)
+    );
+
+    const buildSingleKanjiPrimaryPrefixPlusOneFilter = (searchTerm) => (
+        buildSingleKanjiTokenFilter(`${searchTerm}_`, false)
+    );
+
+    const buildSingleKanjiAlternatePrefixPlusOneFilter = (searchTerm) => (
+        buildSingleKanjiTokenFilter(`${searchTerm}_`, true)
+    );
+
+    const buildSingleKanjiPrimaryPrefixLongFilter = (searchTerm) => (
+        buildSingleKanjiTokenFilter(`${searchTerm}__%`, false)
+    );
+
+    const buildSingleKanjiAlternatePrefixLongFilter = (searchTerm) => (
+        buildSingleKanjiTokenFilter(`${searchTerm}__%`, true)
+    );
+
+    const buildSingleKanjiLaterFilter = (searchTerm) => [
+        `kanji_text.ilike._%${searchTerm}%`,
+        `kanji_text.ilike._%${searchTerm}% *`,
+        `kanji_text.ilike.* _%${searchTerm}%`,
+        `kanji_text.ilike.* _%${searchTerm}% *`
+    ].join(',');
+
+    const fetchVocabularyPages = async ({
+        requestId,
+        buildQuery,
+        maxRows = null,
+        label,
+        defaultPageSize = VOCAB_PAGE_SIZE,
+        pageTimeoutMs = DEFAULT_VOCAB_PAGE_TIMEOUT_MS,
+        pageRetryLimit = 0,
+        pageRetryDelayMs = 0,
+        skipStatementTimeoutFailures = false,
+        onProgress = null,
+        stageIndex = 1,
+        stageTotal = 1
+    }) => {
+        let fetchedVocabulary = [];
+        let pageNumber = 0;
+        let offset = 0;
+
+        while (maxRows === null || offset < maxRows) {
+            pageNumber += 1;
+            const pageSize = maxRows === null
+                ? defaultPageSize
+                : Math.min(defaultPageSize, maxRows - offset);
+            if (pageSize <= 0) {
+                break;
+            }
+
+            let pageData = null;
+
+            for (let pageAttempt = 0; pageAttempt <= pageRetryLimit; pageAttempt += 1) {
+                const pageTimeoutPromise = new Promise((_, reject) =>
+                    setTimeout(
+                        () => reject(new Error(`Request timeout after ${pageTimeoutMs / 1000} seconds (${label}, page ${pageNumber}, attempt ${pageAttempt + 1})`)),
+                        pageTimeoutMs
+                    )
+                );
+
+                try {
+                    const pageResult = await Promise.race([
+                        buildQuery()
+                            .order('id', { ascending: true })
+                            .range(offset, offset + pageSize - 1),
+                        pageTimeoutPromise
+                    ]);
+
+                    pageData = pageResult ? pageResult.data : null;
+                    if (pageResult?.error) {
+                        throw pageResult.error;
+                    }
+                    break;
+                } catch (pageErr) {
+                    console.warn(`${label} page ${pageNumber} failed on attempt ${pageAttempt + 1}: ${describeSearchError(pageErr)}`);
+
+                    if (skipStatementTimeoutFailures && isStatementTimeoutError(pageErr)) {
+                        pageData = [];
+                        break;
+                    }
+
+                    if (requestId !== latestVocabularySearchRequest) {
+                        return { cancelled: true, rows: [] };
+                    }
+
+                    if (pageAttempt >= pageRetryLimit) {
+                        throw pageErr;
+                    }
+
+                    if (pageRetryDelayMs > 0) {
+                        await new Promise((resolve) => setTimeout(resolve, pageRetryDelayMs * (pageAttempt + 1)));
+                    }
+                }
+            }
+
+            if (requestId !== latestVocabularySearchRequest) {
+                return { cancelled: true, rows: [] };
+            }
+
+            if (!Array.isArray(pageData) || pageData.length === 0) {
+                break;
+            }
+
+            const pageVocabulary = mapToWebVocabulary(pageData);
+            fetchedVocabulary = mergeVocabularyById(fetchedVocabulary, pageVocabulary);
+
+            if (typeof onProgress === 'function') {
+                onProgress(fetchedVocabulary, {
+                    label,
+                    pageNumber,
+                    stageIndex,
+                    stageTotal,
+                    fetchedCount: fetchedVocabulary.length,
+                    progress: maxRows
+                        ? Math.min(95, Math.round(((offset + pageData.length) / maxRows) * 100))
+                        : null
+                });
+            }
+
+            if (pageData.length < pageSize) {
+                break;
+            }
+
+            offset += pageSize;
+        }
+
+        return { cancelled: false, rows: fetchedVocabulary };
+    };
+
+    const fetchKanaOnlyVocabulary = async ({ requestId, searchTerm, maxFetchTotal, onProgress = null }) => {
+        let webVocabulary = [];
+
+        for (let extraKanaCount = 0; extraKanaCount <= KANA_PREFIX_BUCKET_MAX_EXTRA && webVocabulary.length < maxFetchTotal; extraKanaCount += 1) {
+            const remainingRows = maxFetchTotal - webVocabulary.length;
+            const bucketLabel = `kana bucket +${extraKanaCount}`;
+            const bucketFilter = buildKanaReadingBucketFilter(searchTerm, extraKanaCount);
+            const { cancelled, rows } = await fetchVocabularyPages({
+                requestId,
+                maxRows: remainingRows,
+                label: bucketLabel,
+                stageIndex: extraKanaCount + 1,
+                stageTotal: KANA_PREFIX_BUCKET_MAX_EXTRA + 1,
+                buildQuery: () => createVocabularyBaseQuery().or(bucketFilter)
+            });
+
+            if (cancelled) {
+                return { cancelled: true, rows: [] };
+            }
+
+            const previousCount = webVocabulary.length;
+            webVocabulary = mergeVocabularyById(webVocabulary, rows);
+            const addedCount = webVocabulary.length - previousCount;
+            perfLog(`[Perf] ${bucketLabel}: added ${addedCount} unique rows (cumulative ${webVocabulary.length})`);
+
+            if (typeof onProgress === 'function') {
+                onProgress(webVocabulary, {
+                    label: bucketLabel,
+                    addedCount,
+                    stageIndex: extraKanaCount + 1,
+                    stageTotal: KANA_PREFIX_BUCKET_MAX_EXTRA + 1
+                });
+            }
+        }
+
+        return { cancelled: false, rows: webVocabulary };
+    };
+
+    const fetchSingleKanjiVocabulary = async ({ requestId, searchTerm, onProgress = null }) => {
+        let webVocabulary = [];
+        const bucketQueries = [
+            {
+                label: 'single kanji exact primary',
+                buildQuery: () => createVocabularyBaseQuery().or(buildSingleKanjiExactPrimaryFilter(searchTerm)),
+                defaultPageSize: SINGLE_KANJI_INITIAL_BUCKET_PAGE_SIZE
+            },
+            {
+                label: 'single kanji exact alternate',
+                buildQuery: () => createVocabularyBaseQuery().or(buildSingleKanjiExactAlternateFilter(searchTerm)),
+                defaultPageSize: SINGLE_KANJI_INITIAL_BUCKET_PAGE_SIZE
+            },
+            {
+                label: 'single kanji prefix primary +1',
+                buildQuery: () => createVocabularyBaseQuery().or(buildSingleKanjiPrimaryPrefixPlusOneFilter(searchTerm)),
+                defaultPageSize: SINGLE_KANJI_INITIAL_BUCKET_PAGE_SIZE
+            },
+            {
+                label: 'single kanji prefix alternate +1',
+                buildQuery: () => createVocabularyBaseQuery().or(buildSingleKanjiAlternatePrefixPlusOneFilter(searchTerm)),
+                defaultPageSize: SINGLE_KANJI_INITIAL_BUCKET_PAGE_SIZE
+            },
+            {
+                label: 'single kanji prefix primary 2+',
+                buildQuery: () => createVocabularyBaseQuery().or(buildSingleKanjiPrimaryPrefixLongFilter(searchTerm)),
+                defaultPageSize: SINGLE_KANJI_VOCAB_PAGE_SIZE
+            },
+            {
+                label: 'single kanji prefix alternate 2+',
+                buildQuery: () => createVocabularyBaseQuery().or(buildSingleKanjiAlternatePrefixLongFilter(searchTerm)),
+                defaultPageSize: SINGLE_KANJI_VOCAB_PAGE_SIZE
+            },
+            {
+                label: 'single kanji later',
+                buildQuery: () => createVocabularyBaseQuery().or(buildSingleKanjiLaterFilter(searchTerm)),
+                defaultPageSize: SINGLE_KANJI_VOCAB_PAGE_SIZE
+            }
+        ];
+
+        for (const [index, bucketQuery] of bucketQueries.entries()) {
+            const { cancelled, rows } = await fetchVocabularyPages({
+                requestId,
+                label: bucketQuery.label,
+                buildQuery: bucketQuery.buildQuery,
+                defaultPageSize: bucketQuery.defaultPageSize,
+                pageRetryLimit: SINGLE_KANJI_PAGE_RETRY_LIMIT,
+                pageRetryDelayMs: SINGLE_KANJI_PAGE_RETRY_DELAY_MS,
+                skipStatementTimeoutFailures: true,
+                stageIndex: index + 1,
+                stageTotal: bucketQueries.length
+            });
+
+            if (cancelled) {
+                return { cancelled: true, rows: [] };
+            }
+
+            const previousCount = webVocabulary.length;
+            webVocabulary = mergeVocabularyById(webVocabulary, rows);
+            const addedCount = webVocabulary.length - previousCount;
+            perfLog(`[Perf] ${bucketQuery.label}: added ${addedCount} unique rows (cumulative ${webVocabulary.length})`);
+
+            if (typeof onProgress === 'function') {
+                onProgress(webVocabulary, {
+                    label: bucketQuery.label,
+                    addedCount,
+                    stageIndex: index + 1,
+                    stageTotal: bucketQueries.length
+                });
+            }
+        }
+
+        return { cancelled: false, rows: webVocabulary };
+    };
+
+    searchVocabulary = async function (searchTerm, retryCount = 0, maxRetries = 3, requestId = null) {
+        const normalizedTerm = typeof searchTerm === 'string' ? searchTerm.trim() : '';
+        if (!normalizedTerm) {
+            isVocabularyFetched = false;
+            vocabulary = [];
+            window.vocabulary = vocabulary;
+            window.rankedVocabulary = [];
+            setVocabularyLoadingUi({ visible: false });
+            return { stale: false, rows: [] };
+        }
+
+        if (requestId === null) {
+            requestId = ++latestVocabularySearchRequest;
+        }
+
+        const isActiveRequest = () => requestId === latestVocabularySearchRequest;
+        const isJapanese = isJapaneseSearchTerm(normalizedTerm);
+        const isKanaOnlyJapaneseSearch = isJapanese && isKanaOnlySearchTerm(normalizedTerm);
+        const isSingleKanjiJapaneseSearch = isJapanese && isSingleKanjiSearchTerm(normalizedTerm);
+        const searchMode = isKanaOnlyJapaneseSearch
+            ? 'kana-only'
+            : isSingleKanjiJapaneseSearch
+                ? 'single-kanji'
+                : isJapanese
+                    ? 'general-japanese'
+                    : 'english';
+        const effectiveMaxRetries = isSingleKanjiJapaneseSearch ? 1 : maxRetries;
+
+        perfLog(`Searching vocabulary for term: ${normalizedTerm} (attempt ${retryCount + 1}/${effectiveMaxRetries + 1})`);
 
         const loadingElement = document.getElementById('loading');
         const errorElement = document.getElementById('error');
@@ -19468,96 +20448,167 @@ waitForSupabase(() => {
         if (!loadingElement || !errorElement || !loadingBarElement || !progressBarElement || !progressTextElement) {
             console.error('Loading, error, or loading bar elements not found in the DOM');
             isVocabularyFetched = false;
-            return;
+            return { stale: false, rows: [] };
         }
 
-        loadingElement.style.display = 'block';
-        loadingBarElement.style.display = 'block';
-        errorElement.style.display = 'none';
+        if (isActiveRequest()) {
+            isVocabularyFetched = false;
+            errorElement.style.display = 'none';
+            const stageDescription = getVocabularyStageDescription(searchMode);
+            setVocabularyLoadingUi({
+                visible: true,
+                text: `Loading words for "${normalizedTerm}"...`,
+                detail: stageDescription,
+                indeterminate: true
+            });
+            showVocabularyLoadingPlaceholder(normalizedTerm, stageDescription);
+        }
 
         try {
-            console.log('Making Supabase request for search term:', searchTerm);
+            let webVocabulary = [];
 
-            let query = supabaseClient
-                .from('vocabulary_test')
-                .select('id, jlpt, kanji, reading, sense');
+            if (isKanaOnlyJapaneseSearch) {
+                const kanaResult = await fetchKanaOnlyVocabulary({
+                    requestId,
+                    searchTerm: normalizedTerm,
+                    maxFetchTotal: KANA_ONLY_VOCAB_FETCH_TOTAL,
+                    onProgress: (_, progressMeta) => {
+                        if (!isActiveRequest()) {
+                            return;
+                        }
+                        const detail = getVocabularyStageDescription(searchMode, progressMeta.label);
+                        setVocabularyLoadingUi({
+                            visible: true,
+                            text: `Loading words for "${normalizedTerm}"...`,
+                            detail,
+                            progress: (progressMeta.stageIndex / progressMeta.stageTotal) * 100
+                        });
+                        showVocabularyLoadingPlaceholder(normalizedTerm, detail);
+                    }
+                });
 
-            const isJapanese = /[一-龯ぁ-んァ-ン]/.test(searchTerm);
+                if (kanaResult.cancelled) {
+                    return { stale: true, rows: [] };
+                }
+                webVocabulary = kanaResult.rows;
+            } else if (isSingleKanjiJapaneseSearch) {
+                const kanjiResult = await fetchSingleKanjiVocabulary({
+                    requestId,
+                    searchTerm: normalizedTerm,
+                    onProgress: (_, progressMeta) => {
+                        if (!isActiveRequest()) {
+                            return;
+                        }
+                        const detail = getVocabularyStageDescription(searchMode, progressMeta.label);
+                        setVocabularyLoadingUi({
+                            visible: true,
+                            text: `Loading words for "${normalizedTerm}"...`,
+                            detail,
+                            progress: (progressMeta.stageIndex / progressMeta.stageTotal) * 100
+                        });
+                        showVocabularyLoadingPlaceholder(normalizedTerm, detail);
+                    }
+                });
 
-            if (isJapanese) {
-                query = query.or(`kanji_text.ilike.%${searchTerm}%,reading_text.ilike.%${searchTerm}%`);
+                if (kanjiResult.cancelled) {
+                    return { stale: true, rows: [] };
+                }
+                webVocabulary = kanjiResult.rows;
             } else {
-                query = query.ilike('sense_text', `%${searchTerm}%`);
+                const pagedResult = await fetchVocabularyPages({
+                    requestId,
+                    maxRows: STANDARD_VOCAB_FETCH_TOTAL,
+                    label: 'vocabulary search',
+                    buildQuery: () => {
+                        if (isJapanese) {
+                            return createVocabularyBaseQuery()
+                                .or(`kanji_text.ilike.%${normalizedTerm}%,reading_text.ilike.%${normalizedTerm}%`);
+                        }
+                        return createVocabularyBaseQuery().ilike('sense_text', `%${normalizedTerm}%`);
+                    },
+                    onProgress: (_, progressMeta) => {
+                        if (!isActiveRequest()) {
+                            return;
+                        }
+                        const detail = progressMeta.fetchedCount > 0
+                            ? `${progressMeta.fetchedCount} matches loaded...`
+                            : getVocabularyStageDescription(searchMode);
+                        setVocabularyLoadingUi({
+                            visible: true,
+                            text: `Loading words for "${normalizedTerm}"...`,
+                            detail,
+                            progress: progressMeta.progress
+                        });
+                        showVocabularyLoadingPlaceholder(normalizedTerm, detail);
+                    }
+                });
+
+                if (pagedResult.cancelled) {
+                    return { stale: true, rows: [] };
+                }
+                webVocabulary = pagedResult.rows;
             }
 
-            // Add a timeout promise to prevent indefinite hanging
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000)
-            );
-
-            const queryPromise = query
-                .order('id', { ascending: true })
-                .limit(800);
-
-            // Race between the query and the timeout
-            const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
-
-            if (error) {
-                throw error;
+            if (!isActiveRequest()) {
+                perfLog(`Discarding stale vocabulary search for term: ${normalizedTerm}`);
+                return { stale: true, rows: [] };
             }
 
-            if (!data) {
-                throw new Error('No data returned from query');
-            }
-
-            console.log('Search results:', data);
-
-            const fetchedRows = data ? data.length : 0;
-            const percentage = fetchedRows > 0 ? 100 : 0;
-            progressBarElement.style.width = `${percentage}%`;
-            progressTextElement.textContent = `${fetchedRows} results found`;
-
-            // Map data to vocabulary format
-            vocabulary = data.map(entry => {
-                const kanji = Array.isArray(entry.kanji) ? entry.kanji : [];
-                const reading = Array.isArray(entry.reading) ? entry.reading : [];
-                const sense = Array.isArray(entry.sense) ? entry.sense : [];
-
-                return {
-                    id: entry.id,
-                    jlpt: entry.jlpt || '',
-                    kanji: kanji,
-                    reading: reading,
-                    sense: sense.map(s => typeof s === "string" ? { text: s } : s),
-                };
-            });
-
-            window.vocabulary = vocabulary;
-            console.log("Total vocabulary entries fetched:", vocabulary.length);
-            console.log("Sample vocabulary entry:", vocabulary[0] || 'No results');
-            
+            vocabulary = webVocabulary;
+            window.vocabulary = webVocabulary;
+            window.rankedVocabulary = [];
+            lastFetchedVocabularyTerm = normalizedTerm;
+            lastFetchedVocabularyTermAtMs = Date.now();
             isVocabularyFetched = true;
             errorElement.style.display = 'none';
 
-        } catch (err) {
-            console.error(`Error in searchVocabulary (attempt ${retryCount + 1}):`, err);
+            setVocabularyLoadingUi({
+                visible: true,
+                text: `Loaded words for "${normalizedTerm}"`,
+                detail: webVocabulary.length > 0 ? `${webVocabulary.length} matches found` : 'No matching words found',
+                progress: 100
+            });
 
-            // Retry logic: if we haven't exceeded max retries, try again
-            if (retryCount < maxRetries) {
-                console.log(`Retrying in 1 second... (${retryCount + 1}/${maxRetries})`);
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
-                return searchVocabulary(searchTerm, retryCount + 1, maxRetries); // Recursive retry
+            return { stale: false, rows: webVocabulary };
+        } catch (err) {
+            if (!isActiveRequest()) {
+                perfLog(`Ignoring stale vocabulary search failure for term: ${normalizedTerm}`);
+                return { stale: true, rows: [] };
             }
 
-            // If all retries exhausted, show error
+            console.error(`Error in searchVocabulary (attempt ${retryCount + 1}):`, err);
+
+            if (retryCount < effectiveMaxRetries) {
+                const retryDetail = retryCount === 0
+                    ? 'Search timed out. Retrying...'
+                    : 'Trying again...';
+                setVocabularyLoadingUi({
+                    visible: true,
+                    text: `Retrying "${normalizedTerm}"...`,
+                    detail: retryDetail,
+                    indeterminate: true
+                });
+                showVocabularyLoadingPlaceholder(normalizedTerm, retryDetail);
+                await new Promise((resolve) => setTimeout(resolve, 600 * (retryCount + 1)));
+                return searchVocabulary(normalizedTerm, retryCount + 1, effectiveMaxRetries, requestId);
+            }
+
             errorElement.textContent = 'Failed to load vocabulary after multiple attempts. Please check your connection and try again.';
             errorElement.style.display = 'block';
-            loadingBarElement.style.display = 'none';
             isVocabularyFetched = false;
-
+            vocabulary = [];
+            window.vocabulary = vocabulary;
+            window.rankedVocabulary = [];
+            showVocabularyUnavailablePlaceholder('Vocabulary search failed. Please try again.');
+            return { stale: false, rows: [] };
         } finally {
-            loadingElement.style.display = 'none';
-            loadingBarElement.style.display = 'none';
+            if (isActiveRequest()) {
+                setTimeout(() => {
+                    if (isActiveRequest()) {
+                        setVocabularyLoadingUi({ visible: false });
+                    }
+                }, 150);
+            }
         }
     };
 
@@ -19568,6 +20619,21 @@ waitForSupabase(() => {
 
 // Device detection function
 function detectDevice() {
+    const queryParams = new URLSearchParams(window.location.search);
+    const forcedDevice = (queryParams.get('force_device') || '').toLowerCase();
+
+    if (forcedDevice === 'android') {
+        return { isAndroid: true, isIOS: false, isMobile: true, isDesktop: false };
+    }
+
+    if (forcedDevice === 'ios') {
+        return { isAndroid: false, isIOS: true, isMobile: true, isDesktop: false };
+    }
+
+    if (forcedDevice === 'desktop') {
+        return { isAndroid: false, isIOS: false, isMobile: false, isDesktop: true };
+    }
+
     const userAgent = navigator.userAgent.toLowerCase();
     
     return {
@@ -19581,11 +20647,19 @@ function detectDevice() {
 // Create and show download banner
 function showDownloadBanner() {
     const device = detectDevice();
-    const googlePlayUrl = 'https://play.google.com/store/apps/details?id=com.kanji.radical'; // REPLACE WITH YOUR ACTUAL URL
+    const googlePlayUrl = 'https://play.google.com/store/apps/details?id=com.kanji.radical';
+    const appStoreUrl = 'https://apps.apple.com/us/app/radical-kanji-dictionary/id6760137001';
+    const queryParams = new URLSearchParams(window.location.search);
+    const forceBanner = ['1', 'true', 'yes'].includes((queryParams.get('force_banner') || '').toLowerCase());
     
     // Don't show banner if already dismissed in this session
-    if (sessionStorage.getItem('bannerDismissed')) {
+    if (!forceBanner && sessionStorage.getItem('bannerDismissed')) {
         return;
+    }
+
+    const existingBanner = document.getElementById('download-banner');
+    if (existingBanner) {
+        existingBanner.remove();
     }
     
     // Create banner container
@@ -19593,10 +20667,11 @@ function showDownloadBanner() {
     banner.id = 'download-banner';
     banner.style.cssText = `
     position:fixed;top:0;left:0;right:0;
-    background:linear-gradient(135deg,#00b4d8 0%,#0096c7 100%);
-    color:white;
+    background:linear-gradient(180deg,#143243 0%,#0d1a24 100%);
+    color:#eaf7fb;
     padding:8px 12px;               /* was 15px 20px */
-    box-shadow:0 2px 6px rgba(0,0,0,.2);
+    box-shadow:0 6px 18px rgba(0,0,0,.45);
+    border-bottom:1px solid rgba(0,180,216,.45);
     z-index:9999;
     display:flex;align-items:center;justify-content:space-between;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
@@ -19608,72 +20683,106 @@ function showDownloadBanner() {
     // Content container
     const content = document.createElement('div');
     content.style.cssText = 'flex: 1; display: flex; align-items: center; gap: 15px;';
+
+    const storeButtonStyle = `
+        background: linear-gradient(135deg,#48cae4 0%,#00b4d8 100%);
+        color: #ffffff;
+        padding: 12px 20px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: bold;
+        white-space: nowrap;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    `;
     
     if (device.isAndroid) {
-        // Android: Show download button
         content.innerHTML = `
             <div style="flex: 1;">
                 <div style="font-weight: bold; font-size: 16px; margin-bottom: 4px;">
-                    📱 Get the Full Radical Experience!
+                    Take Radical with you
                 </div>
                 <div style="font-size: 13px; opacity: 0.95;">
-                    Vocabulary lists, custom quizzes, kana charts & progress tracking
+                    Saved vocabulary and kanji lists, quizzes, streak/progress/JLPT tracking, courses, coaching, and handwriting lookup.
                 </div>
             </div>
             <a href="${googlePlayUrl}" 
                target="_blank"
                rel="noopener noreferrer"
-               style="background: white; color: #00b4d8; padding: 12px 24px; 
-                      border-radius: 8px; text-decoration: none; font-weight: bold;
-                      white-space: nowrap; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"
+               style="${storeButtonStyle}"
                onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)';"
                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)';">
-                Download on Google Play
+                Get it on Google Play
             </a>
         `;
     } else if (device.isIOS) {
-        // iOS: Show coming soon message
         content.innerHTML = `
             <div style="flex: 1;">
                 <div style="font-weight: bold; font-size: 16px; margin-bottom: 4px;">
-                    🍎 iOS Version Coming Soon!
+                    Take Radical with you
                 </div>
                 <div style="font-size: 13px; opacity: 0.95;">
-                    Radical is currently only available for Android. Stay tuned for the iOS release!
+                    Saved vocabulary and kanji lists, quizzes, streak/progress/JLPT tracking, courses, coaching, and JLPT shortcuts in the iPhone and iPad app.
                 </div>
             </div>
+            <a href="${appStoreUrl}" 
+               target="_blank"
+               rel="noopener noreferrer"
+               style="${storeButtonStyle}"
+               onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)';"
+               onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)';">
+                Download on the App Store
+            </a>
         `;
     } else if (device.isDesktop) {
-        // Desktop: Show QR code message
         content.innerHTML = `
-            <div style="flex: 1;">
+            <div style="flex: 1; min-width: 0;">
                 <div style="font-weight: bold; font-size: 16px; margin-bottom: 4px;">
-                    📱 Radical Works Best on Mobile!
+                    Download the Radical app
                 </div>
                 <div style="font-size: 13px; opacity: 0.95;">
-                    Get vocabulary lists, custom quizzes, kana charts & progress tracking
+                    The mobile app adds saved lists, quizzes, progress tracking, courses, and 1-on-1 coaching.
                 </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <div id="qr-code-container" style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-                    <!-- QR code will be inserted here -->
+            <div class="download-actions" style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                <div class="download-qr-grid" style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <div class="qr-card" style="background: white; color: #003b4d; padding: 10px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); min-width: 128px; text-align: center;">
+                        <div style="font-size: 12px; font-weight: 700; margin-bottom: 8px;">Android</div>
+                        <div id="qr-code-container-android"></div>
+                    </div>
+                    <div class="qr-card" style="background: white; color: #003b4d; padding: 10px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); min-width: 128px; text-align: center;">
+                        <div style="font-size: 12px; font-weight: 700; margin-bottom: 8px;">iPhone / iPad</div>
+                        <div id="qr-code-container-ios"></div>
+                    </div>
                 </div>
-                <a href="${googlePlayUrl}" 
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   style="background: white; color: #00b4d8; padding: 12px 24px; 
-                          border-radius: 8px; text-decoration: none; font-weight: bold;
-                          white-space: nowrap; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"
-                   onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)';"
-                   onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)';">
-                    View on Google Play
-                </a>
+                <div class="download-store-buttons" style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px;">
+                    <a href="${googlePlayUrl}" 
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       style="${storeButtonStyle}"
+                       onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)';"
+                       onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)';">
+                        Google Play
+                    </a>
+                    <a href="${appStoreUrl}" 
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       style="${storeButtonStyle}"
+                       onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)';"
+                       onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)';">
+                        App Store
+                    </a>
+                </div>
             </div>
         `;
     }
     
     // Close button
     const closeBtn = document.createElement('button');
+    closeBtn.className = 'close-btn';
     closeBtn.innerHTML = '✕';
     closeBtn.style.cssText = `
         background: rgba(255, 255, 255, 0.2);
@@ -19704,6 +20813,7 @@ function showDownloadBanner() {
         setTimeout(() => {
             banner.remove();
             document.body.classList.remove('has-banner');
+            document.documentElement.style.removeProperty('--download-banner-offset');
         }, 300);
         sessionStorage.setItem('bannerDismissed', 'true');
     };
@@ -19738,7 +20848,7 @@ function showDownloadBanner() {
         
         /* Adjust body padding to account for banner */
         body.has-banner {
-            padding-top: 90px !important;
+            padding-top: var(--download-banner-offset, 90px) !important;
         }
         
         body.has-banner .container {
@@ -19762,11 +20872,21 @@ function showDownloadBanner() {
                 text-align: center;
                 margin-top: 0;
             }
-            #qr-code-container {
-                display: none !important;
+            #download-banner .download-actions,
+            #download-banner .download-store-buttons {
+                width: 100%;
             }
-            body.has-banner {
-                padding-top: 160px !important;
+            #download-banner .download-store-buttons {
+                flex-direction: row;
+                gap: 10px;
+            }
+            #download-banner .download-store-buttons a {
+                width: auto;
+                flex: 1 1 0;
+                min-width: 0;
+            }
+            #download-banner .download-qr-grid {
+                display: none !important;
             }
             #download-banner .close-btn {
                 position: absolute;
@@ -19783,21 +20903,24 @@ function showDownloadBanner() {
     }
     document.body.insertBefore(banner, document.body.firstChild);
     document.body.classList.add('has-banner');
+    requestAnimationFrame(() => {
+        document.documentElement.style.setProperty('--download-banner-offset', `${banner.offsetHeight + 2}px`);
+    });
     
-    // Generate QR code for desktop
     if (device.isDesktop) {
-        generateQRCode(googlePlayUrl);
+        generateQRCode('qr-code-container-android', googlePlayUrl, 'Scan to download Radical on Android');
+        generateQRCode('qr-code-container-ios', appStoreUrl, 'Scan to download Radical on iPhone or iPad');
     }
 }
 
 // Generate QR code using Google Charts API (no library needed!)
-function generateQRCode(url) {
-    const container = document.getElementById('qr-code-container');
+function generateQRCode(containerId, url, altText = 'Scan to download Radical') {
+    const container = document.getElementById(containerId);
     if (container) {
         const qrImg = document.createElement('img');
         qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(url)}`;
-        qrImg.alt = 'Scan to download Radical';
-        qrImg.title = 'Scan with your phone to download';
+        qrImg.alt = altText;
+        qrImg.title = altText;
         qrImg.style.display = 'block';
         qrImg.style.width = '100px';
         qrImg.style.height = '100px';
@@ -19809,6 +20932,13 @@ document.addEventListener("DOMContentLoaded", function() {
     // Global variables for kanji navigation
     let currentInput = "";
     let currentKanjiIndex = 0;
+    let currentUiSearchToken = 0;
+    let inFlightVocabularySearchPromise = null;
+    let inFlightVocabularySearchTerm = "";
+    let lastLookupTrigger = {
+        input: "",
+        at: 0
+    };
 
     // No initial fetchVocabulary call; searchVocabulary will be triggered by user input
 
@@ -19893,8 +21023,43 @@ document.addEventListener("DOMContentLoaded", function() {
         // Log call to detect multiple invocations
         console.log('updateMobileBoxes called at:', new Date().toISOString());
 
+        function setMobileInfoBoxContent(boxElement, label, contentHtml, { breakBeforeValue = false } = {}) {
+            if (!boxElement) {
+                return;
+            }
+
+            boxElement.style.display = '';
+            boxElement.style.minHeight = '';
+            boxElement.style.padding = '';
+            boxElement.innerHTML = `
+                <span class="mobile-box-label">${escapeHtml(label)}</span>
+                ${breakBeforeValue ? '<br>' : ''}
+                <strong class="mobile-box-value">${contentHtml || ''}</strong>
+            `;
+        }
+
+        // Shrink a box's font-size until its content fits (both height and
+        // width), so long meanings never overflow or push the box to a new
+        // line. Resets to maxFontPx first so shorter text scales back up.
+        function fitTextToBox(boxElement, { maxFontPx = 40, minFontPx = 13 } = {}) {
+            if (!boxElement) return;
+            let fontPx = maxFontPx;
+            boxElement.style.fontSize = fontPx + 'px';
+            let guard = 0;
+            while (
+                guard++ < 60 &&
+                fontPx > minFontPx &&
+                (boxElement.scrollHeight > boxElement.clientHeight + 1 ||
+                 boxElement.scrollWidth > boxElement.clientWidth + 1)
+            ) {
+                fontPx -= 1;
+                boxElement.style.fontSize = fontPx + 'px';
+            }
+        }
+
         // Update kanji display
         mobileDisplayKanjiElement.textContent = displayKanjiElement.textContent;
+        mobileDisplayKanjiElement.style.display = 'flex';
 
         // Update JLPT bubble
         const jlptClasses = ['n1', 'n2', 'n3', 'n4', 'n5', 'notinjlpt'];
@@ -19948,6 +21113,16 @@ document.addEventListener("DOMContentLoaded", function() {
         // Log character and type
         console.log('updateMobileBoxes - Character:', currentChar, 'Type:', charType, 'isKana:', isKana);
 
+        if (!currentChar || currentChar.trim() === '') {
+            if (mobileKunyomiBoxElement) mobileKunyomiBoxElement.style.display = 'none';
+            if (mobileOnyomiBoxElement) mobileOnyomiBoxElement.style.display = 'none';
+            if (mobileMeaningRadicalBoxElement) mobileMeaningRadicalBoxElement.style.display = 'none';
+            if (mobilePhoneticRadicalBoxElement) mobilePhoneticRadicalBoxElement.style.display = 'none';
+            if (mobileEnglishBoxElement) mobileEnglishBoxElement.style.display = 'none';
+            if (mobileDisplayKanjiElement) mobileDisplayKanjiElement.style.display = 'none';
+            return;
+        }
+
         if (isKana) {
             // Hide and clear boxes for kana
             if (mobileKunyomiBoxElement) {
@@ -19981,38 +21156,32 @@ document.addEventListener("DOMContentLoaded", function() {
         } else {
             // Show and update boxes for kanji
             if (mobileKunyomiBoxElement) {
-                mobileKunyomiBoxElement.style.display = '';
-                mobileKunyomiBoxElement.style.minHeight = '';
-                mobileKunyomiBoxElement.style.padding = '';
-                mobileKunyomiBoxElement.innerHTML = "<span style='font-size:0.7em;'>Kun'yomi // </span><strong>" + kunyomiBoxElement.innerHTML + "</strong>";
+                setMobileInfoBoxContent(mobileKunyomiBoxElement, "Kun'yomi", kunyomiBoxElement.innerHTML);
                 console.log('Showing mobile-kunyomi-box with content:', mobileKunyomiBoxElement.innerHTML, 'computed display:', window.getComputedStyle(mobileKunyomiBoxElement).display);
             }
             if (mobileOnyomiBoxElement) {
-                mobileOnyomiBoxElement.style.display = '';
-                mobileOnyomiBoxElement.style.minHeight = '';
-                mobileOnyomiBoxElement.style.padding = '';
-                mobileOnyomiBoxElement.innerHTML = "<span style='font-size:0.7em;'>On'yomi // </span><strong>" + onyomiBoxElement.innerHTML + "</strong>";
+                setMobileInfoBoxContent(mobileOnyomiBoxElement, "On'yomi", onyomiBoxElement.innerHTML);
                 console.log('Showing mobile-onyomi-box with content:', mobileOnyomiBoxElement.innerHTML, 'computed display:', window.getComputedStyle(mobileOnyomiBoxElement).display);
             }
             if (mobileMeaningRadicalBoxElement) {
-                mobileMeaningRadicalBoxElement.style.display = '';
-                mobileMeaningRadicalBoxElement.style.minHeight = '';
-                mobileMeaningRadicalBoxElement.style.padding = '';
-                mobileMeaningRadicalBoxElement.innerHTML = "<span style='font-size:0.7em;'>Meaning Radical // </span><strong><br>" + meaningRadicalBoxElement.innerHTML + "</strong>";
+                setMobileInfoBoxContent(mobileMeaningRadicalBoxElement, "Meaning Radical", meaningRadicalBoxElement.innerHTML);
                 console.log('Showing mobile-meaningradical-box with content:', mobileMeaningRadicalBoxElement.innerHTML, 'computed display:', window.getComputedStyle(mobileMeaningRadicalBoxElement).display);
             }
             if (mobilePhoneticRadicalBoxElement) {
-                mobilePhoneticRadicalBoxElement.style.display = '';
-                mobilePhoneticRadicalBoxElement.style.minHeight = '';
-                mobilePhoneticRadicalBoxElement.style.padding = '';
-                mobilePhoneticRadicalBoxElement.innerHTML = "<span style='font-size:0.7em;'>Phonetic Radical // </span><strong>" + radicalBoxElement.innerHTML + "</strong>";
+                setMobileInfoBoxContent(mobilePhoneticRadicalBoxElement, "Phonetic Radical", radicalBoxElement.innerHTML);
                 console.log('Showing mobile-radical-box with content:', mobilePhoneticRadicalBoxElement.innerHTML, 'computed display:', window.getComputedStyle(mobilePhoneticRadicalBoxElement).display);
             }
         }
 
         // Update English box (always shown)
         mobileEnglishBoxElement.innerHTML = englishBoxElement.innerHTML;
+        mobileEnglishBoxElement.style.display = 'flex';
+        // Shrink the meaning text so it always fits the box beside the kanji
+        // square instead of wrapping onto a new line.
+        fitTextToBox(mobileEnglishBoxElement, { maxFontPx: 46, minFontPx: 10 });
         console.log('Updated mobile-english-box with content:', mobileEnglishBoxElement.innerHTML, 'computed display:', window.getComputedStyle(mobileEnglishBoxElement).display);
+        applyRadicalBoxInteractions();
+        syncResultContainerVisibility();
     }
 
     function getRandomKanji() {
@@ -20063,37 +21232,157 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    async function triggerLookup(inputKanji = null) {
+        const kanjiInputElement = document.getElementById("kanjiInput");
+        const resolvedInput = typeof inputKanji === 'string'
+            ? inputKanji.trim()
+            : (kanjiInputElement?.value || '').trim();
+
+        if (resolvedInput) {
+            const now = Date.now();
+            if (
+                resolvedInput === lastLookupTrigger.input &&
+                (now - lastLookupTrigger.at) <= LOOKUP_DEDUP_WINDOW_MS
+            ) {
+                perfLog(`[Perf] Skipping duplicate lookup trigger for term: ${resolvedInput}`);
+                return;
+            }
+
+            lastLookupTrigger = {
+                input: resolvedInput,
+                at: now
+            };
+
+            if (window.scrollY > 180) {
+                scrollDictionaryToTop();
+            }
+        }
+
+        await processKanjiInput(resolvedInput);
+    }
+
     async function processKanjiInput(inputKanji = null) {
         const kanjiInputElement = document.getElementById("kanjiInput");
-        currentInput = inputKanji || kanjiInputElement.value.trim();
-        if (inputKanji) kanjiInputElement.value = currentInput;
+        const requestedInput = typeof inputKanji === 'string'
+            ? inputKanji.trim()
+            : kanjiInputElement.value.trim();
+        currentInput = requestedInput;
+        if (kanjiInputElement) {
+            kanjiInputElement.value = currentInput;
+        }
         currentKanjiIndex = 0;
+        const uiSearchToken = ++currentUiSearchToken;
+        const isLatestUiSearch = () =>
+            uiSearchToken === currentUiSearchToken && currentInput === requestedInput;
+        const isJapaneseInput = isJapaneseSearchTerm(requestedInput);
+        const searchMode = isJapaneseInput
+            ? (isKanaOnlySearchTerm(requestedInput) ? 'kana-only' : (isSingleKanjiSearchTerm(requestedInput) ? 'single-kanji' : 'general-japanese'))
+            : 'english';
 
-        if (!currentInput) {
+        if (!requestedInput) {
             console.warn('No input provided');
             isVocabularyFetched = false;
             vocabulary = [];
             window.vocabulary = vocabulary;
+            window.rankedVocabulary = [];
+            showVocabularyIdlePlaceholder();
             await displayCurrentKanji();
             return;
         }
 
         if (!isSupabaseReady) {
-            console.error('Supabase is not ready yet.');
+            console.warn('Supabase is not ready yet. Rendering dictionary without vocabulary.');
             const errorElement = document.getElementById('error');
             if (errorElement) {
-                errorElement.textContent = 'Supabase is not initialized. Please wait and try again.';
+                errorElement.textContent = 'Vocabulary service is not available right now. Dictionary lookup still works.';
                 errorElement.style.display = 'block';
+            }
+            isVocabularyFetched = false;
+            vocabulary = [];
+            window.vocabulary = vocabulary;
+            window.rankedVocabulary = [];
+            showVocabularyUnavailablePlaceholder();
+            await displayCurrentKanji();
+            return;
+        }
+
+        const canReuseRecentSearch =
+            requestedInput === lastFetchedVocabularyTerm &&
+            (Date.now() - lastFetchedVocabularyTermAtMs) <= DUPLICATE_SEARCH_REUSE_WINDOW_MS &&
+            Array.isArray(window.vocabulary);
+
+        if (!canReuseRecentSearch) {
+            window.rankedVocabulary = [];
+            showVocabularyLoadingPlaceholder(requestedInput, getVocabularyStageDescription(searchMode));
+        }
+
+        if (isJapaneseInput) {
+            if (!canReuseRecentSearch) {
+                isVocabularyFetched = false;
+            }
+            await displayCurrentKanji();
+            if (!isLatestUiSearch()) {
+                return;
+            }
+        }
+
+        if (canReuseRecentSearch) {
+            perfLog(`[Perf] Reusing recent vocabulary cache for term: ${requestedInput}`);
+            await updateVocabDisplay(requestedInput);
+            if (!isJapaneseInput && isLatestUiSearch()) {
+                await displayCurrentKanji();
             }
             return;
         }
 
-        isVocabularyFetched = false;
-        await searchVocabulary(currentInput);
-        await displayCurrentKanji();
+        if (inFlightVocabularySearchPromise && requestedInput === inFlightVocabularySearchTerm) {
+            perfLog(`[Perf] Awaiting in-flight vocabulary search for term: ${requestedInput}`);
+            await inFlightVocabularySearchPromise;
+        } else {
+            isVocabularyFetched = false;
+            const requestedTerm = requestedInput;
+            inFlightVocabularySearchTerm = requestedTerm;
+            inFlightVocabularySearchPromise = searchVocabulary(requestedTerm).finally(() => {
+                if (inFlightVocabularySearchTerm === requestedTerm) {
+                    inFlightVocabularySearchTerm = "";
+                    inFlightVocabularySearchPromise = null;
+                }
+            });
+            await inFlightVocabularySearchPromise;
+        }
+
+        if (!isLatestUiSearch()) {
+            perfLog(`[Perf] Skipping stale UI render for term: ${requestedInput}`);
+            return;
+        }
+
+        if (isVocabularyFetched) {
+            await updateVocabDisplay(requestedInput);
+        } else {
+            showVocabularyUnavailablePlaceholder();
+        }
+
+        if (!isJapaneseInput) {
+            await displayCurrentKanji();
+        }
     }
 
 // [Previous code unchanged until displayCurrentKanji function]
+
+/** Apply JLPT-level border to the kanji box and level bubble — matches Android's per-level color. */
+function applyJlptKanjiBoxStyle(level) {
+    const kanjiBox = document.getElementById('displayKanji');
+    const mobileContainer = document.getElementById('mobile-displayKanjiContainer');
+    const jlptClasses = ['jlpt-n1', 'jlpt-n2', 'jlpt-n3', 'jlpt-n4', 'jlpt-n5'];
+
+    [kanjiBox, mobileContainer].forEach((el) => {
+        if (!el) return;
+        el.classList.remove(...jlptClasses);
+        if (level) {
+            el.classList.add(`jlpt-${level.toLowerCase()}`);
+        }
+    });
+}
 
 async function displayCurrentKanji() {
     // Get Element References
@@ -20113,6 +21402,8 @@ async function displayCurrentKanji() {
     // Clear Previous Content
     displayKanjiElement.textContent = "";
     levelBubbleElement.textContent = "";
+    levelBubbleElement.className = 'level-bubble'; // Reset color class so stale JLPT color doesn't persist
+    levelBubbleElement.style.display = "none";
     resultElement.textContent = "";
     resultLeftElement.textContent = "";
     kunyomiBoxElement.innerHTML = "";
@@ -20122,6 +21413,19 @@ async function displayCurrentKanji() {
     radicalBoxElement.innerHTML = "";
     radicalBoxElement.style.backgroundColor = "";
     radicalBoxElement.style.color = "";
+    applyJlptKanjiBoxStyle(null); // Reset kanji box border color
+
+    // Start each render clean: clear the no-kanji collapse / kana layout and any
+    // inline display:none a previous render forced onto these boxes.
+    document.querySelector('.container')?.classList.remove('no-kanji-result');
+    document.querySelector('.container')?.classList.remove('kana-layout');
+    const kbSectionForReset = document.getElementById('kanjiBoxSection');
+    if (englishBoxElement && kbSectionForReset && englishBoxElement.parentElement === kbSectionForReset) {
+        // move the English box back to its normal spot (right after the kanji row)
+        kbSectionForReset.parentNode.insertBefore(englishBoxElement, kbSectionForReset.nextSibling);
+    }
+    [displayKanjiElement, englishBoxElement, kunyomiBoxElement, onyomiBoxElement,
+     radicalBoxElement, meaningRadicalBoxElement].forEach((el) => el && el.style.removeProperty('display'));
 
     if (englishBoxElement) {
         englishBoxElement.classList.remove('kana-mode');
@@ -20147,174 +21451,249 @@ async function displayCurrentKanji() {
                 return;
             }
 
-            const input = currentInput;
-            let filteredVocab = vocabulary.filter(entry =>
-                entry.sense.some(s => s && s.text && s.text.toLowerCase().includes(input.toLowerCase()))
-            );
+            const input = currentInput.trim();
+            const inputLower = input.toLowerCase();
+            let bestMatchEntry = null;
 
-            console.log('Filtered vocab count (English):', filteredVocab.length);
-
-            if (filteredVocab.length > 0) {
-                filteredVocab.sort((a, b) => {
-                    const inputLower = input.toLowerCase();
-                    function getRank(entry) {
-                        if (!entry || !Array.isArray(entry.sense)) return 5;
-                        for (let s of entry.sense) {
-                            if (!s || !s.text) continue;
-                            const senseText = s.text.toLowerCase();
-                            const words = senseText.split(/[\s,;!?()"]+/).filter(Boolean);
-                            if (words.length > 0 && words[0] === inputLower) return 1;
-                            if (senseText.startsWith(`to ${inputLower}`)) return 1;
-                            if (senseText === inputLower) return 1;
-                            if (words.includes(inputLower)) return 2;
-                            if (senseText.includes(inputLower)) return 3;
+            if (Array.isArray(window.rankedVocabulary) && window.rankedVocabulary.length > 0) {
+                bestMatchEntry = window.rankedVocabulary[0];
+            } else {
+                const filteredVocab = vocabulary.filter((entry) =>
+                    entry.sense?.some((sense) => {
+                        if (!sense || !sense.text) {
+                            return false;
                         }
-                        return 5;
-                    }
+                        return sense.text.toLowerCase().includes(inputLower);
+                    })
+                );
 
-                    const rankA = getRank(a);
-                    const rankB = getRank(b);
-                    if (rankA !== rankB) return rankA - rankB;
-
-                    const aIsCommon = a.kanji?.some(k => k?.common) || a.reading?.some(r => r?.common);
-                    const bIsCommon = b.kanji?.some(k => k?.common) || b.reading?.some(r => r?.common);
-                    if (aIsCommon !== bIsCommon) return aIsCommon ? -1 : 1;
-
-                    const jlptOrder = { "n5": 1, "n4": 2, "n3": 3, "n2": 4, "n1": 5, "": 6 };
-                    const jlptA = jlptOrder[a.jlpt?.toLowerCase()] || 6;
-                    const jlptB = jlptOrder[b.jlpt?.toLowerCase()] || 6;
-                    if (jlptA !== jlptB) return jlptA - jlptB;
-
-                    return (a.id || 0) - (b.id || 0);
-                });
-
-                const bestMatchEntry = filteredVocab[0];
-                let displayKanji = '';
-                const topEntry = bestMatchEntry;
-
-                if (topEntry && Array.isArray(topEntry.kanji)) {
-                    for (const k of topEntry.kanji) {
-                        if (k && k.text && k.text.trim()) {
-                            const kanjiMatch = k.text.match(/[一-龯]/);
-                            if (kanjiMatch) {
-                                displayKanji = kanjiMatch[0];
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (!displayKanji && topEntry && Array.isArray(topEntry.reading)) {
-                    for (const r of topEntry.reading) {
-                        if (r && r.text && r.text.trim()) {
-                            const kanjiMatch = r.text.match(/[一-龯]/);
-                            if (kanjiMatch) {
-                                displayKanji = kanjiMatch[0];
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (!displayKanji) {
+                if (filteredVocab.length === 0) {
                     displayKanjiElement.textContent = "";
-                    resultElement.textContent = "No kanji found in the primary forms of the first match.";
-                    englishBoxElement.innerHTML = "<p>no primary kanji found</p>";
+                    resultElement.textContent = "No matching vocabulary found.";
+                    englishBoxElement.innerHTML = "<p>no word found</p>";
                     updateReadingBoxes("", "", "", "");
                     levelBubbleElement.style.display = "none";
                     lightBlueRows.forEach(row => row.style.display = 'none');
-                    if (resultContainer) resultContainer.style.display = 'none';
-                } else {
-                    displayKanjiElement.textContent = displayKanji;
-
-                    const level = getJLPTLevel(displayKanji);
-                    if (level) {
-                        levelBubbleElement.textContent = level;
-                        levelBubbleElement.className = `level-bubble ${level.toLowerCase()}`;
-                        levelBubbleElement.style.display = "inline-block";
-                    } else {
-                        levelBubbleElement.style.display = "none";
+                    if (resultContainer) {
+                        resultContainer.style.display = 'none';
                     }
-
-                    const phoneticRadicalInfo = checkKanjiReadingGroup(displayKanji);
-                    const hasPhoneticRadical = !phoneticRadicalInfo.includes('does not contain a phonetic radical');
-                    let phoneticRadical = "none";
-                    let phoneticRadicalReading = "";
-
-                    if (hasPhoneticRadical) {
-                        const parts = phoneticRadicalInfo.split('phonetic radical');
-                        if (parts.length > 1) {
-                            const radicalPart = parts[1];
-                            const radicalMatch = radicalPart.match(/<span class="kanji-highlight">(.+?)<\/span>/);
-                            if (radicalMatch && radicalMatch[1]) {
-                                phoneticRadical = radicalMatch[1];
-                                const readingMatch = radicalPart.match(/<span class="reading-highlight">(.+?)<\/span>/);
-                                if (readingMatch && readingMatch[1]) {
-                                    phoneticRadicalReading = readingMatch[1];
-                                }
-                            }
-                        }
-                        phoneticRadicalReading = phoneticRadicalDatabase[phoneticRadical]?.defaultReading || phoneticRadicalReading || "";
-                        if (!phoneticRadicalDatabase[phoneticRadical]?.defaultReading) {
-                            console.warn(`No default reading found for phonetic radical: ${phoneticRadical}`);
-                        }
-                    }
-
-                    resultElement.innerHTML = `${phoneticRadicalInfo}`;
-                    const meaningRadicalMessage = formatMeaningRadicalMessage(displayKanji);
-                    resultLeftElement.innerHTML = meaningRadicalMessage || "";
-
-                    checkMeaningRadical(displayKanji);
-                    const kanjiReading = readings.find(reading => reading.kanji === displayKanji);
-
-                    let kunyomiReading = "";
-                    let englishMeaningFromReadings = "";
-                    let onyomiReading = "";
-
-                    if (kanjiReading) {
-                        kunyomiReading = kanjiReading.kunyomi || "";
-                        onyomiReading = kanjiReading.onyomi || "";
-                        englishMeaningFromReadings = kanjiReading.english || "";
-                    }
-
-                    if (!onyomiReading && hasPhoneticRadical && phoneticRadical !== "none") {
-                        const phoneticRadicalData = phoneticRadicalDatabase[phoneticRadical];
-                        if (phoneticRadicalData) {
-                            const derivedKanji = [
-                                ...(phoneticRadicalData.derivedKanji?.regular || []),
-                                ...(phoneticRadicalData.derivedKanji?.modified || []),
-                                ...(phoneticRadicalData.derivedKanji?.exception || []),
-                                ...(phoneticRadicalData.derivedKanji?.doublereading || [])
-                            ];
-                            const kanjiEntryInPhoneticDB = derivedKanji.find(entry => entry && entry.kanji === displayKanji);
-                            onyomiReading = kanjiEntryInPhoneticDB?.reading || phoneticRadicalReading || "";
-                        } else {
-                            onyomiReading = phoneticRadicalReading || "";
-                        }
-                    }
-
-                    updateReadingBoxes(onyomiReading || "no on'yomi", phoneticRadical, phoneticRadicalReading, kunyomiReading || "no kun'yomi");
-                    kunyomiBoxElement.style.backgroundColor = "#ffffff";
-                    kunyomiBoxElement.style.color = "#000000";
-
-                    englishBoxElement.innerHTML = englishMeaningFromReadings
-                        ? `<p>${englishMeaningFromReadings}</p>`
-                        : "<p>No specific translation found.</p>";
-
-                    radicalBoxElement.style.backgroundColor = phoneticRadical && phoneticRadical !== "none" ? "#00b4d8" : "";
-                    radicalBoxElement.style.color = phoneticRadical && phoneticRadical !== "none" ? "#ffffff" : "";
-                    lightBlueRows.forEach(row => row.style.display = '');
-                    if (resultContainer) resultContainer.style.display = 'flex';
+                    updateMobileBoxes();
+                    return;
                 }
-            } else {
+
+                bestMatchEntry = filteredVocab[0];
+            }
+
+            let displayKanji = '';
+            const searchVariations = getSearchVariations(inputLower);
+            const allMatchingKanji = Array.isArray(readings)
+                ? readings.filter((readingEntry) => {
+                    if (!readingEntry?.english) {
+                        return false;
+                    }
+
+                    const meanings = readingEntry.english
+                        .toLowerCase()
+                        .split(/[,;]/)
+                        .map((meaning) => meaning.trim())
+                        .filter(Boolean);
+
+                    return meanings.some((meaning) => {
+                        const words = meaning.split(/\s+/).filter(Boolean);
+                        return searchVariations.some((variant) => (
+                            meaning === variant ||
+                            words[0] === variant ||
+                            (
+                                words.length > 1 &&
+                                (
+                                    (words[0] === 'to' && words[1] === variant) ||
+                                    ((words[0] === 'a' || words[0] === 'an') && words[1] === variant)
+                                )
+                            )
+                        ));
+                    });
+                })
+                : [];
+
+            let matchingKanjiFromReadings = null;
+            if (allMatchingKanji.length > 0) {
+                const jlptPriority = { N5: 1, N4: 2, N3: 3, N2: 4, N1: 5, null: 6 };
+                allMatchingKanji.sort((a, b) => {
+                    const levelA = getJLPTLevel(a.kanji);
+                    const levelB = getJLPTLevel(b.kanji);
+                    return (jlptPriority[levelA] || 6) - (jlptPriority[levelB] || 6);
+                });
+                matchingKanjiFromReadings = allMatchingKanji[0];
+            }
+
+            if (matchingKanjiFromReadings?.kanji) {
+                displayKanji = matchingKanjiFromReadings.kanji;
+            }
+
+            if (!displayKanji && bestMatchEntry) {
+                displayKanji = extractFirstKanjiFromEntry(bestMatchEntry);
+            }
+
+            if (!displayKanji) {
+                // Collapse the whole kanji area (row + level bubble + English
+                // box + mobile boxes) so nothing empty is left and the vocab
+                // sits right under the search bar (N4 + N5).
+                document.querySelector('.container')?.classList.add('no-kanji-result');
                 displayKanjiElement.textContent = "";
-                resultElement.textContent = "No matching vocabulary found.";
-                englishBoxElement.innerHTML = "<p>no word found</p>";
+                // Use setProperty('important') so these override the desktop
+                // grid's `display:flex !important` rules on the boxes.
+                displayKanjiElement.style.setProperty("display", "none", "important");
+                resultElement.textContent = "";
+                resultElement.style.display = "none";
+                resultLeftElement.innerHTML = "";
+                resultLeftElement.style.display = "none";
+                englishBoxElement.innerHTML = "";
+                englishBoxElement.style.setProperty("display", "none", "important");
                 updateReadingBoxes("", "", "", "");
+                kunyomiBoxElement.style.setProperty("display", "none", "important");
+                onyomiBoxElement.style.setProperty("display", "none", "important");
+                radicalBoxElement.style.setProperty("display", "none", "important");
+                meaningRadicalBoxElement.style.setProperty("display", "none", "important");
                 levelBubbleElement.style.display = "none";
                 lightBlueRows.forEach(row => row.style.display = 'none');
-                if (resultContainer) resultContainer.style.display = 'none';
+                if (resultContainer) {
+                    resultContainer.style.display = 'none';
+                }
+                if (navContainer) {
+                    navContainer.style.display = 'none';
+                }
+
+                const existingButton = document.getElementById("addKanjiButton");
+                if (existingButton) {
+                    existingButton.remove();
+                }
+
+                const mobileDisplayKanjiContainer = document.getElementById("mobile-displayKanjiContainer");
+                if (mobileDisplayKanjiContainer) {
+                    mobileDisplayKanjiContainer.style.display = "none";
+                }
+
+                updateMobileBoxes();
+                return;
+            }
+
+            displayKanjiElement.textContent = displayKanji;
+            displayKanjiElement.style.display = "flex";
+            if (navContainer) {
+                navContainer.style.display = "flex";
+            }
+            resultElement.style.display = "";
+            resultLeftElement.style.display = "";
+            englishBoxElement.style.display = "";
+
+            const mobileDisplayKanjiContainer = document.getElementById("mobile-displayKanjiContainer");
+            if (mobileDisplayKanjiContainer) {
+                mobileDisplayKanjiContainer.style.display = "";
+            }
+
+            const level = getJLPTLevel(displayKanji);
+            if (level) {
+                levelBubbleElement.textContent = level;
+                levelBubbleElement.className = `level-bubble ${level.toLowerCase()}`;
+                levelBubbleElement.style.display = "inline-block";
+            } else {
+                levelBubbleElement.style.display = "none";
+            }
+            applyJlptKanjiBoxStyle(level || null);
+
+            const phoneticRadicalInfo = checkKanjiReadingGroup(displayKanji);
+            const hasPhoneticRadical = !phoneticRadicalInfo.includes('does not contain a phonetic radical');
+            let phoneticRadical = "none";
+            let phoneticRadicalReading = "";
+
+            if (hasPhoneticRadical) {
+                const parts = phoneticRadicalInfo.split('phonetic radical');
+                if (parts.length > 1) {
+                    const radicalPart = parts[1];
+                    const radicalSpanMatches = Array.from(
+                        radicalPart.matchAll(/<span class="(?:kanji-highlight|reading-highlight|phonetic-radical-chip)">(.+?)<\/span>/g)
+                    );
+                    if (radicalSpanMatches[0]?.[1]) {
+                        phoneticRadical = radicalSpanMatches[0][1];
+                    }
+                    if (radicalSpanMatches[1]?.[1]) {
+                        phoneticRadicalReading = radicalSpanMatches[1][1];
+                    }
+                }
+                phoneticRadicalReading = phoneticRadicalDatabase[phoneticRadical]?.defaultReading || phoneticRadicalReading || "";
+            }
+
+            resultElement.innerHTML = phoneticRadicalInfo;
+            const meaningRadicalMessage = formatMeaningRadicalMessage(displayKanji);
+            resultLeftElement.innerHTML = meaningRadicalMessage || "";
+
+            checkMeaningRadical(displayKanji);
+            const kanjiReading = readings.find((reading) => reading.kanji === displayKanji) || {};
+            const fallbackEnglishSense =
+                bestMatchEntry?.sense?.find((sense) => sense && sense.text)?.text || '';
+
+            let kunyomiReading = kanjiReading.kunyomi || "";
+            let onyomiReading = kanjiReading.onyomi || "";
+            let englishMeaningFromReadings = kanjiReading.english || "";
+
+            if (!onyomiReading && hasPhoneticRadical && phoneticRadical !== "none") {
+                const phoneticRadicalData = phoneticRadicalDatabase[phoneticRadical];
+                if (phoneticRadicalData) {
+                    const derivedKanji = [
+                        ...(phoneticRadicalData.derivedKanji?.regular || []),
+                        ...(phoneticRadicalData.derivedKanji?.modified || []),
+                        ...(phoneticRadicalData.derivedKanji?.exception || []),
+                        ...(phoneticRadicalData.derivedKanji?.doublereading || [])
+                    ];
+                    const kanjiEntryInPhoneticDB = derivedKanji.find((entry) => entry && entry.kanji === displayKanji);
+                    onyomiReading = kanjiEntryInPhoneticDB?.reading || phoneticRadicalReading || "";
+                } else {
+                    onyomiReading = phoneticRadicalReading || "";
+                }
+            }
+
+            updateReadingBoxes(
+                onyomiReading || "no on'yomi",
+                phoneticRadical,
+                phoneticRadicalReading,
+                kunyomiReading || "no kun'yomi"
+            );
+
+            kunyomiBoxElement.style.display = "";
+            onyomiBoxElement.style.display = "";
+            radicalBoxElement.style.display = "";
+            meaningRadicalBoxElement.style.display = "";
+            kunyomiBoxElement.style.backgroundColor = "#ffffff";
+            kunyomiBoxElement.style.color = "#000000";
+
+            englishBoxElement.innerHTML = englishMeaningFromReadings
+                ? `<p>${englishMeaningFromReadings}</p>`
+                : fallbackEnglishSense
+                    ? `<p>from vocab: ${fallbackEnglishSense}</p>`
+                    : `<p>No specific translation found.</p>`;
+
+            radicalBoxElement.style.backgroundColor = "";
+            radicalBoxElement.style.color = "";
+            lightBlueRows.forEach((row) => {
+                row.style.display = '';
+            });
+            if (resultContainer) {
+                resultContainer.style.display = 'flex';
             }
         } else {
+            displayKanjiElement.style.display = "flex";
+            resultElement.style.display = "";
+            resultLeftElement.style.display = "";
+            englishBoxElement.style.display = "";
+            kunyomiBoxElement.style.display = "";
+            onyomiBoxElement.style.display = "";
+            radicalBoxElement.style.display = "";
+            meaningRadicalBoxElement.style.display = "";
+            const mobileDisplayKanjiContainer = document.getElementById("mobile-displayKanjiContainer");
+            if (mobileDisplayKanjiContainer) {
+                mobileDisplayKanjiContainer.style.display = "";
+            }
+
             if (currentInput.length > 1) {
                 navButton = document.createElement('span');
                 navButton.id = 'navButton';
@@ -20342,6 +21721,19 @@ async function displayCurrentKanji() {
             lightBlueRows.forEach(row => {
                 row.style.display = isKana ? 'none' : '';
             });
+            // The reading/radical boxes carry a `display:flex !important` grid
+            // rule, so hide/show them explicitly with matching priority so kana
+            // characters (べ, る, み …) never show radical analysis, while kanji
+            // characters (食) do.
+            [kunyomiBoxElement, onyomiBoxElement, radicalBoxElement, meaningRadicalBoxElement]
+                .forEach((el) => {
+                    if (!el) return;
+                    if (isKana) {
+                        el.style.setProperty('display', 'none', 'important');
+                    } else {
+                        el.style.removeProperty('display');
+                    }
+                });
             if (resultContainer) {
                 resultContainer.style.display = isKana ? 'none' : 'flex';
             }
@@ -20349,6 +21741,13 @@ async function displayCurrentKanji() {
             if (isKana) {
                 if (englishBoxElement) {
                     englishBoxElement.classList.add('kana-mode');
+                    // N13: move the English box up beside the kanji, into the
+                    // space freed by the hidden reading/radical boxes.
+                    document.querySelector('.container')?.classList.add('kana-layout');
+                    const kbSectionKana = document.getElementById('kanjiBoxSection');
+                    if (kbSectionKana && englishBoxElement.parentElement !== kbSectionKana) {
+                        kbSectionKana.appendChild(englishBoxElement);
+                    }
                 }
                 const phoneticValue = getPhoneticValue(kanjiChar);
                 const typeLabel = charType === 'small-hiragana' ? 'small hiragana' :
@@ -20360,6 +21759,7 @@ async function displayCurrentKanji() {
                 levelBubbleElement.textContent = 'N5';
                 levelBubbleElement.className = 'level-bubble n5';
                 levelBubbleElement.style.display = "inline-block";
+                applyJlptKanjiBoxStyle('n5');
             } else {
                 const level = getJLPTLevel(kanjiChar);
                 if (level) {
@@ -20369,6 +21769,7 @@ async function displayCurrentKanji() {
                 } else {
                     levelBubbleElement.style.display = "none";
                 }
+                applyJlptKanjiBoxStyle(level || null);
 
                 const phoneticRadicalInfo = checkKanjiReadingGroup(kanjiChar);
                 const hasPhoneticRadical = !phoneticRadicalInfo.includes('does not contain a phonetic radical');
@@ -20379,13 +21780,14 @@ async function displayCurrentKanji() {
                     const parts = phoneticRadicalInfo.split('phonetic radical');
                     if (parts.length > 1) {
                         const radicalPart = parts[1];
-                        const radicalMatch = radicalPart.match(/<span class="kanji-highlight">(.+?)<\/span>/);
-                        if (radicalMatch && radicalMatch[1]) {
-                            phoneticRadical = radicalMatch[1];
-                            const readingMatch = radicalPart.match(/<span class="reading-highlight">(.+?)<\/span>/);
-                            if (readingMatch && readingMatch[1]) {
-                                phoneticRadicalReading = readingMatch[1];
-                            }
+                        const radicalSpanMatches = Array.from(
+                            radicalPart.matchAll(/<span class="(?:kanji-highlight|reading-highlight|phonetic-radical-chip)">(.+?)<\/span>/g)
+                        );
+                        if (radicalSpanMatches[0]?.[1]) {
+                            phoneticRadical = radicalSpanMatches[0][1];
+                        }
+                        if (radicalSpanMatches[1]?.[1]) {
+                            phoneticRadicalReading = radicalSpanMatches[1][1];
                         }
                     }
                     phoneticRadicalReading = phoneticRadicalDatabase[phoneticRadical]?.defaultReading || phoneticRadicalReading || "";
@@ -20452,7 +21854,7 @@ async function displayCurrentKanji() {
     }
 
     updateMobileBoxes();
-    await updateVocabDisplay(currentInput);
+    syncRadicalTails();
 
     document.querySelectorAll('.clickable-kanji').forEach(kanjiSpan => {
         kanjiSpan.removeEventListener('click', handleKanjiClick);
@@ -20460,21 +21862,82 @@ async function displayCurrentKanji() {
     });
 }
 
+// N10: if either radical box needs two lines, stack BOTH (radical on line 1,
+// arrow + meaning/reading on line 2) so the two boxes stay visually in sync.
+// Shrink a radical box's "→ meaning/reading" tail until it fits the box width
+// (the tail is nowrap, so a long meaning like 款's 欠 → "person w/mouth open"
+// would otherwise spill over the border).
+function fitRadicalBoxText(boxId) {
+    const box = document.getElementById(boxId);
+    if (!box) return;
+    const tail = box.querySelector('.radical-tail');
+    if (!tail) return;
+    tail.style.fontSize = '';
+    let size = parseFloat(getComputedStyle(tail).fontSize) || 16;
+    let guard = 0;
+    while (box.scrollWidth > box.clientWidth + 1 && size > 9 && guard < 40) {
+        size -= 0.5;
+        tail.style.fontSize = `${size}px`;
+        guard++;
+    }
+}
+
+const RADICAL_BOX_IDS = ['meaningradical-box', 'radical-box', 'mobile-meaningradical-box', 'mobile-radical-box'];
+
+function syncRadicalTails() {
+    // Clear any previous shrink so measurements start from the natural size.
+    RADICAL_BOX_IDS.forEach((id) => {
+        const t = document.getElementById(id)?.querySelector('.radical-tail');
+        if (t) t.style.fontSize = '';
+    });
+    const wraps = (boxId) => {
+        const box = document.getElementById(boxId);
+        const chip = box?.querySelector('.meaning-radical-chip, .phonetic-radical-chip');
+        const tail = box?.querySelector('.radical-tail');
+        if (!chip || !tail) return false;
+        return tail.getBoundingClientRect().top > chip.getBoundingClientRect().bottom - 6;
+    };
+    const kbs = document.getElementById('kanjiBoxSection');
+    if (kbs) {
+        kbs.classList.remove('radicals-stacked');
+        if (wraps('meaningradical-box') || wraps('radical-box')) {
+            kbs.classList.add('radicals-stacked');
+        }
+    }
+    const mboxes = document.querySelector('.mobile-boxes');
+    if (mboxes) {
+        mboxes.classList.remove('radicals-stacked');
+        if (wraps('mobile-meaningradical-box') || wraps('mobile-radical-box')) {
+            mboxes.classList.add('radicals-stacked');
+        }
+    }
+    // After stacking is decided, shrink any tail that still overflows.
+    RADICAL_BOX_IDS.forEach(fitRadicalBoxText);
+}
+
 function handleKanjiClick() {
     const clickedKanji = this.textContent;
+    const shouldJumpToTop = !!this.closest('#result-left, #result, #mobile-meaningradical-box, #mobile-radical-box');
     const kanjiInputElement = document.getElementById('kanjiInput');
     if (kanjiInputElement) {
         kanjiInputElement.value = clickedKanji;
     }
+    const searchPromise = triggerLookup(clickedKanji);
+
+    if (shouldJumpToTop) {
+        scrollDictionaryToTop();
+        searchPromise.catch((error) => {
+            console.error('Error processing radical kanji click:', error);
+        });
+        return;
+    }
+
     (async () => {
-        await processKanjiInput(clickedKanji);
-        setTimeout(() => {
-            const h4Element = document.querySelector('h4');
-            if (h4Element) {
-                h4Element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }, 100);
-    })();
+        await searchPromise;
+        scrollDictionaryToTop();
+    })().catch((error) => {
+        console.error('Error processing kanji click:', error);
+    });
 }
 
 function navigateKanji(direction) {
@@ -20487,11 +21950,391 @@ function navigateKanji(direction) {
     displayCurrentKanji();
 }
 
+const handwritingButtonElement = document.getElementById("handwritingButton");
+const handwritingModalElement = document.getElementById("handwritingModal");
+const handwritingBackdropElement = document.getElementById("handwritingBackdrop");
+const handwritingModalPanelElement = handwritingModalElement
+    ? handwritingModalElement.querySelector(".handwriting-modal-panel")
+    : null;
+const handwritingCanvasElement = document.getElementById("handwritingCanvas");
+const handwritingStatusElement = document.getElementById("handwritingStatus");
+const handwritingCandidatesElement = document.getElementById("handwritingModalCandidates");
+const handwritingUndoButtonElement = document.getElementById("handwritingUndoButton");
+const handwritingClearButtonElement = document.getElementById("handwritingClearButton");
+const handwritingCancelButtonElement = document.getElementById("handwritingCancelButton");
+const handwritingUseButtonElement = document.getElementById("handwritingUseButton");
+const HANDWRITING_KANJI_REGEX = /[一-龯々〆ヵヶ]/;
+
+let handwritingCanvasContext = null;
+let handwritingStrokes = [];
+let handwritingCurrentStroke = null;
+let handwritingIsDrawing = false;
+let handwritingIsRecognizing = false;
+let handwritingLastFocusedElement = null;
+
+function isHandwritingModalOpen() {
+    return !!handwritingModalElement && handwritingModalElement.classList.contains("is-open");
+}
+
+function setHandwritingStatus(message = "") {
+    if (handwritingStatusElement) {
+        handwritingStatusElement.textContent = message;
+    }
+}
+
+function setHandwritingRecognizingState(isRecognizing) {
+    handwritingIsRecognizing = isRecognizing;
+    if (handwritingUseButtonElement) {
+        handwritingUseButtonElement.disabled = isRecognizing;
+    }
+}
+
+function clearHandwritingCandidates() {
+    if (!handwritingCandidatesElement) {
+        return;
+    }
+
+    handwritingCandidatesElement.innerHTML = "";
+    handwritingCandidatesElement.style.display = "none";
+}
+
+function submitHandwritingCandidate(candidate) {
+    const normalizedCandidate = typeof candidate === "string" ? candidate.trim() : "";
+    if (!normalizedCandidate) {
+        return;
+    }
+
+    const kanjiInputElement = document.getElementById("kanjiInput");
+    if (kanjiInputElement) {
+        kanjiInputElement.value = normalizedCandidate;
+    }
+
+    closeHandwritingModal({ returnFocus: false });
+    triggerLookup(normalizedCandidate).catch((error) => {
+        console.error("Error processing handwriting lookup:", error);
+    });
+}
+
+function renderHandwritingCandidates(candidates) {
+    if (!handwritingCandidatesElement) {
+        return;
+    }
+
+    handwritingCandidatesElement.innerHTML = "";
+    if (!Array.isArray(candidates) || candidates.length === 0) {
+        handwritingCandidatesElement.style.display = "none";
+        return;
+    }
+
+    const label = document.createElement("span");
+    label.className = "handwriting-candidate-label";
+    label.textContent = "Candidates:";
+    handwritingCandidatesElement.appendChild(label);
+
+    candidates.forEach((candidate) => {
+        const candidateChip = document.createElement("button");
+        candidateChip.type = "button";
+        candidateChip.className = "handwriting-candidate-chip";
+        candidateChip.textContent = candidate;
+        candidateChip.addEventListener("click", () => {
+            submitHandwritingCandidate(candidate);
+        });
+        handwritingCandidatesElement.appendChild(candidateChip);
+    });
+
+    handwritingCandidatesElement.style.display = "flex";
+}
+
+function ensureHandwritingContext() {
+    if (!handwritingCanvasElement) {
+        return null;
+    }
+
+    if (!handwritingCanvasContext) {
+        handwritingCanvasContext = handwritingCanvasElement.getContext("2d");
+    }
+
+    return handwritingCanvasContext;
+}
+
+function resizeHandwritingCanvas() {
+    if (!handwritingCanvasElement) {
+        return;
+    }
+
+    const rect = handwritingCanvasElement.getBoundingClientRect();
+    if (!rect.width || !rect.height) {
+        return;
+    }
+
+    const dpr = Math.max(window.devicePixelRatio || 1, 1);
+    handwritingCanvasElement.width = Math.max(1, Math.floor(rect.width * dpr));
+    handwritingCanvasElement.height = Math.max(1, Math.floor(rect.height * dpr));
+
+    const handwritingContext = ensureHandwritingContext();
+    if (!handwritingContext) {
+        return;
+    }
+
+    handwritingContext.setTransform(dpr, 0, 0, dpr, 0, 0);
+    redrawHandwritingCanvas();
+}
+
+function redrawHandwritingCanvas() {
+    const handwritingContext = ensureHandwritingContext();
+    if (!handwritingContext || !handwritingCanvasElement) {
+        return;
+    }
+
+    const dpr = Math.max(window.devicePixelRatio || 1, 1);
+    const cssWidth = handwritingCanvasElement.width / dpr;
+    const cssHeight = handwritingCanvasElement.height / dpr;
+
+    handwritingContext.clearRect(0, 0, cssWidth, cssHeight);
+    handwritingContext.lineCap = "round";
+    handwritingContext.lineJoin = "round";
+    handwritingContext.strokeStyle = "#0f2230";
+    handwritingContext.lineWidth = 4;
+
+    handwritingStrokes.forEach((stroke) => {
+        if (!Array.isArray(stroke) || stroke.length === 0) {
+            return;
+        }
+
+        if (stroke.length === 1) {
+            const point = stroke[0];
+            handwritingContext.beginPath();
+            handwritingContext.arc(point.x, point.y, 2, 0, Math.PI * 2);
+            handwritingContext.fillStyle = "#0f2230";
+            handwritingContext.fill();
+            return;
+        }
+
+        handwritingContext.beginPath();
+        handwritingContext.moveTo(stroke[0].x, stroke[0].y);
+
+        for (let index = 1; index < stroke.length - 1; index++) {
+            const point = stroke[index];
+            const nextPoint = stroke[index + 1];
+            const midX = (point.x + nextPoint.x) / 2;
+            const midY = (point.y + nextPoint.y) / 2;
+            handwritingContext.quadraticCurveTo(point.x, point.y, midX, midY);
+        }
+
+        const lastPoint = stroke[stroke.length - 1];
+        handwritingContext.lineTo(lastPoint.x, lastPoint.y);
+        handwritingContext.stroke();
+    });
+}
+
+function resetHandwritingDrawing() {
+    handwritingStrokes = [];
+    handwritingCurrentStroke = null;
+    handwritingIsDrawing = false;
+    redrawHandwritingCanvas();
+    clearHandwritingCandidates();
+}
+
+function closeHandwritingModal({ returnFocus = true } = {}) {
+    if (!handwritingModalElement) {
+        return;
+    }
+
+    handwritingModalElement.classList.remove("is-open");
+    handwritingModalElement.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("handwriting-modal-open");
+    setHandwritingRecognizingState(false);
+    setHandwritingStatus("");
+    clearHandwritingCandidates();
+
+    if (returnFocus && handwritingLastFocusedElement && typeof handwritingLastFocusedElement.focus === "function") {
+        handwritingLastFocusedElement.focus();
+    }
+}
+
+function openHandwritingModal() {
+    if (!handwritingModalElement) {
+        return;
+    }
+
+    handwritingLastFocusedElement = document.activeElement;
+    setHandwritingRecognizingState(false);
+    resetHandwritingDrawing();
+    handwritingModalElement.classList.add("is-open");
+    handwritingModalElement.setAttribute("aria-hidden", "false");
+    document.body.classList.add("handwriting-modal-open");
+    setHandwritingStatus("Draw one kanji, then tap Recognize.");
+    resizeHandwritingCanvas();
+
+    if (handwritingModalPanelElement && typeof handwritingModalPanelElement.focus === "function") {
+        handwritingModalPanelElement.focus();
+    }
+}
+
+function handwritingCanvasPoint(event) {
+    if (!handwritingCanvasElement) {
+        return null;
+    }
+
+    const rect = handwritingCanvasElement.getBoundingClientRect();
+    return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+        t: Date.now()
+    };
+}
+
+function normalizeHandwritingRecognitionCandidates(result) {
+    const rawCandidates = Array.isArray(result)
+        ? result
+        : (Array.isArray(result?.candidates) ? result.candidates : []);
+
+    return rawCandidates
+        .map((value) => (value == null ? "" : String(value).trim()))
+        .map((value) => {
+            if (!value) {
+                return "";
+            }
+
+            if (value.length === 1 && HANDWRITING_KANJI_REGEX.test(value)) {
+                return value;
+            }
+
+            const match = value.match(HANDWRITING_KANJI_REGEX);
+            return match ? match[0] : "";
+        })
+        .filter((value, index, array) => value && array.indexOf(value) === index);
+}
+
+async function recognizeHandwritingWithGoogle(strokes) {
+    const normalizedInk = (Array.isArray(strokes) ? strokes : [])
+        .filter((stroke) => Array.isArray(stroke) && stroke.length > 0)
+        .map((stroke) => {
+            const xs = [];
+            const ys = [];
+            const ts = [];
+
+            stroke.forEach((point, index) => {
+                xs.push(Number(point?.x) || 0);
+                ys.push(Number(point?.y) || 0);
+                ts.push(Number(point?.t) || (index * 50));
+            });
+
+            return [xs, ys, ts];
+        });
+
+    if (normalizedInk.length === 0) {
+        return [];
+    }
+
+    const writingArea = handwritingCanvasElement?.getBoundingClientRect?.();
+    const writingAreaWidth = Math.max(1, Math.round(writingArea?.width || 300));
+    const writingAreaHeight = Math.max(1, Math.round(writingArea?.height || 300));
+
+    const payload = {
+        app_version: 0.4,
+        api_level: "537.36",
+        device: window.navigator.userAgent,
+        input_type: 0,
+        options: "enable_pre_space",
+        requests: [{
+            writing_guide: {
+                writing_area_width: writingAreaWidth,
+                writing_area_height: writingAreaHeight
+            },
+            pre_context: "",
+            max_num_results: 5,
+            max_completions: 0,
+            ink: normalizedInk,
+            language: "ja"
+        }]
+    };
+
+    const response = await fetch(
+        "https://inputtools.google.com/request?itc=ja-t-i0-handwrit&app=demopage",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Recognition service returned ${response.status}.`);
+    }
+
+    const data = await response.json();
+    if (!Array.isArray(data) || data[0] !== "SUCCESS") {
+        throw new Error("Recognition failed. Please try again.");
+    }
+
+    return Array.isArray(data?.[1]?.[0]?.[1]) ? data[1][0][1] : [];
+}
+
+function getDesktopHandwritingRecognizer() {
+    if (window.RadicalHandwriting && typeof window.RadicalHandwriting.recognize === "function") {
+        return window.RadicalHandwriting.recognize.bind(window.RadicalHandwriting);
+    }
+
+    if (typeof window.recognizeHandwritingCandidates === "function") {
+        return window.recognizeHandwritingCandidates;
+    }
+
+    return recognizeHandwritingWithGoogle;
+}
+
+async function requestHandwritingRecognition() {
+    if (handwritingIsRecognizing) {
+        return;
+    }
+
+    const normalizedStrokes = handwritingCurrentStroke && handwritingCurrentStroke.length
+        ? [...handwritingStrokes.slice(0, -1), handwritingCurrentStroke]
+        : handwritingStrokes;
+
+    if (!normalizedStrokes.length) {
+        setHandwritingStatus("Please draw a kanji first.");
+        return;
+    }
+
+    const handwritingRecognizer = getDesktopHandwritingRecognizer();
+    if (!handwritingRecognizer) {
+        clearHandwritingCandidates();
+        setHandwritingStatus("Automatic recognition is not available in this desktop build yet. Draw here, then type or paste the kanji into the search box.");
+        return;
+    }
+
+    setHandwritingRecognizingState(true);
+    setHandwritingStatus("Recognizing...");
+
+    try {
+        const recognitionResult = await Promise.resolve(handwritingRecognizer(normalizedStrokes));
+        const normalizedCandidates = normalizeHandwritingRecognitionCandidates(recognitionResult).slice(0, 5);
+
+        if (!normalizedCandidates.length) {
+            clearHandwritingCandidates();
+            setHandwritingStatus("Could not recognize that kanji. Please try again.");
+            return;
+        }
+
+        renderHandwritingCandidates(normalizedCandidates);
+        setHandwritingStatus("Tap a candidate below the canvas.");
+    } catch (error) {
+        console.error("Handwriting recognition failed:", error);
+        clearHandwritingCandidates();
+        setHandwritingStatus(error?.message || "Recognition failed. Please try again.");
+    } finally {
+        setHandwritingRecognizingState(false);
+    }
+}
+
 // Event Listeners
 document.getElementById("checkButton").addEventListener("click", async () => {
     const kanjiInputElement = document.getElementById("kanjiInput");
     const inputValue = kanjiInputElement ? kanjiInputElement.value.trim() : "";
-    await processKanjiInput(inputValue);
+    await triggerLookup(inputValue);
 });
 
 document.getElementById("randomButton").addEventListener("click", async () => {
@@ -20505,7 +22348,7 @@ document.getElementById("randomButton").addEventListener("click", async () => {
         } else {
             console.error("Kanji input field not found to display random Kanji.");
         }
-        await processKanjiInput(randomKanji);
+        await triggerLookup(randomKanji);
     } else {
         if (resultElement) {
             resultElement.textContent = "Could not find a random kanji.";
@@ -20522,7 +22365,7 @@ if (kanjiInputElement) {
         if (event.key === "Enter" && !event.target.isComposing) {
             event.preventDefault();
             const inputValue = event.target.value.trim();
-            await processKanjiInput(inputValue);
+            await triggerLookup(inputValue);
         }
     });
     kanjiInputElement.addEventListener("compositionstart", (event) => {
@@ -20535,7 +22378,7 @@ if (kanjiInputElement) {
         const inputValue = event.target.value.trim();
         if (inputValue) {
             (async () => {
-                await processKanjiInput(inputValue);
+                await triggerLookup(inputValue);
             })();
         }
     });
@@ -20543,8 +22386,148 @@ if (kanjiInputElement) {
     console.warn("Element with ID 'kanjiInput' not found for keydown/composition listeners.");
 }
 
+if (handwritingCanvasElement) {
+    handwritingCanvasElement.addEventListener("pointerdown", (event) => {
+        if (!isHandwritingModalOpen() || handwritingIsRecognizing) {
+            return;
+        }
+
+        event.preventDefault();
+        if (typeof handwritingCanvasElement.setPointerCapture === "function") {
+            handwritingCanvasElement.setPointerCapture(event.pointerId);
+        }
+
+        const point = handwritingCanvasPoint(event);
+        if (!point) {
+            return;
+        }
+
+        clearHandwritingCandidates();
+        handwritingCurrentStroke = [point];
+        handwritingStrokes.push(handwritingCurrentStroke);
+        handwritingIsDrawing = true;
+        setHandwritingStatus("Draw one kanji, then tap Recognize.");
+        redrawHandwritingCanvas();
+    });
+
+    handwritingCanvasElement.addEventListener("pointermove", (event) => {
+        if (!handwritingIsDrawing || !handwritingCurrentStroke) {
+            return;
+        }
+
+        event.preventDefault();
+        const point = handwritingCanvasPoint(event);
+        if (!point) {
+            return;
+        }
+
+        handwritingCurrentStroke.push(point);
+        redrawHandwritingCanvas();
+    });
+
+    const stopHandwritingDrawing = (event) => {
+        if (!handwritingIsDrawing) {
+            return;
+        }
+
+        event.preventDefault();
+        handwritingIsDrawing = false;
+        handwritingCurrentStroke = null;
+
+        if (handwritingCanvasElement && typeof handwritingCanvasElement.releasePointerCapture === "function") {
+            try {
+                handwritingCanvasElement.releasePointerCapture(event.pointerId);
+            } catch (_error) {
+                // Ignore release errors when the pointer capture has already ended.
+            }
+        }
+
+        redrawHandwritingCanvas();
+    };
+
+    handwritingCanvasElement.addEventListener("pointerup", stopHandwritingDrawing);
+    handwritingCanvasElement.addEventListener("pointercancel", stopHandwritingDrawing);
+    handwritingCanvasElement.addEventListener("pointerleave", stopHandwritingDrawing);
+}
+
+if (handwritingButtonElement) {
+    handwritingButtonElement.addEventListener("click", () => {
+        openHandwritingModal();
+    });
+}
+
+if (handwritingBackdropElement) {
+    handwritingBackdropElement.addEventListener("click", () => {
+        closeHandwritingModal();
+    });
+}
+
+if (handwritingCancelButtonElement) {
+    handwritingCancelButtonElement.addEventListener("click", () => {
+        closeHandwritingModal();
+    });
+}
+
+if (handwritingUndoButtonElement) {
+    handwritingUndoButtonElement.addEventListener("click", () => {
+        if (!handwritingStrokes.length) {
+            return;
+        }
+
+        handwritingStrokes.pop();
+        clearHandwritingCandidates();
+        redrawHandwritingCanvas();
+        setHandwritingStatus(handwritingStrokes.length ? "Last stroke removed." : "Canvas cleared.");
+    });
+}
+
+if (handwritingClearButtonElement) {
+    handwritingClearButtonElement.addEventListener("click", () => {
+        resetHandwritingDrawing();
+        setHandwritingStatus("Canvas cleared.");
+    });
+}
+
+if (handwritingUseButtonElement) {
+    handwritingUseButtonElement.addEventListener("click", () => {
+        requestHandwritingRecognition();
+    });
+}
+
+let lastDictionaryLayoutWasMobile = isMobileDictionaryLayout();
+let dictionaryLayoutRerenderTimeout = null;
+
+window.addEventListener("resize", () => {
+    if (isHandwritingModalOpen()) {
+        resizeHandwritingCanvas();
+    }
+    updateMobileBoxes();
+    syncResultContainerVisibility();
+
+    const isMobileLayout = isMobileDictionaryLayout();
+    if (isMobileLayout !== lastDictionaryLayoutWasMobile) {
+        lastDictionaryLayoutWasMobile = isMobileLayout;
+        if (dictionaryLayoutRerenderTimeout) {
+            window.clearTimeout(dictionaryLayoutRerenderTimeout);
+        }
+        dictionaryLayoutRerenderTimeout = window.setTimeout(() => {
+            if (currentInput) {
+                displayCurrentKanji();
+            }
+        }, 80);
+    }
+});
+
 // Arrow key navigation
 document.addEventListener("keydown", (e) => {
+    if (isHandwritingModalOpen()) {
+        if (e.key === "Escape") {
+            e.preventDefault();
+            closeHandwritingModal();
+        }
+        return;
+    }
+
     if (currentInput && currentInput.length > 1) {
         if (e.key === "ArrowRight") {
             navigateKanji(1);
@@ -20582,7 +22565,7 @@ if (kanjiBoxSection) {
 // Initial Load - wait for Supabase to be ready
 function initialLoad() {
     if (isSupabaseReady) {
-        processKanjiInput("紅");
+        triggerLookup("紅");
     } else {
         setTimeout(initialLoad, 100);
     }
@@ -20657,7 +22640,13 @@ function checkMeaningRadical(kanji) {
 
 function updateMeaningRadicalBox(radicalSymbol, radicalMeaning) {
     const meaningRadicalBoxElement = document.getElementById('meaningradical-box');
-    meaningRadicalBoxElement.innerHTML = radicalSymbol && radicalMeaning ? `${radicalMeaning} → ${radicalSymbol}` : "";
+    // Wrap in <p> (like the phonetic-radical box) so the space before the arrow
+    // is preserved and both boxes have the same chip→arrow spacing (N3). The
+    // "→ meaning" tail is a nowrap unit so, when the box needs two lines, the
+    // radical sits on line 1 and the arrow + meaning move together to line 2 (N10).
+    meaningRadicalBoxElement.innerHTML = radicalSymbol && radicalMeaning
+        ? `<p>${buildMeaningRadicalChip(radicalMeaning)}<span class="radical-tail"> → ${radicalSymbol}</span></p>`
+        : "";
 }
 
 
@@ -20665,26 +22654,24 @@ function updateMeaningRadicalBox(radicalSymbol, radicalMeaning) {
 // Function to format the output (unchanged, included for context)
 function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes) {
     let message = "";
-    const isMobile = window.innerWidth < 768; // Detect mobile device
-    const separator = isMobile ? "\n" : "、 "; // Use newline for mobile, comma for desktop
-
+    const useAndroidMobileListLayout = isMobileDictionaryLayout();
     const kanjiElement = `<span class="kanji-highlight clickable-kanji">${kanji}</span>`;
     const kanjiReadingElement = Array.isArray(kanjiReadings) ?
         kanjiReadings.map(reading => `<span class="reading-highlight">${reading}</span>`).join(" or ") :
         `<span class="reading-highlight">${kanjiReadings}</span>`;
-    const radicalElement = `<span class="kanji-highlight">${radical}</span>`;
+    const radicalElement = buildPhoneticRadicalChip(radical);
     const radicalReadingElement = Array.isArray(radicalReading) ?
-        radicalReading.map(reading => `<span class="reading-highlight">${reading}</span>`).join(" or ") :
-        `<span class="reading-highlight">${radicalReading}</span>`;
+        radicalReading.map((reading) => buildPhoneticRadicalChip(reading)).join(" or ") :
+        buildPhoneticRadicalChip(radicalReading);
 
     const { defaultReading, derivedKanji } = phoneticRadicalDatabase[radical] || {};
     const { regular = [], modified = [], exception = [], doublereading = [] } = derivedKanji || {};
 
-    function getKanjiWithJLPT(kanji) {
-        const level = getJLPTLevel(kanji);
+    function getKanjiWithJLPT(relatedKanji) {
+        const level = getJLPTLevel(relatedKanji);
         return level ?
-            `<span class="kanji-highlight clickable-kanji jlpt-${level.toLowerCase()}">${kanji}</span>` :
-            `<span class="clickable-kanji">${kanji}</span>`; // Non-JLPT kanji are clickable but not highlighted
+            `<span class="kanji-highlight clickable-kanji jlpt-${level.toLowerCase()}">${relatedKanji}</span>` :
+            `<span class="clickable-kanji">${relatedKanji}</span>`;
     }
 
     function sortByJLPT(kanjiList) {
@@ -20695,6 +22682,15 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
             const order = { "N5": 1, "N4": 2, "N3": 3, "N2": 4, "N1": 5, "Z": 6 };
             return order[levelA] - order[levelB];
         });
+    }
+
+    function buildRelatedKanjiItem(kanjiMarkup, detailText) {
+        return `<span class="related-kanji-item">${kanjiMarkup}<span class="related-kanji-detail">${detailText}</span></span>`;
+    }
+
+    function buildRelatedKanjiGroup(title, itemsMarkup) {
+        if (!itemsMarkup) return '';
+        return `<div class="related-kanji-group"><div class="jlpt-header">${title}</div><div class="kanji-list">${itemsMarkup}</div></div>`;
     }
 
     if (type === "regular") {
@@ -20719,24 +22715,63 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
 
     if (regular.length > 0) {
         const sortedRegular = sortByJLPT([...regular]);
-        const regularKanjiList = sortedRegular.map(k => `${getKanjiWithJLPT(k.kanji)} （${k.reading}）`).join(separator);
         message += `Other kanji that contain the ${Array.isArray(defaultReading) ? "double-reading phonetic" : "phonetic"} radical ${radicalElement} are:\n`;
-        message += `Kanji read like their phonetic radical:\n${regularKanjiList}\n`;
+        if (useAndroidMobileListLayout) {
+            const regularKanjiList = formatAndroidMobileRelatedKanjiList(
+                sortedRegular.map((entry) => `${getKanjiWithJLPT(entry.kanji)} （${escapeHtml(entry.reading)}）`)
+            );
+            message += `Kanji read like their phonetic radical:\n${regularKanjiList}\n`;
+        } else {
+            const regularKanjiList = sortedRegular
+                .map(k => buildRelatedKanjiItem(getKanjiWithJLPT(k.kanji), k.reading))
+                .join('');
+            message += `${buildRelatedKanjiGroup("Kanji read like their phonetic radical", regularKanjiList)}\n`;
+        }
     }
+
     if (doublereading.length > 0) {
         const sortedDouble = sortByJLPT([...doublereading]);
-        const doublereadingKanjiList = sortedDouble.map(k => `${getKanjiWithJLPT(k.kanji)} （${radicalReadingElement} & ${k.reading}）`).join(separator);
-        message += `Kanji with two readings (the default reading & a modified reading):\n${doublereadingKanjiList}\n`;
+        if (useAndroidMobileListLayout) {
+            const doublereadingKanjiList = formatAndroidMobileRelatedKanjiList(
+                sortedDouble.map((entry) => `${getKanjiWithJLPT(entry.kanji)} （${escapeHtml(Array.isArray(radicalReading) ? radicalReading.join(' / ') : radicalReading)} & ${escapeHtml(entry.reading)}）`)
+            );
+            message += `Kanji with two readings (the default reading & a modified reading):\n${doublereadingKanjiList}\n`;
+        } else {
+            const doublereadingKanjiList = sortedDouble
+                .map(k => buildRelatedKanjiItem(getKanjiWithJLPT(k.kanji), `${Array.isArray(radicalReading) ? radicalReading.join(' / ') : radicalReading} / ${k.reading}`))
+                .join('');
+            message += `${buildRelatedKanjiGroup("Kanji with two readings", doublereadingKanjiList)}\n`;
+        }
     }
+
     if (modified.length > 0) {
         const sortedModified = sortByJLPT([...modified]);
-        const modifiedKanjiList = sortedModified.map(k => `${getKanjiWithJLPT(k.kanji)} （${k.reading}）`).join(separator);
-        message += `Kanji whose reading is similar to their phonetic radical's:\n${modifiedKanjiList}\n`;
+        if (useAndroidMobileListLayout) {
+            const modifiedKanjiList = formatAndroidMobileRelatedKanjiList(
+                sortedModified.map((entry) => `${getKanjiWithJLPT(entry.kanji)} （${escapeHtml(entry.reading)}）`)
+            );
+            message += `Kanji whose reading is similar to their phonetic radical's:\n${modifiedKanjiList}\n`;
+        } else {
+            const modifiedKanjiList = sortedModified
+                .map(k => buildRelatedKanjiItem(getKanjiWithJLPT(k.kanji), k.reading))
+                .join('');
+            message += `${buildRelatedKanjiGroup("Kanji whose reading is similar to their phonetic radical's", modifiedKanjiList)}\n`;
+        }
     }
+
     if (exception.length > 0) {
         const sortedException = sortByJLPT([...exception]);
-        const exceptionKanjiList = sortedException.map(k => `${getKanjiWithJLPT(k.kanji)} （${k.reading}）`).join(separator);
-        message += `Kanji whose reading is an exception:\n${exceptionKanjiList}\n`;
+        if (useAndroidMobileListLayout) {
+            const exceptionKanjiList = formatAndroidMobileRelatedKanjiList(
+                sortedException.map((entry) => `${getKanjiWithJLPT(entry.kanji)} （${escapeHtml(entry.reading)}）`)
+            );
+            message += `Kanji whose reading is an exception:\n${exceptionKanjiList}\n`;
+        } else {
+            const exceptionKanjiList = sortedException
+                .map(k => buildRelatedKanjiItem(getKanjiWithJLPT(k.kanji), k.reading))
+                .join('');
+            message += `${buildRelatedKanjiGroup("Kanji whose reading is an exception", exceptionKanjiList)}\n`;
+        }
     }
 
     if (notes) {
@@ -20754,21 +22789,22 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
     if (Array.isArray(defaultReading)) {
         message += `\nWhile the vast majority of phonetic radicals have a single reading,\n` +
                    `a few have double readings. The most common ones are:\n` +
-                   `周（シュウ or チョウ）、非（ヒ or ハイ）\n`+
+                   `周（シュウ or チョウ）、非（ヒ or ハイ）\n` +
                    `正（セイ or ショウ）、丁（チョウ or テイ）\n\n`;
     }
 
-    // Add the new text for phonetic radicals with the same reading
     const phoneticRadicalsWithSameReading = Object.entries(phoneticRadicalDatabase)
         .filter(([r, data]) => r !== radical && data.defaultReading === radicalReading)
-        .map(([r, data]) => ({
-            radical: r,
+        .map(([relatedRadical, data]) => ({
+            radical: relatedRadical,
             data,
-            score: calculateRadicalScore(data) // Add score for sorting
+            score: calculateRadicalScore(data)
         }))
-        .sort((a, b) => a.score - b.score) // Sort by score (lower is better)
-        .map(({ radical, data }) => {
-            const radicalSpan = `<span class="kanji-highlight">${radical}</span>`;
+        .sort((a, b) => a.score - b.score)
+        .map(({ radical: relatedRadical, data }) => {
+            const radicalSpan = useAndroidMobileListLayout
+                ? `<span class="kanji-highlight">${relatedRadical}</span>`
+                : buildPhoneticRadicalChip(relatedRadical);
             const allDerivedKanji = [
                 ...(data.derivedKanji.regular || []),
                 ...(data.derivedKanji.modified || []),
@@ -20776,7 +22812,7 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
                 ...(data.derivedKanji.doublereading || [])
             ];
             const sortedDerivedKanji = sortByJLPT(allDerivedKanji);
-            const derivedKanjiList = sortedDerivedKanji.map(k => getKanjiWithJLPT(k.kanji)).join("、 "); // Always use comma separator
+            const derivedKanjiList = sortedDerivedKanji.map(k => getKanjiWithJLPT(k.kanji)).join("、 ");
             return `${radicalSpan}（${derivedKanjiList || "none"}）`;
         })
         .join("\n");
@@ -20794,13 +22830,13 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
             const level = getJLPTLevel(k.kanji);
             if (level) jlptCounts[level]++;
         });
-        // Lower score is better; prioritize N5 count, then N4, etc.
+
         return (
-            -jlptCounts.N5 * 1000000 + // High weight for N5
-            -jlptCounts.N4 * 10000 +  // Lower weight for N4
-            -jlptCounts.N3 * 100 +    // Lower weight for N3
-            -jlptCounts.N2 * 10 +     // Lower weight for N2
-            -jlptCounts.N1            // Lowest weight for N1
+            -jlptCounts.N5 * 1000000 +
+            -jlptCounts.N4 * 10000 +
+            -jlptCounts.N3 * 100 +
+            -jlptCounts.N2 * 10 +
+            -jlptCounts.N1
         );
     }
 
@@ -20812,6 +22848,18 @@ function formatOutput(kanji, kanjiReadings, radical, radicalReading, type, notes
 }
 
 // Function to update reading boxes (unchanged)
+// N6 + N8: separate kun'yomi / on'yomi readings with a Japanese comma (、),
+// keep each reading on one line (nowrap token), and only allow a line break
+// AFTER a comma (via <wbr>).
+function formatReadingForBox(reading) {
+    if (!reading || typeof reading !== 'string') return reading;
+    const parts = reading.split(/\s*,\s*/).map((p) => p.trim()).filter(Boolean);
+    if (parts.length <= 1) return reading;
+    return parts
+        .map((p) => `<span class="reading-token">${p}</span>`)
+        .join('、<wbr>');
+}
+
 function updateReadingBoxes(onyomiReading = "", radical = "", radicalReading = "", kunyomiReading = "") {
     const onyomiBoxElement = document.getElementById('onyomi-box');
     const radicalBoxElement = document.getElementById('radical-box');
@@ -20858,16 +22906,19 @@ function updateReadingBoxes(onyomiReading = "", radical = "", radicalReading = "
         }
     }
 
-    setupBox(onyomiBoxElement, onyomiReading);
+    setupBox(onyomiBoxElement, formatReadingForBox(onyomiReading));
     // Handle the phonetic radical box
     if (radical === "none") {
         // Apply the same font size as the meaning radical box
         setupBox(radicalBoxElement, "no phonetic radical", "0.8em"); // Adjust the font size to match meaningradical-box
     } else {
         // Use the default font size when there is a phonetic radical
-        setupBox(radicalBoxElement, radical && radicalReading ? `${radical} → ${radicalReading}` : "");
+        setupBox(
+            radicalBoxElement,
+            radical && radicalReading ? `${buildPhoneticRadicalChip(radical)}<span class="radical-tail"> → ${radicalReading}</span>` : ""
+        );
     }
-    setupBox(kunyomiBoxElement, kunyomiReading);
+    setupBox(kunyomiBoxElement, formatReadingForBox(kunyomiReading));
 }
 
 
@@ -20879,6 +22930,14 @@ function updateReadingBoxes(onyomiReading = "", radical = "", radicalReading = "
 function formatMeaningRadicalMessage(kanji) {
     const kanjiReading = readings.find(reading => reading.kanji === kanji);
     const englishMeaning = kanjiReading ? kanjiReading.english : "unknown m.";
+    const useAndroidMobileListLayout = isMobileDictionaryLayout();
+
+    function getMeaningKanjiWithJLPT(targetKanji) {
+        const level = getJLPTLevel(targetKanji);
+        return level
+            ? `<span class="kanji-highlight clickable-kanji jlpt-${level.toLowerCase()}">${targetKanji}</span>`
+            : `<span class="kanji-highlight clickable-kanji">${targetKanji}</span>`;
+    }
 
     const meaningRadicalInfo = Object.entries(meaningRadicalDatabase).find(([radical, data]) => data.kanjiList.includes(kanji));
     const meaningRadical = meaningRadicalInfo ? meaningRadicalInfo[0] : "Unknown";
@@ -20905,39 +22964,84 @@ function formatMeaningRadicalMessage(kanji) {
         }
     });
 
-    const isMobile = window.innerWidth < 768; // Detect mobile device
-    const separator = isMobile ? "\n" : "、 "; // Use newline for mobile, comma for desktop
+    const meaningRadicalElement = buildMeaningRadicalChip(meaningRadical);
+    const meaningRadicalTranslationElement = buildMeaningRadicalChip(meaningRadicalTranslation);
 
     let message = `The character <span class="kanji-highlight clickable-kanji">${kanji}</span> means <span class="reading-highlight">${englishMeaning}</span>,<br>` +
-                  `as it contains the meaning radical <span class="kanji-highlight">${meaningRadical}</span> (<span class="reading-highlight">${meaningRadicalTranslation}</span>).<br><br>` +
-                  `Other kanji that contain the meaning radical <span class="kanji-highlight">${meaningRadical}</span> are:<br>`;
+                  `as it contains the meaning radical ${meaningRadicalElement} (${meaningRadicalTranslationElement}).<br><br>` +
+                  `Other kanji that contain the meaning radical ${meaningRadicalElement} are:<br>`;
+
+    function buildMeaningKanjiItem(relatedKanji, detailText) {
+        return `<span class="related-kanji-item"><span class="kanji-highlight clickable-kanji">${relatedKanji}</span><span class="related-kanji-detail">${detailText}</span></span>`;
+    }
 
     const jlptLevels = ['N5', 'N4', 'N3', 'N2', 'N1', 'NotInJLPT'];
     for (const level of jlptLevels) {
         if (kanjiGroups[level].length > 0) {
             const levelLabel = level !== 'NotInJLPT' ? `${level} Kanji:` : 'Not in JLPT:';
             const levelColorClass = level !== 'NotInJLPT' ? `inline-level-bubble ${level.toLowerCase()}` : 'inline-level-bubble notinjlpt';
-            const kanjiList = kanjiGroups[level].map(k => `<span class="kanji-highlight clickable-kanji">${k.kanji}</span> (${k.english})`).join(separator);
-            message += `<div class="kanji-list"><div class="jlpt-header"><span class="${levelColorClass}">${levelLabel}</span></div>${kanjiList}</div><br>`;
+            if (useAndroidMobileListLayout) {
+                const kanjiList = formatAndroidMobileRelatedKanjiList(
+                    kanjiGroups[level].map((entry) => `${getMeaningKanjiWithJLPT(entry.kanji)} (${escapeHtml(entry.english)})`)
+                );
+                message += `<div class="kanji-list"><div class="jlpt-header"><span class="${levelColorClass}">${levelLabel}</span></div>${kanjiList}</div><br>`;
+            } else {
+                const kanjiList = kanjiGroups[level]
+                    .map(k => buildMeaningKanjiItem(k.kanji, k.english))
+                    .join('');
+                message += `<div class="related-kanji-group"><div class="jlpt-header"><span class="${levelColorClass}">${levelLabel}</span></div><div class="kanji-list">${kanjiList}</div></div><br>`;
+            }
         }
     }
 
     if (meaningRadical.startsWith("月")) {
         const moonRadical = meaningRadicalDatabase["月 (moon)"].kanjiList;
         const meatRadical = meaningRadicalDatabase["月 / 肉 / ⺼"].kanjiList;
-        const meatKanjiList = meatRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join(separator);
-        const moonKanjiList = moonRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join(separator);
-        message += `<br><br><div class="kanji-list">Careful! The meaning radical meat (<span class="kanji-highlight">月</span>) looks exactly the same as the meaning radical moon (<span class="kanji-highlight">月</span>).<br>` +
-                   `<div class="jlpt-header">Characters with the meat radical:</div>${meatKanjiList}</div><br>` +
-                   `<div class="kanji-list"><div class="jlpt-header">Characters with the moon radical:</div>${moonKanjiList}</div>`;
+        if (useAndroidMobileListLayout) {
+            const meatKanjiList = formatAndroidMobileRelatedKanjiList(
+                meatRadical.map((entry) => `${getMeaningKanjiWithJLPT(entry)} (${escapeHtml(readings.find(r => r.kanji === entry)?.english || "No Translation")})`)
+            );
+            const moonKanjiList = formatAndroidMobileRelatedKanjiList(
+                moonRadical.map((entry) => `${getMeaningKanjiWithJLPT(entry)} (${escapeHtml(readings.find(r => r.kanji === entry)?.english || "No Translation")})`)
+            );
+            message += `<br><br><div class="kanji-list">Careful! The meaning radical meat (${buildMeaningRadicalChip("月")}) looks exactly the same as the meaning radical moon (${buildMeaningRadicalChip("月")}).<br>` +
+                `<div class="jlpt-header">Characters with the meat radical:</div>${meatKanjiList}</div><br>` +
+                `<div class="kanji-list"><div class="jlpt-header">Characters with the moon radical:</div>${moonKanjiList}</div>`;
+        } else {
+            const meatKanjiList = meatRadical
+                .map(k => buildMeaningKanjiItem(k, readings.find(r => r.kanji === k)?.english || "No Translation"))
+                .join('');
+            const moonKanjiList = moonRadical
+                .map(k => buildMeaningKanjiItem(k, readings.find(r => r.kanji === k)?.english || "No Translation"))
+                .join('');
+            message += `<br><br><div class="related-kanji-group related-kanji-note">Careful! The meaning radical meat (${buildMeaningRadicalChip("月")}) looks exactly the same as the meaning radical moon (${buildMeaningRadicalChip("月")}).<br>` +
+                       `<div class="jlpt-header">Characters with the meat radical:</div><div class="kanji-list">${meatKanjiList}</div></div><br>` +
+                       `<div class="related-kanji-group"><div class="jlpt-header">Characters with the moon radical:</div><div class="kanji-list">${moonKanjiList}</div></div>`;
+        }
     } else if (meaningRadical.startsWith("阝")) {
         const hillsRadical = meaningRadicalDatabase["阝 (hills)"].kanjiList;
         const cityRadical = meaningRadicalDatabase["阝 (city)"].kanjiList;
-        const hillsKanjiList = hillsRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join(separator);
-        const cityKanjiList = cityRadical.map(k => `<span class="kanji-highlight clickable-kanji">${k}</span> (${readings.find(r => r.kanji === k)?.english || "No Translation"})`).join(separator);
-        message += `<br><br><div class="kanji-list">Careful! The meaning radical hills (<span class="kanji-highlight">阝</span>) looks exactly the same as the meaning radical city (<span class="kanji-highlight">阝</span>).<br>` +
-                   `<div class="jlpt-header">Characters with the hills radical:</div>${hillsKanjiList}</div><br>` +
-                   `<div class="kanji-list"><div class="jlpt-header">Characters with the city radical:</div>${cityKanjiList}</div>`;
+        if (useAndroidMobileListLayout) {
+            const hillsKanjiList = formatAndroidMobileRelatedKanjiList(
+                hillsRadical.map((entry) => `${getMeaningKanjiWithJLPT(entry)} (${escapeHtml(readings.find(r => r.kanji === entry)?.english || "No Translation")})`)
+            );
+            const cityKanjiList = formatAndroidMobileRelatedKanjiList(
+                cityRadical.map((entry) => `${getMeaningKanjiWithJLPT(entry)} (${escapeHtml(readings.find(r => r.kanji === entry)?.english || "No Translation")})`)
+            );
+            message += `<br><br><div class="kanji-list">Careful! The meaning radical hills (${buildMeaningRadicalChip("阝")}) looks exactly the same as the meaning radical city (${buildMeaningRadicalChip("阝")}).<br>` +
+                `<div class="jlpt-header">Characters with the hills radical:</div>${hillsKanjiList}</div><br>` +
+                `<div class="kanji-list"><div class="jlpt-header">Characters with the city radical:</div>${cityKanjiList}</div>`;
+        } else {
+            const hillsKanjiList = hillsRadical
+                .map(k => buildMeaningKanjiItem(k, readings.find(r => r.kanji === k)?.english || "No Translation"))
+                .join('');
+            const cityKanjiList = cityRadical
+                .map(k => buildMeaningKanjiItem(k, readings.find(r => r.kanji === k)?.english || "No Translation"))
+                .join('');
+            message += `<br><br><div class="related-kanji-group related-kanji-note">Careful! The meaning radical hills (${buildMeaningRadicalChip("阝")}) looks exactly the same as the meaning radical city (${buildMeaningRadicalChip("阝")}).<br>` +
+                       `<div class="jlpt-header">Characters with the hills radical:</div><div class="kanji-list">${hillsKanjiList}</div></div><br>` +
+                       `<div class="related-kanji-group"><div class="jlpt-header">Characters with the city radical:</div><div class="kanji-list">${cityKanjiList}</div></div>`;
+        }
     }
 
     return message;
@@ -20982,27 +23086,7 @@ function getJLPTLevel(kanji) {
     return null;
 }
 
-
-function getRandomKanji() {
-    const radicals = Object.values(phoneticRadicalDatabase);
-    const randomRadical = radicals[Math.floor(Math.random() * radicals.length)];
-
-    // Collect all kanji from different types
-    const allKanji = [
-        ...randomRadical.derivedKanji.regular,
-        ...randomRadical.derivedKanji.modified,
-        ...randomRadical.derivedKanji.exception,
-        ...randomRadical.derivedKanji.doublereading
-    ];
-
-    if (allKanji.length > 0) {
-        const randomKanji = allKanji[Math.floor(Math.random() * allKanji.length)].kanji;
-        document.getElementById("kanjiInput").value = randomKanji; // Set the random kanji in the input field
-        processKanjiInput(); // Call processKanjiInput to process the kanji
-    } else {
-        document.getElementById("result").textContent = "No kanji found.";
-    }
-}
+window.getJLPTLevel = getJLPTLevel;
 
 
 // Function to get a random kanji with multiple readings
@@ -21094,10 +23178,6 @@ document.getElementById("retryButton").addEventListener("click", () => {
     document.getElementById("retryButton").classList.add("hidden");
 });
 
-// Show the quiz after 1.5 seconds
-setTimeout(showQuiz, 1500);
-
-
 function countRadicalsAndKanji(database) {
     let totalRadicals = 0;
     let totalSingleReadingRadicals = 0;
@@ -21148,40 +23228,35 @@ console.log(`Total Exception Derived Kanji: ${counts.totalException}`);
 console.log(`Total Double Reading Derived Kanji: ${counts.totalDoubleReading}`);
 console.log(`Total Derived Kanji: ${counts.totalDerivedKanji}`);
 
-window.addEventListener('resize', function() {
+function shouldUseCompactSearchButtonLabels() {
+    const effectiveWidth = Math.min(
+        window.innerWidth || Number.MAX_SAFE_INTEGER,
+        document.documentElement?.clientWidth || Number.MAX_SAFE_INTEGER
+    );
+    const coarsePointer = window.matchMedia?.('(pointer: coarse)').matches;
+    const mobileUserAgent = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    const hasAndroidBridge = typeof Android !== 'undefined';
+    return hasAndroidBridge || mobileUserAgent || (coarsePointer && effectiveWidth <= 920) || effectiveWidth <= 780;
+}
+
+function updateSearchActionLabels() {
+    const root = document.documentElement;
     const checkButton = document.getElementById('checkButton');
     const randomButton = document.getElementById('randomButton');
+    const handwritingButton = document.getElementById('handwritingButton');
+    if (!root || !checkButton || !randomButton || !handwritingButton) return;
 
-    if (window.innerWidth <= 768) {
-        checkButton.innerHTML = 'Check';
-        randomButton.innerHTML = 'Random';
-        checkButton.style.width = '25%';
-        randomButton.style.width = '25%';
-    } else {
-        checkButton.innerHTML = 'Check';
-        randomButton.innerHTML = 'Random Kanji';
-        checkButton.style.width = 'auto';
-        randomButton.style.width = 'auto';
-    }
-});
+    const useCompactLabels = shouldUseCompactSearchButtonLabels();
+    root.classList.toggle('compact-ui', useCompactLabels);
+    root.classList.toggle('desktop-ui', !useCompactLabels);
 
-// Initial check on page load
-window.addEventListener('load', function() {
-    const checkButton = document.getElementById('checkButton');
-    const randomButton = document.getElementById('randomButton');
+    checkButton.setAttribute('aria-label', 'Check');
+    randomButton.setAttribute('aria-label', useCompactLabels ? 'Random' : 'Random Kanji');
+    handwritingButton.setAttribute('aria-label', useCompactLabels ? 'Handwrite' : 'Handwriting input');
+}
 
-    if (window.innerWidth <= 768) {
-        checkButton.innerHTML = 'Check';
-        randomButton.innerHTML = 'Random';
-        checkButton.style.width = '25%';
-        randomButton.style.width = '25%';
-    } else {
-        checkButton.innerHTML = 'Check';
-        randomButton.innerHTML = 'Random Kanji';
-        checkButton.style.width = 'auto';
-        randomButton.style.width = 'auto';
-    }
-});
+window.addEventListener('resize', updateSearchActionLabels);
+window.addEventListener('load', updateSearchActionLabels);
 
 
 
@@ -21304,30 +23379,35 @@ async function updateVocabDisplay(input) {
     console.log('updateVocabDisplay called with input:', input);
     console.log('isVocabularyFetched:', isVocabularyFetched);
 
-    // 1. Validate input early to avoid unnecessary processing
-    if (!input || input.trim() === "") {
-        console.log("No input provided, skipping vocab display update.");
-        return;
-    }
-
-    // 2. Wait for vocabulary data if it's not ready
-    while (!isVocabularyFetched) {
-        console.log('Waiting for vocabulary fetch...');
-        await new Promise(resolve => setTimeout(resolve, 100));
-    }
-
-    // 3. Check if vocabulary data actually loaded
     const vocabBox = document.getElementById('vocab-box');
     if (!vocabBox) {
         console.error('Vocab box element not found in the DOM');
         return;
     }
+
+    // 1. Validate input early to avoid unnecessary processing
+    if (!input || input.trim() === "") {
+        console.log("No input provided, skipping vocab display update.");
+        window.rankedVocabulary = [];
+        showVocabularyIdlePlaceholder();
+        return;
+    }
+
+    // 2. Check if vocabulary data actually loaded
+    if (!isVocabularyFetched) {
+        console.log('Vocabulary fetch is not ready yet, skipping vocab render.');
+        window.rankedVocabulary = [];
+        showVocabularyLoadingPlaceholder(input, 'Waiting for matching vocabulary...');
+        return;
+    }
+
     if (!Array.isArray(window.vocabulary) || window.vocabulary.length === 0) {
+        window.rankedVocabulary = [];
         if (isVocabularyFetched) {
-            vocabBox.innerHTML = '<p>Failed to load vocabulary data or data is empty. Please try refreshing.</p>';
+            showVocabularyNoResultsPlaceholder(input);
             console.warn('Vocabulary array is empty after fetch attempt, cannot render.');
         } else {
-            vocabBox.innerHTML = '<p>Vocabulary data is still loading...</p>';
+            showVocabularyLoadingPlaceholder(input, 'Waiting for matching vocabulary...');
             console.warn('Vocabulary array is empty, fetch may not be complete.');
         }
         return;
@@ -21337,7 +23417,7 @@ async function updateVocabDisplay(input) {
     vocabBox.innerHTML = '';
 
     console.log("Processing input for vocab:", input);
-    const isJapanese = /[一-龯ぁ-んァ-ン]/.test(input);
+    const isJapanese = isJapaneseSearchTerm(input);
     const inputLower = input.toLowerCase();
     console.log("Input type detected as:", isJapanese ? "Japanese" : "English");
 
@@ -21346,8 +23426,8 @@ async function updateVocabDisplay(input) {
     if (isJapanese) {
         filteredVocab = window.vocabulary.filter(entry => {
             if (!entry || !Array.isArray(entry.kanji) || !Array.isArray(entry.reading)) return false;
-            const kanjiMatch = entry.kanji.some(k => k && k.text && k.text.includes(input));
-            const readingMatch = entry.reading.some(r => r && r.text && r.text.includes(input));
+            const kanjiMatch = entry.kanji.some(k => getEntryText(k).includes(input));
+            const readingMatch = entry.reading.some(r => getEntryText(r).includes(input));
             return kanjiMatch || readingMatch;
         });
     } else {
@@ -21361,7 +23441,8 @@ async function updateVocabDisplay(input) {
     }
     console.log("Initial filtered count:", filteredVocab.length);
     if (filteredVocab.length === 0) {
-        vocabBox.innerHTML = '<p>No matching vocabulary found.</p>';
+        window.rankedVocabulary = [];
+        showVocabularyNoResultsPlaceholder(input);
         return;
     }
 
@@ -21388,47 +23469,42 @@ async function updateVocabDisplay(input) {
         if (isJapaneseInput) {
             let matchTypeScore = 99;
             let commonBonus = 0;
-            const exactKanjiMatch = entry.kanji?.find(k => k && k.text === searchInput);
+            const exactKanjiMatch = entry.kanji?.find(k => getEntryText(k) === searchInput);
             if (exactKanjiMatch) {
                 matchTypeScore = 1;
                 if (exactKanjiMatch.common) commonBonus = -0.5;
             }
-            const exactReadingMatch = entry.reading?.find(r => r && r.text === searchInput);
+            const exactReadingMatch = entry.reading?.find(r => getEntryText(r) === searchInput);
             if (exactReadingMatch && matchTypeScore > 2) {
                 matchTypeScore = 2;
                 if (exactReadingMatch.common && commonBonus === 0) commonBonus = -0.5;
             }
-            if (matchTypeScore > 4 && entry.kanji?.some(k => k && k.text && k.text.includes(searchInput))) {
+            if (matchTypeScore > 4 && entry.kanji?.some(k => getEntryText(k).includes(searchInput))) {
                 matchTypeScore = 5;
             }
-            if (matchTypeScore > 5 && entry.reading?.some(r => r && r.text && r.text.includes(searchInput))) {
+            if (matchTypeScore > 5 && entry.reading?.some(r => getEntryText(r).includes(searchInput))) {
                 matchTypeScore = 6;
             }
             score = matchTypeScore + commonBonus + levelScore + commonalityPenalty;
         } else {
             let definitionScore = 99;
-            const searchInputLower = searchInput.toLowerCase();
+            const searchVariations = getSearchVariations(searchInput);
             entry.sense?.forEach((s, index) => {
                 if (!s || !s.text) return;
-                const senseTextLower = s.text.toLowerCase();
-                const words = senseTextLower.split(/[\s.,;!?()"'-]+/).filter(Boolean);
                 let currentSenseRank = 99;
-                if (words.length > 0 && words[0] === searchInputLower) {
-                    currentSenseRank = 1;
-                } else if (senseTextLower.startsWith('to ') && words.length > 1 && words[1] === searchInputLower) {
-                    currentSenseRank = 1;
-                } else if (words.includes(searchInputLower)) {
-                    currentSenseRank = 2;
-                } else if (senseTextLower.includes(searchInputLower)) {
-                    currentSenseRank = 3;
+                const meaningRank = getEnglishMeaningMatchRank(s.text, searchVariations);
+                if (meaningRank !== null) {
+                    currentSenseRank = meaningRank + 1;
+                } else if (s.text.toLowerCase().includes(searchInput.toLowerCase())) {
+                    currentSenseRank = 5;
                 }
                 const senseIndexPenalty = index * 0.1;
                 const scoreForThisSense = currentSenseRank + senseIndexPenalty;
                 definitionScore = Math.min(definitionScore, scoreForThisSense);
             });
             let loanwordPenalty = 0;
-            const hasOnlyKatakanaReadings = entry.reading?.length > 0 && entry.reading.every(r => r && /^[ァ-ン・ー]+$/.test(r.text));
-            const hasOnlyKatakanaKanjiOrNoKanji = !entry.kanji || entry.kanji.length === 0 || entry.kanji.every(k => k && /^[ァ-ン・ー]+$/.test(k.text));
+            const hasOnlyKatakanaReadings = entry.reading?.length > 0 && entry.reading.every(r => /^[ァ-ン・ー]+$/.test(getEntryText(r)));
+            const hasOnlyKatakanaKanjiOrNoKanji = !entry.kanji || entry.kanji.length === 0 || entry.kanji.every(k => /^[ァ-ン・ー]+$/.test(getEntryText(k)));
             if (hasOnlyKatakanaReadings && hasOnlyKatakanaKanjiOrNoKanji) {
                 loanwordPenalty = 0.2;
             }
@@ -21439,10 +23515,19 @@ async function updateVocabDisplay(input) {
 
     const rankedVocabWithScore = filteredVocab.map(entry => ({
         ...entry,
-        rankScore: calculateRank(entry, input, isJapanese)
+        rankScore: calculateRank(entry, input, isJapanese),
+        // N14: an entry whose kanji or reading is EXACTLY the search term.
+        isExactMatch: isJapanese && (
+            (entry.kanji?.some(k => getEntryText(k) === input)) ||
+            (entry.reading?.some(r => getEntryText(r) === input))
+        )
     }));
     const rankedVocab = rankedVocabWithScore.filter(entry => entry.rankScore < 90);
     rankedVocab.sort((a, b) => {
+        // N14: exact-term matches come first, even with no JLPT level / uncommon
+        // (e.g. 律 before 法律).
+        if (a.isExactMatch && !b.isExactMatch) return -1;
+        if (!a.isExactMatch && b.isExactMatch) return 1;
         const aHasJLPT = !!a.jlpt;
         const bHasJLPT = !!b.jlpt;
         // Prioritize JLPT-tagged words
@@ -21459,11 +23544,13 @@ async function updateVocabDisplay(input) {
         return a.rankScore - b.rankScore;
     });
 
+    window.rankedVocabulary = rankedVocab;
+
     console.log("Ranked Vocab Sample (Top 5 AFTER SORT):", rankedVocab.slice(0, 5).map(e => ({
         id: e.id,
         score: e.rankScore.toFixed(2),
-        kanji: e.kanji?.map(k => k.text)[0],
-        reading: e.reading?.map(r => r.text)[0],
+        kanji: e.kanji?.map(getEntryText)[0],
+        reading: e.reading?.map(getEntryText)[0],
         sense: e.sense?.[0]?.text
     })));
 
@@ -21477,9 +23564,9 @@ async function updateVocabDisplay(input) {
         if (entriesToRender.length === 0) {
             if (rankedVocab.length > 0) {
                 console.warn("Attempted to render 0 words, but rankedVocab has entries. Check slicing/limit logic.");
-                vocabBox.innerHTML = '<p>Error rendering results.</p>';
+                showVocabularyUnavailablePlaceholder('Something went wrong while rendering the matching vocabulary.');
             } else {
-                vocabBox.innerHTML = '<p>No matching vocabulary found.</p>';
+                showVocabularyNoResultsPlaceholder(input);
             }
             return;
         }
@@ -21487,9 +23574,13 @@ async function updateVocabDisplay(input) {
         entriesToRender.forEach((entry) => {
             const box = document.createElement('div');
             box.classList.add('vocab-entry');
+            const cleanedJlptKey = (entry.jlpt || '').toString().toLowerCase().replace('jlpt ', '').trim();
+            if (['n1', 'n2', 'n3', 'n4', 'n5'].includes(cleanedJlptKey)) {
+                box.classList.add(`vocab-entry-jlpt-${cleanedJlptKey}`);
+            }
 
             // Set data-term attribute to the primary kanji or reading
-            const primaryTerm = entry.kanji?.[0]?.text || entry.reading?.[0]?.text || '';
+            const primaryTerm = getEntryText(entry.kanji?.[0]) || getEntryText(entry.reading?.[0]) || '';
             box.setAttribute('data-term', primaryTerm); // Add data-term attribute
 
             // Word and reading section
@@ -21498,11 +23589,26 @@ async function updateVocabDisplay(input) {
             let kanjiHtml = '';
 
             if (entry.kanji && entry.kanji.length > 0) {
-                kanjiHtml = entry.kanji.map(k => {
-                    if (!k || !k.text) return '';
+                // Show the searched kanji first within the entry (match Android),
+                // even when it is an uncommon written form. Only reorder when the
+                // first form does not already contain the searched term, so normal
+                // word searches are unaffected.
+                let kanjiFormsForDisplay = entry.kanji;
+                if (isJapanese && input) {
+                    const containsInput = (k) => (getEntryText(k) || '').includes(input);
+                    if (!containsInput(entry.kanji[0]) && entry.kanji.some(containsInput)) {
+                        kanjiFormsForDisplay = [
+                            ...entry.kanji.filter(containsInput),
+                            ...entry.kanji.filter((k) => !containsInput(k))
+                        ];
+                    }
+                }
+                kanjiHtml = kanjiFormsForDisplay.map(k => {
+                    const text = getEntryText(k);
+                    if (!text) return '';
                     const span = document.createElement('span');
-                    span.textContent = k.text;
-                    span.style.color = k.common ? '#000000' : '#aaaaaa';
+                    span.textContent = text;
+                    span.style.color = k.common ? '#eef7fa' : '#7c8a92';
                     span.style.marginRight = '0.2em';
                     return span.outerHTML;
                 }).join('');
@@ -21511,12 +23617,13 @@ async function updateVocabDisplay(input) {
             let kanaHtml = '';
             if (entry.reading && entry.reading.length > 0) {
                 kanaHtml = entry.reading.map(r => {
-                    if (!r || !r.text) return '';
-                    const color = r.common ? '#000000' : '#aaaaaa';
+                    const text = getEntryText(r);
+                    if (!text) return '';
+                    const color = r.common ? '#eef7fa' : '#7c8a92';
                     const appliesTo = (r.appliesToKanji && r.appliesToKanji[0] !== '*' && entry.kanji?.length > 1)
                         ? `<i style="font-size:0.8em; opacity: 0.6;">(${r.appliesToKanji.join(',')})</i>`
                         : '';
-                    return `<span style="color: ${color};">${r.text}</span>${appliesTo}`;
+                    return `<span style="color: ${color};">${text}</span>${appliesTo}`;
                 }).join('、');
             }
 
@@ -21574,7 +23681,6 @@ async function updateVocabDisplay(input) {
 
             // JLPT bubble
             if (entry.jlpt) {
-                const cleanedJlptKey = entry.jlpt.toLowerCase().replace('jlpt ', '').trim();
                 if (cleanedJlptKey) {
                     const jlptBubble = document.createElement('div');
                     jlptBubble.classList.add('jlpt-vocab-bubble', cleanedJlptKey);
@@ -21587,6 +23693,8 @@ async function updateVocabDisplay(input) {
             box.addEventListener('click', async function(e) {
                 // Prevent toggling when clicking "Display More Sentences"
                 if (e.target.classList.contains('show-more-sentences')) return;
+
+                showDictionaryToast('If the kanji or kana is black, they are common. If gray, uncommon.');
 
                 console.log('Box clicked, expanding:', this);
                 this.classList.toggle('expanded');
@@ -21771,19 +23879,15 @@ async function updateVocabDisplay(input) {
 }
 
 
-// Event listener for "Check Kanji" button
-document.getElementById('checkButton').addEventListener('click', async () => {
-    const inputKanji = document.getElementById('kanjiInput').value;
-    await updateVocabDisplay(inputKanji);
-  });
-
 // Call this function when the user looks up a kanji
 // Initial display
-updateVocabDisplay('');
+bindDictionaryHelpToasts();
+
+if (!currentInput) {
+    updateVocabDisplay('');
+}
+syncResultContainerVisibility();
 
 setTimeout(showDownloadBanner, 1500);
 
 })
-
-
-

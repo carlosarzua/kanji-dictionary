@@ -5,31 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Radical. Kanji Dictionary</title>
     <link rel="stylesheet" href="styles.css">
+</head>
 <body>
     <div class="container">
-        <h4><a style="color: #00b4d8" href="https://carloscoordinator.com">CarlosCoordinator.com</a>'s</h4> 
-        <h1>Radical. v.12*</h1>
-        <h2>Kanji Made Radically Easier.</h2>
-        <div class="search-container">
-            <input type="text" id="kanjiInput" placeholder="Enter Japanese or English">
-            <button id="checkButton">Check</button>
-            <button id="randomButton">Random Kanji</button>
+        <header class="dictionary-hero" id="dictionaryTop">
+            <div class="hero-title-row">
+                <h1>Radical.</h1>
+                <p class="hero-tagline">Kanji made radically easier.</p>
+            </div>
+            <div class="search-container">
+                <input type="text" id="kanjiInput" placeholder="Search Japanese or English">
+                <button id="checkButton" type="button" aria-label="Check">
+                    <span class="button-label-desktop">Check</span>
+                    <span class="button-label-mobile" aria-hidden="true">✅</span>
+                </button>
+                <button id="randomButton" type="button" aria-label="Random">
+                    <span class="button-label-desktop">Random</span>
+                    <span class="button-label-mobile" aria-hidden="true">🎲</span>
+                </button>
+                <button id="handwritingButton" type="button" aria-label="Handwriting input">
+                    <span class="button-label-desktop">Handwrite</span>
+                    <span class="button-label-mobile" aria-hidden="true">✍️</span>
+                </button>
+            </div>
+        </header>
+
+        <div id="handwritingModal" class="handwriting-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="handwritingModalTitle">
+            <div id="handwritingBackdrop" class="handwriting-modal-backdrop"></div>
+            <div class="handwriting-modal-panel" role="document" tabindex="-1">
+                <div class="handwriting-modal-header">
+                    <h3 id="handwritingModalTitle">Write a Kanji</h3>
+                    <p>Draw one character, then tap Recognize.</p>
+                </div>
+                <div class="handwriting-canvas-wrap">
+                    <canvas id="handwritingCanvas" aria-label="Handwriting canvas"></canvas>
+                </div>
+                <div id="handwritingStatus" class="handwriting-status" aria-live="polite"></div>
+                <div id="handwritingModalCandidates" class="handwriting-modal-candidates" aria-live="polite"></div>
+                <p class="handwriting-fallback-note">
+                    If the first guess is off, try clearer strokes or tap another candidate.
+                </p>
+                <div class="handwriting-actions">
+                    <button id="handwritingUndoButton" class="handwriting-action-secondary" type="button">Undo</button>
+                    <button id="handwritingClearButton" class="handwriting-action-secondary" type="button">Clear</button>
+                    <button id="handwritingCancelButton" class="handwriting-action-secondary" type="button">Cancel</button>
+                    <button id="handwritingUseButton" class="handwriting-action-primary" type="button">Recognize</button>
+                </div>
+            </div>
         </div>
 
         <!-- Six new boxes for mobile -->
-        <div class="mobile-boxes"> 
-            <div class="mobile-box" id="mobile-displayKanjiContainer">
-                <div id="mobile-displayKanji"></div>
-                <div id="mobile-levelBubble"></div>
+        <div class="mobile-boxes">
+            <div class="row-1">
+                <div class="mobile-box" id="mobile-displayKanjiContainer">
+                    <div id="mobile-displayKanji"></div>
+                    <div id="mobile-levelBubble"></div>
+                </div>
+                <div class="mobile-box" id="mobile-english-box">English Meaning</div>
             </div>
-            <div class="mobile-box" id="mobile-english-box">English Meaning //</div>
             <div class="row-2">
-                <div class="mobile-box" id="mobile-kunyomi-box">Kun'yomi //</div>
-                <div class="mobile-box" id="mobile-onyomi-box">On'yomi //</div>
+                <div class="mobile-box" id="mobile-kunyomi-box">Kun'yomi</div>
+                <div class="mobile-box" id="mobile-onyomi-box">On'yomi</div>
             </div>
             <div class="row-3">
-                <div class="mobile-box" id="mobile-meaningradical-box">Meaning Radical //</div>
-                <div class="mobile-box" id="mobile-radical-box">Phonetic Radical //</div>
+                <div class="mobile-box" id="mobile-meaningradical-box">Meaning Radical</div>
+                <div class="mobile-box" id="mobile-radical-box">Phonetic Radical</div>
             </div>
         </div>
 
@@ -45,25 +85,25 @@
                 </div>
                 <div class="reading-box blue-reading-box" id="meaningradical-box"></div>
                 <div class="small-blue-box"><p>Meaning Radical</p></div>
-                <div class="small-white-box"><p>Kun'yomi //</p></div>
+                <div class="small-white-box"><p>Kun'yomi</p></div>
             </div>
             <div class="light-blue-row">
                 <div class="reading-box white-reading-box" id="onyomi-box"></div>
                 <div class="reading-box blue-reading-box" id="radical-box"></div>
                 <div class="small-blue-box"><p>Phonetic Radical</p></div>
-                <div class="small-white-box"><p>On'yomi //</p></div>
+                <div class="small-white-box"><p>On'yomi</p></div>
             </div>
         </div>
 
         <div id="english-box" class="reading-box white-reading-box"></div>
 
         <div id="vocabSection">
-            <div id="loading" style="display: none; text-align: center; padding: 10px;">Loading vocabulary...</div>
+            <div id="loading" style="display: none; text-align: center; padding: 10px;" aria-live="polite">Loading vocabulary...</div>
             <div id="loading-bar" style="text-align: center; padding: 10px; display: none;">
                 <div id="progress-bar" style="width: 0%; height: 20px; background-color: #4CAF50; transition: width 0.3s;"></div>
-                <div id="progress-text" style="margin-top: 5px;">0/148352 words loaded (0%)</div>
+                <div id="progress-text" style="margin-top: 5px;" aria-live="polite">Searching words...</div>
             </div>
-            <div id="error" style="display: none; text-align: center; padding: 10px; color: red;"></div>
+            <div id="error" style="display: none; text-align: center; padding: 10px; color: red;" aria-live="polite"></div>
             <div id="vocab-box"></div>  
         </div>
 
@@ -85,17 +125,26 @@
 
         <!-- Explanation Section -->
         <div class="explanation">
-            <p>The first bilingual Japanese kanji dictionary designed to truly help learners accurately identify meaning and phonetic radicals. Creating a project like this inspired me to learn programming (HTML, CSS, JavaScript, Python) and explore AI. If you'd like to support the development of Radical, <a style="color: #00b4d8" href="https://paypal.me/carloscoordinator?country.x=ES&locale.x=en_US">you can donate here</a>. You can also book a free trial Japanese class with me <a style="color: #00b4d8" href="https://zcal.co/carloscoordinator/japanese">here</a> or find out what I'm up to on <a style="color: #00b4d8" href="https://www.linkedin.com/in/carlosramosfuentes/">LinkedIn</a>, <a style="color: #00b4d8" href="https://www.youtube.com/@CarlosCoordinator?sub_confirmation=1">YouTube</a> or <a style="color: #00b4d8" href="https://www.tiktok.com/@carloscoordinator">TikTok</a> or <a style="color: #00b4d8" href="https://www.instagram.com/carloscoordinator/">Instagram</a>.</p>
+            <p>The first bilingual Japanese kanji dictionary designed to truly help learners accurately identify meaning and phonetic radicals. Creating a project like this inspired me to learn programming (HTML, CSS, JavaScript, Python) and explore AI. If you'd like to support the development of Radical, <a style="color: #00b4d8" href="https://paypal.me/carloscoordinator?country.x=ES&locale.x=en_US">you can donate here</a>. You can also book a free trial Japanese class with me <a style="color: #00b4d8" href="https://zcal.co/carloscoordinator/japanese">here</a> or find out what I'm up to on <a style="color: #00b4d8" href="https://www.linkedin.com/in/carlosramosfuentes/">LinkedIn</a>, <a style="color: #00b4d8" href="https://www.youtube.com/@CarlosCoordinator?sub_confirmation=1">YouTube</a>, <a style="color: #00b4d8" href="https://www.tiktok.com/@carloscoordinator">TikTok</a> or <a style="color: #00b4d8" href="https://www.instagram.com/carloscoordinator/">Instagram</a>.</p>
             <br>
             <p>Radicals are the building blocks of kanji. Some radicals show the meaning, while others indicate the <strong>on’yomi</strong> reading, used when two kanji are together. For example, 泊まる means "to stay" and is read とまる. When 泊 is next to another kanji, it's read ハク, because it contains the phonetic radical 白. Similarly, 伯, 迫, and 拍 are read ハク but have different meanings based on their meaning radicals. None of them have to do with 'white'.</p>
             <br>
-            <p><strong>*Version 12</strong> [released Oct 26, 2025] added the Vocabulary Tab on the Google Play app, where learners can study their vocabulary with interactive quizzes and keep up with their study progress. Radical now contains <strong>210,641 words</strong>, <strong>805 phonetic radicals</strong>, <strong>278 meaning radicals</strong>, <strong>6,368 kanji</strong>, <strong>246,737 sample sentences</strong> and <strong>9,756 JLPT tags</strong>, partly obtained from JMDict, KANJIDIC, Tatoeba, <a style="color: #00b4d8" href="https://blog.goo.ne.jp/ishiseiji">Ishizawa-sensei's blog</a>, and my own memory. Radical's new version on Google Play will soon be updated to contain features such as tracking kanji & radical acquisition progress (not just vocabulary) and study plans by JLPT level.</p>
-            <p><strong>*Version 11</strong> [released Aug 27, 2025] added improved the "Your Vocabulary List" functionality on the Google Play app, where you now you can add words directly from the Dictionary tab, as well as visual and speed improvements.</p>
-            <p><strong>*Version 10</strong> [released Aug 23, 2025] added the Your Vocabulary List functionality on the Google Play app, where you can add your words, sort them by JLPT level, added date or alphabetical order, and study them by hiding their kanji, hiragana, or meaning, as well as editing and deleting entries.</p>
-            <p><strong>*Version 9</strong> [released Aug 14, 2025] enhanced query speed again, and added a four-tab structure on the app: Dictionary (where you can look up words even faster), Test (where you can do hiragana and katakana quizzes), Study (where you can study your kana) and Ask (soon to be released). It now contains <strong>210,641 words</strong>, <strong>805 phonetic radicals</strong>, <strong>278 meaning radicals</strong>, <strong>6,368 kanji</strong>, <strong>246,737 sample sentences</strong> and <strong>9,756 JLPT tags</strong>, partly obtained from JMDict, KANJIDIC, Tatoeba, <a style="color: #00b4d8" href="https://blog.goo.ne.jp/ishiseiji">Ishizawa-sensei's blog</a>, and my own memory. Radical's new version on Google Play will soon be updated to contain features such as tracking kanji & radical acquisition progress, customizable tests, and study plans by JLPT level.</p>
+            <p><strong>*Version 21</strong> [released Apr 25, 2026] improved kanji and word lookup, and improved the speed of the app. Radical now contains <strong>210,691 words</strong>, <strong>820 phonetic radicals</strong>, <strong>214 meaning radicals</strong>, <strong>6,355 kanji</strong>, <strong>246,737 sample sentences</strong> and <strong>7,001 JLPT tags</strong>, partly obtained from JMDict, KANJIDIC, Tatoeba, <a style="color: #00b4d8" href="https://blog.goo.ne.jp/ishiseiji">Ishizawa-sensei's blog</a>, and my own memory. Radical’s new Google Play version will include the N4 Kanji Course.</p>
+            <p><strong>*Version 20</strong> [released Mar 9, 2026] added the handwriting feature, which now allows you to handwrite kanji you want to look up. Radical now contains <strong>210,641 words</strong>, <strong>805 phonetic radicals</strong>, <strong>278 meaning radicals</strong>, <strong>6,368 kanji</strong>, <strong>246,737 sample sentences</strong> and <strong>9,756 JLPT tags</strong>.</p>
+            <p><strong>*Version 19</strong> [released Mar 2, 2026] added the Live 1-on-1 Kanji Coaching session with Carlos Ramos, the creator of Radical. Radical's new version on Google Play will soon be updated to contain N1, N2, N3 and N4 courses.</p>
+            <p><strong>*Version 18</strong> [released Feb 27, 2026] added the full JLPT N5 Kanji Course. Radical's new version on Google Play will soon be updated to contain N1, N2, N3 and N4 courses.</p>
+            <p><strong>*Version 17</strong> [released Feb 26, 2026] added the ability to add JLPT vocabulary and kanji in bulk, improved the JLPT N5 Kanji Course (which is almost ready!), fixed bugs and improved speed tremendously. Radical's new version on Google Play will soon be updated to contain N1, N2, N3 and N4 courses.</p>
+            <p><strong>*Version 16</strong> [released Feb 24, 2026] revamped the app with many more functionalities and improvements, including an onboarding screen, the JLPT N5 Kanji course (still in development), and the Starter Course (based on the Starter Challenge). Radical's new version on Google Play will soon be updated to contain N1, N2, N3 and N4 courses, as well as an option to add all JLPT vocabulary and/or kanji in bulk from a certain level.</p>
+            <p><strong>*Version 15</strong> [released Dec 18, 2025] added the 'Understanding Radicals' mini course, where you can learn about meaning and phonetic radicals and obtain a certificate if you complete it, and the Starter challenge, where you can learn all the functionalities of the Radical app. Radical's new version on Google Play will soon be updated to contain N1, N2, N3 and N4 courses.</p>
+            <p><strong>*Version 14</strong> [released Nov 24, 2025] improved the loading screen and the Kanji Tab, where learners can now do interactive kanji quizzes with the kanji they've added from the Dictionary tab. Users can now add their name, photo and goals in the all new Me Tab, as well as check their study progress.</p>
+            <p><strong>*Version 13</strong> [released Nov 20, 2025] added the Kanji Tab, where learners can add and sort the kanji they can add directly from the Dictionary tab, as well as study by analyzing their radicals and hiding their meaning and reading. Radical's new version on Google Play will soon be updated to contain features such as kanji quizzes (not just vocabulary) and study plans by JLPT level.</p>
+            <p><strong>*Version 12</strong> [released Oct 26, 2025] added the Vocabulary Tab, where learners can study their vocabulary with interactive quizzes and keep up with their study progress.</p>
+            <p><strong>*Version 11</strong> [released Aug 27, 2025] added improved the "Your Vocabulary List" functionality, where you now you can add words directly from the Dictionary tab, as well as visual and speed improvements.</p>
+            <p><strong>*Version 10</strong> [released Aug 23, 2025] added the Your Vocabulary List functionality, where you can add your words, sort them by JLPT level, added date or alphabetical order, and study them by hiding their kanji, hiragana, or meaning, as well as editing and deleting entries.</p>
+            <p><strong>*Version 9</strong> [released Aug 14, 2025] enhanced query speed again, and added a four-tab structure on the app: Dictionary (where you can look up words even faster), Test (where you can do hiragana and katakana quizzes), Study (where you can study your kana) and Ask (soon to be released). </p>
             <p><strong>*Version 8</strong> [released Aug 6, 2025] enhanced query speed by 300%, increased vocabulary by 50%, increased the amount of JLPT tags by 150%, added many phonetic radicals, and improved the arrow button functionality. It contained 210,641 words, 805 phonetic radicals, 278 meaning radicals, 6,368 kanji, 246,737 sample sentences and 9,756 JLPT tags, partly obtained from JMDict, KANJIDIC, Tatoeba, <a style="color: #00b4d8" href="https://blog.goo.ne.jp/ishiseiji">Ishizawa-sensei's blog</a>, and my own memory. Radical's new version on Google Play will soon be updated to contain features such as tracking kanji & radical acquisition progress, customizable tests, and study plans by JLPT level.</p>
             <p><strong>*Version 7</strong> [released Apr 27, 2025] improved the desktop and mobile display and added the functionality to see sample sentences. It contained 148,352 words, 584 phonetic radicals, 279 meaning radicals, 6,368 kanji and 246,737 sample sentences, partly obtained from the JMDict, the KANJIDIC and the Tatoeba Projects. Radical, the Google Play app, is now out.</p>
-            <p><strong>*Version 6</strong> [released Apr 13, 2025] is now a full fledged dictionary where you can look up words in English and in Japanese, including in hiragana and in English. It contained 148,352 words, 380 phonetic radicals, 279 meaning radicals and 6,368 kanji, partly obtained from the JMDict and the KANJIDIC Projects. Radical, the Google Play app, is now out.</p>
+            <p><strong>*Version 6</strong> [released Apr 13, 2025] is now a full-fledged dictionary where you can look up words in English and in Japanese, including in hiragana and in English. It contained 148,352 words, 380 phonetic radicals, 279 meaning radicals and 6,368 kanji, partly obtained from the JMDict and the KANJIDIC Projects. Radical, the Google Play app, is now out.</p>
             <p><strong>*Version 5</strong> [released Jan 18, 2025] added the hiragana and English search functions. It contained 17,608 words, 380 phonetic radicals, 279 meaning radicals and 6,368 kanji, partly obtained from the JMDict and the KANJIDIC Projects.</p>
             <p><strong>*Version 4</strong> [released Jan 11, 2025] contained 380 phonetic radicals, 279 meaning radicals and 6,368 kanji.</p>
             <p><strong>*Version 3</strong> [released Jan 3, 2025] added all common use kanji [常用漢字], added meaning radicals, JLPT level classification and contained 377 phonetic radicals, 225 meaning radicals and 2,484 kanji. </p>

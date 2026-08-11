@@ -596,16 +596,17 @@ button:hover {
 /* JLPT Level Bubble */
 .level-bubble, #mobile-levelBubble.level-bubble {
     position: absolute;
-    top: -25px; /* Position the bubble at the top right corner */
-    left: 85px; /* Position the bubble at the top right corner */
-    width: 50px;
-    height: 50px;
+    top: -18px;
+    left: 80px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #ffffff;
-    font-size: 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 700;
     z-index: 1000;
 }
 
@@ -977,22 +978,23 @@ button:hover {
 
 .nav-button {
     position: absolute;
-    top: 88px; /* Position the bubble at the top right corner */
-    left: 88px; /* Position the bubble at the top right corner */
-    width: 50px;
-    height: 50px;
+    top: 80px;
+    left: 80px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #ffffff;
-    font-size: 1.5rem;
+    font-size: 1rem;
     z-index: 1000;
     background-color: #00b4d8;
+    cursor: pointer;
 }
 
 .nav-button:hover {
-    background-color: #e0e0e0; /* Slightly darker on hover */
+    background-color: #0096c7;
 }
 
 .kanji-display-section {
@@ -1168,11 +1170,2337 @@ button:hover {
 
     .result-box .kanji-list {
         text-align: left !important;
-        margin-left: 50px !important; /* Adds a 30px indent to the left-aligned kanji lists */
+        margin-left: 4px !important;
     }
     .result-box .jlpt-header {
-        text-align: center !important;
-        margin-left: -50px !important;
+        text-align: left !important;
+        margin-left: 0 !important;
     }
     
+}
+
+/* Desktop dictionary polish */
+:root {
+    --radical-surface: #09131c;
+    --radical-surface-soft: #122230;
+    --radical-panel: #10202d;
+    --radical-panel-alt: #162b39;
+    --radical-border: rgba(144, 224, 239, 0.16);
+    --radical-text-soft: #b8d5df;
+    --radical-shadow: 0 24px 50px rgba(0, 0, 0, 0.28);
+    --radical-accent: #00b4d8;
+    --jlpt-n1: #ff5722;
+    --jlpt-n2: #ff9800;
+    --jlpt-n3: #ffeb3b;
+    --jlpt-n4: #4caf50;
+    --jlpt-n5: #2196f3;
+    --jlpt-none: #9e9e9e;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at top, rgba(0, 180, 216, 0.18), transparent 26%),
+        linear-gradient(180deg, #03070b 0%, #07131c 42%, #04090d 100%);
+    color: #ffffff;
+}
+
+a {
+    color: #90e0ef;
+}
+
+.container {
+    width: min(1100px, 92vw);
+    padding: 20px 0 48px;
+    gap: 0;
+}
+
+.dictionary-hero,
+#kanjiBoxSection,
+#english-box,
+#vocabSection,
+.result-container,
+.explanation {
+    width: min(940px, 94%);
+    box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.dictionary-hero {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
+        linear-gradient(140deg, rgba(0, 180, 216, 0.12), rgba(0, 0, 0, 0) 55%);
+    border: 1px solid var(--radical-border);
+    border-radius: 22px;
+    padding: 22px 24px 20px;
+    box-shadow: var(--radical-shadow);
+    text-align: left;
+    margin-top: 24px;
+    margin-bottom: 18px;
+}
+
+.hero-kicker-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.hero-kicker {
+    margin: 0;
+    font-size: 0.92rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--radical-text-soft);
+}
+
+.hero-kicker a {
+    text-decoration: none;
+}
+
+.hero-mode-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 11px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #dff7fc;
+    background: rgba(0, 180, 216, 0.14);
+    border: 1px solid rgba(144, 224, 239, 0.26);
+}
+
+.dictionary-hero h1 {
+    margin: 0;
+    color: #00b4d8;
+    font-size: clamp(2.5rem, 5.5vw, 4rem);
+    letter-spacing: -0.04em;
+}
+
+.hero-tagline {
+    margin: 10px 0 6px;
+    font-size: clamp(1.05rem, 2vw, 1.35rem);
+    color: #e6f9fc;
+}
+
+.hero-description,
+.search-subnote {
+    margin: 0;
+    color: var(--radical-text-soft);
+    line-height: 1.6;
+    font-size: 0.98rem;
+}
+
+.hero-description {
+    max-width: 760px;
+    margin-bottom: 16px;
+}
+
+.dictionary-hero .search-container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    gap: 12px;
+    align-items: stretch;
+    margin: 0;
+}
+
+.dictionary-hero #kanjiInput {
+    width: 100%;
+    margin: 0;
+    border-radius: 14px;
+    border: 1px solid rgba(144, 224, 239, 0.24);
+    background: rgba(255, 255, 255, 0.96);
+    color: #0f2230;
+    padding: 14px 16px;
+    font-size: 1.06rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.dictionary-hero #kanjiInput:focus {
+    outline: 2px solid rgba(0, 180, 216, 0.34);
+    border-color: rgba(0, 180, 216, 0.6);
+}
+
+.dictionary-hero #kanjiInput::placeholder {
+    color: #638194;
+}
+
+.dictionary-hero #checkButton,
+.dictionary-hero #randomButton,
+.dictionary-hero #handwritingButton {
+    margin: 0;
+    min-width: 148px;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 0 18px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
+}
+
+.dictionary-hero #checkButton {
+    background: linear-gradient(135deg, #48cae4 0%, #00b4d8 100%);
+}
+
+.dictionary-hero #checkButton:hover {
+    background: linear-gradient(135deg, #21bddc 0%, #009bc1 100%);
+}
+
+.dictionary-hero #randomButton {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f3fdff;
+    border: 1px solid rgba(144, 224, 239, 0.24);
+}
+
+.dictionary-hero #randomButton:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.dictionary-hero #handwritingButton {
+    background: linear-gradient(135deg, rgba(144, 224, 239, 0.18) 0%, rgba(0, 180, 216, 0.42) 100%);
+    color: #f5fdff;
+    border: 1px solid rgba(144, 224, 239, 0.3);
+}
+
+.dictionary-hero #handwritingButton:hover {
+    background: linear-gradient(135deg, rgba(144, 224, 239, 0.26) 0%, rgba(0, 180, 216, 0.55) 100%);
+}
+
+.handwriting-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease;
+}
+
+.handwriting-modal.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.handwriting-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(4, 11, 18, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.handwriting-modal-panel {
+    position: relative;
+    width: min(640px, calc(100vw - 28px));
+    margin: 32px auto 0;
+    padding: 18px;
+    border-radius: 22px;
+    border: 1px solid rgba(144, 224, 239, 0.2);
+    background: linear-gradient(180deg, rgba(13, 25, 35, 0.98), rgba(7, 14, 20, 0.99));
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.42);
+    transform: translateY(16px) scale(0.98);
+    opacity: 0;
+    transition: transform 180ms ease, opacity 180ms ease;
+    outline: none;
+}
+
+.handwriting-modal.is-open .handwriting-modal-panel {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+.handwriting-modal-header h3 {
+    margin: 0;
+    color: #f5fdff;
+    font-size: 1.08rem;
+}
+
+.handwriting-modal-header p {
+    margin: 6px 0 12px;
+    color: var(--radical-text-soft);
+    font-size: 0.94rem;
+}
+
+.handwriting-canvas-wrap {
+    width: 100%;
+    height: 300px;
+    border-radius: 18px;
+    border: 1px solid rgba(144, 224, 239, 0.24);
+    background:
+        linear-gradient(to bottom, rgba(15, 34, 48, 0.08) 1px, transparent 1px) 0 0 / 100% 25%,
+        linear-gradient(to right, rgba(15, 34, 48, 0.08) 1px, transparent 1px) 0 0 / 25% 100%,
+        #fbfeff;
+    overflow: hidden;
+}
+
+#handwritingCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+    cursor: crosshair;
+}
+
+.handwriting-status {
+    min-height: 22px;
+    margin-top: 10px;
+    color: var(--radical-text-soft);
+    font-size: 0.92rem;
+}
+
+.handwriting-modal-candidates {
+    min-height: 34px;
+    margin-top: 6px;
+    display: none;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.handwriting-candidate-label {
+    color: var(--radical-text-soft);
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.handwriting-candidate-chip {
+    margin: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid rgba(144, 224, 239, 0.36);
+    background: rgba(0, 180, 216, 0.16);
+    color: #ffffff;
+    padding: 8px 14px;
+    font-size: 1.05rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: none;
+}
+
+.handwriting-candidate-chip:hover {
+    background: rgba(0, 180, 216, 0.28);
+}
+
+.handwriting-fallback-note {
+    margin: 10px 0 0;
+    color: #86a6b9;
+    font-size: 0.86rem;
+    line-height: 1.55;
+}
+
+.handwriting-actions {
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.handwriting-actions > button {
+    margin: 0;
+    min-width: 0;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.94rem;
+}
+
+.handwriting-action-secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: #f5fdff;
+    border: 1px solid rgba(144, 224, 239, 0.18);
+}
+
+.handwriting-action-secondary:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.handwriting-action-primary {
+    margin-left: auto !important;
+    background: linear-gradient(135deg, #48cae4 0%, #00b4d8 100%);
+    color: #ffffff;
+}
+
+.handwriting-action-primary:hover {
+    background: linear-gradient(135deg, #21bddc 0%, #009bc1 100%);
+}
+
+.handwriting-actions > button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+body.handwriting-modal-open {
+    overflow: hidden;
+}
+
+.search-helper {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 14px 0 10px;
+}
+
+.search-helper-label {
+    color: var(--radical-text-soft);
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.search-helper-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #eafcff;
+    font-size: 0.9rem;
+}
+
+.kanji-box-section {
+    margin-top: 22px;
+    margin-bottom: 14px;
+}
+
+#english-box {
+    margin-top: 0;
+    margin-bottom: 0;
+    border-radius: 16px;
+    border: 1px solid var(--radical-border);
+    background: linear-gradient(180deg, #ffffff 0%, #eef8fb 100%);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.15);
+}
+
+#vocabSection {
+    background: transparent;
+    border-radius: 18px;
+    padding: 0;
+    margin-top: 14px;
+}
+
+#vocab-box {
+    width: 100%;
+    margin-top: 12px;
+    padding: 0;
+    background: transparent;
+}
+
+#loading,
+#error {
+    width: 100%;
+    max-width: 940px;
+    margin: 0 auto;
+    border-radius: 14px;
+}
+
+#loading {
+    /* Text loading indicator suppressed — only the progress bar is shown */
+    display: none !important;
+}
+
+#loading-bar {
+    width: 100%;
+    max-width: 620px;
+    margin: 0 auto;
+    padding-top: 0;
+}
+
+#progress-bar {
+    height: 8px !important;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #00b4d8 0%, #90e0ef 100%) !important;
+    box-shadow: 0 0 0 1px rgba(144, 224, 239, 0.18);
+}
+
+#progress-text {
+    /* Suppressed — only the bar is shown during loading */
+    display: none !important;
+}
+
+#error {
+    color: #ffb4b4 !important;
+    background: rgba(122, 25, 25, 0.18);
+    border: 1px solid rgba(255, 117, 117, 0.18);
+}
+
+.vocab-status-card {
+    border-radius: 18px;
+    border: 1px solid var(--radical-border);
+    background: linear-gradient(180deg, rgba(17, 34, 46, 0.94), rgba(10, 21, 29, 0.98));
+    color: #ffffff;
+    box-shadow: var(--radical-shadow);
+    padding: 18px 20px;
+    text-align: left;
+}
+
+.vocab-status-card + .vocab-status-card {
+    margin-top: 12px;
+}
+
+.vocab-status-kicker {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: rgba(0, 180, 216, 0.16);
+    color: #90e0ef;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.vocab-status-title {
+    margin: 12px 0 6px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #f5fdff;
+}
+
+.vocab-status-detail {
+    margin: 0;
+    color: var(--radical-text-soft);
+    line-height: 1.6;
+    font-size: 0.96rem;
+}
+
+.result-container {
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+    margin-top: 20px;
+    margin-bottom: 0;
+}
+
+.result-container.is-empty {
+    display: none !important;
+}
+
+.result-box {
+    margin-top: 0;
+    background: linear-gradient(180deg, var(--radical-panel-alt) 0%, var(--radical-panel) 100%);
+    border: 1px solid var(--radical-border);
+    border-radius: 18px;
+    box-shadow: var(--radical-shadow);
+    text-align: left;
+    line-height: 1.65;
+}
+
+#result-left,
+#result {
+    scroll-margin-top: calc(var(--download-banner-offset, 96px) + 16px);
+}
+
+#meaningradical-box,
+#radical-box,
+#mobile-meaningradical-box,
+#mobile-radical-box {
+    transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+#meaningradical-box.is-clickable,
+#radical-box.is-clickable,
+#mobile-meaningradical-box.is-clickable,
+#mobile-radical-box.is-clickable {
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.14);
+}
+
+#meaningradical-box.is-clickable:hover,
+#radical-box.is-clickable:hover,
+#mobile-meaningradical-box.is-clickable:hover,
+#mobile-radical-box.is-clickable:hover {
+    transform: translateY(-1px);
+}
+
+.explanation {
+    margin-top: 28px;
+    background: linear-gradient(180deg, rgba(13, 25, 35, 0.96), rgba(8, 16, 22, 0.98));
+    border: 1px solid var(--radical-border);
+    border-radius: 22px;
+    box-shadow: var(--radical-shadow);
+    padding: 26px;
+}
+
+.explanation p {
+    color: var(--radical-text-soft);
+    font-size: 1rem;
+    line-height: 1.7;
+    margin: 0 0 14px;
+}
+
+.explanation-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin: 20px 0 18px;
+}
+
+.explanation-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 16px;
+    padding: 16px;
+}
+
+.explanation-card h3 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    color: #e5fbff;
+}
+
+.explanation-card p,
+.explanation-footer {
+    margin: 0;
+}
+
+@media (max-width: 1035px) {
+    .container {
+        width: 95%;
+        padding-top: 12px;
+    }
+
+    .dictionary-hero {
+        padding: 18px 16px;
+        margin-top: 12px;
+    }
+
+    .dictionary-hero .search-container {
+        grid-template-columns: minmax(0, 1fr) auto auto auto;
+        gap: 8px;
+    }
+
+    .dictionary-hero #kanjiInput {
+        font-size: 0.98rem;
+        padding: 12px 14px;
+    }
+
+    .dictionary-hero #checkButton,
+    .dictionary-hero #randomButton,
+    .dictionary-hero #handwritingButton {
+        min-width: 0;
+        padding: 0 12px;
+        font-size: 0.96rem;
+    }
+
+    .handwriting-modal-panel {
+        width: calc(100vw - 20px);
+        margin-top: 18px;
+        padding: 16px;
+    }
+
+    .result-container {
+        margin-top: 14px;
+        gap: 12px;
+    }
+
+    .explanation-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .dictionary-hero .search-container {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .dictionary-hero #checkButton,
+    .dictionary-hero #randomButton,
+    .dictionary-hero #handwritingButton {
+        width: 100%;
+        min-height: 48px;
+    }
+
+    .handwriting-canvas-wrap {
+        height: 240px;
+    }
+
+    .search-helper {
+        gap: 6px;
+    }
+
+    .search-helper-chip {
+        font-size: 0.84rem;
+    }
+
+    .result-container {
+        flex-direction: column;
+    }
+
+.result-box {
+    width: 100%;
+}
+
+.explanation {
+        padding: 20px 18px;
+    }
+}
+
+/* Final desktop alignment safeguards */
+#kanjiBoxSection {
+    width: min(940px, 94%) !important;
+    max-width: 940px;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+#kanjiBoxSection .light-blue-row,
+#kanjiBoxSection .reading-box-container,
+#kanjiBoxSection .reading-box,
+#kanjiBoxSection .blue-reading-box,
+#kanjiBoxSection .white-reading-box {
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+#english-box {
+    width: min(940px, 94%) !important;
+    max-width: 940px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    white-space: normal;
+    padding: 14px 18px;
+}
+
+#english-box p {
+    width: 100%;
+    margin: 0;
+    text-align: center;
+}
+
+#english-box.kana-mode,
+#english-box:not(.kana-mode) {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Android palette parity */
+.kanji-box {
+    border-color: var(--radical-accent) !important;
+}
+
+.level-bubble,
+#mobile-levelBubble.level-bubble,
+.jlpt-vocab-bubble,
+.inline-level-bubble {
+    box-shadow: none;
+}
+
+.level-bubble.n1,
+#mobile-levelBubble.level-bubble.n1,
+.jlpt-vocab-bubble.n1,
+.inline-level-bubble.n1,
+.jlpt-n1 {
+    background-color: var(--jlpt-n1) !important;
+    color: #ffffff !important;
+}
+
+.level-bubble.n2,
+#mobile-levelBubble.level-bubble.n2,
+.jlpt-vocab-bubble.n2,
+.inline-level-bubble.n2,
+.jlpt-n2 {
+    background-color: var(--jlpt-n2) !important;
+    color: #ffffff !important;
+}
+
+.level-bubble.n3,
+#mobile-levelBubble.level-bubble.n3,
+.jlpt-vocab-bubble.n3,
+.inline-level-bubble.n3,
+.jlpt-n3 {
+    background-color: var(--jlpt-n3) !important;
+    color: #000000 !important;
+}
+
+.level-bubble.n4,
+#mobile-levelBubble.level-bubble.n4,
+.jlpt-vocab-bubble.n4,
+.inline-level-bubble.n4,
+.jlpt-n4 {
+    background-color: var(--jlpt-n4) !important;
+    color: #ffffff !important;
+}
+
+.level-bubble.n5,
+#mobile-levelBubble.level-bubble.n5,
+.jlpt-vocab-bubble.n5,
+.inline-level-bubble.n5,
+.jlpt-n5 {
+    background-color: var(--jlpt-n5) !important;
+    color: #ffffff !important;
+}
+
+.level-bubble.notinjlpt,
+#mobile-levelBubble.level-bubble.notinjlpt,
+.jlpt-vocab-bubble.notinjlpt,
+.inline-level-bubble.notinjlpt {
+    background-color: var(--jlpt-none) !important;
+    color: #ffffff !important;
+}
+
+.vocab-entry {
+    border-width: 4px;
+    border-color: var(--radical-accent);
+}
+
+.vocab-entry.vocab-entry-jlpt-n1 {
+    border-color: var(--jlpt-n1);
+}
+
+.vocab-entry.vocab-entry-jlpt-n2 {
+    border-color: var(--jlpt-n2);
+}
+
+.vocab-entry.vocab-entry-jlpt-n3 {
+    border-color: var(--jlpt-n3);
+}
+
+.vocab-entry.vocab-entry-jlpt-n4 {
+    border-color: var(--jlpt-n4);
+}
+
+.vocab-entry.vocab-entry-jlpt-n5 {
+    border-color: var(--jlpt-n5);
+}
+
+/* Android-style dictionary colors */
+.kanji-box,
+#mobile-displayKanjiContainer {
+    background-color: #ffffff !important;
+    border-color: #00b4d8 !important; /* default — overridden by JLPT class below */
+    color: #000000 !important;
+    transition: border-color 0.25s ease;
+}
+
+/* JLPT-colored kanji box border — matches Android app per-level color */
+.kanji-box.jlpt-n1,
+#mobile-displayKanjiContainer.jlpt-n1 { border-color: var(--jlpt-n1) !important; }
+.kanji-box.jlpt-n2,
+#mobile-displayKanjiContainer.jlpt-n2 { border-color: var(--jlpt-n2) !important; }
+.kanji-box.jlpt-n3,
+#mobile-displayKanjiContainer.jlpt-n3 { border-color: var(--jlpt-n3) !important; }
+.kanji-box.jlpt-n4,
+#mobile-displayKanjiContainer.jlpt-n4 { border-color: var(--jlpt-n4) !important; }
+.kanji-box.jlpt-n5,
+#mobile-displayKanjiContainer.jlpt-n5 { border-color: var(--jlpt-n5) !important; }
+
+#english-box,
+#mobile-english-box,
+#kunyomi-box,
+#onyomi-box,
+#mobile-kunyomi-box,
+#mobile-onyomi-box {
+    background-color: #ffffff !important;
+    border-color: #00b4d8 !important;
+    color: #000000 !important;
+}
+
+/* Android palette: meaning radical = blue accent, phonetic radical = orange-red accent.
+   Boxes use a light tint + colored border, not a solid fill — matching the Android app's
+   card style where only the accent color appears on the border and text, not the background. */
+#meaningradical-box,
+#mobile-meaningradical-box {
+    background-color: rgba(74, 144, 226, 0.10) !important;
+    border-color: #4A90E2 !important;
+    color: #ffffff !important;
+}
+
+#radical-box,
+#mobile-radical-box {
+    background-color: rgba(255, 87, 34, 0.10) !important;
+    border-color: #FF5722 !important;
+    color: #ffffff !important;
+}
+
+#dictionary-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%) translateY(18px);
+    width: min(640px, calc(100vw - 32px));
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(144, 224, 239, 0.26);
+    background: rgba(7, 18, 27, 0.96);
+    color: #f6fdff;
+    font-size: 0.94rem;
+    line-height: 1.45;
+    text-align: center;
+    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    z-index: 12000;
+}
+
+#dictionary-toast.is-visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+#quiz {
+    display: none !important;
+}
+
+#kanjiDisplay {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#kanjiDisplay > #navButton.nav-button {
+    z-index: 2;
+    box-shadow: 0 8px 18px rgba(0, 111, 140, 0.2);
+    /* Match level-bubble dimensions exactly */
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+}
+
+#kanjiDisplay > #navButton.nav-button:hover {
+    background-color: #0096c7;
+}
+
+#english-box {
+    position: relative;
+    bottom: auto !important;
+    margin-top: 16px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+    padding: 16px 20px !important;
+    min-height: 88px;
+    z-index: 0;
+}
+
+#english-box p {
+    white-space: normal;
+    line-height: 1.2;
+}
+
+.dictionary-hero {
+    padding-top: 20px;
+    padding-bottom: 18px;
+}
+
+.dictionary-hero .search-container {
+    margin-top: 8px;
+}
+
+@media (min-width: 1036px) {
+    #kanjiBoxSection {
+        --dictionary-card-height: 112px;
+        display: grid;
+        grid-template-columns: 112px repeat(4, minmax(0, 1fr));
+        align-items: stretch;
+        gap: 12px;
+        overflow: visible;
+        margin-bottom: 12px;
+    }
+
+    #kanjiBoxSection .light-blue-row {
+        display: contents;
+    }
+
+    #kanjiBoxSection .small-blue-box,
+    #kanjiBoxSection .small-white-box {
+        display: none !important;
+    }
+
+    #kanjiDisplay,
+    #kanjiBoxSection .reading-box-container,
+    #kanjiBoxSection #meaningradical-box,
+    #kanjiBoxSection #onyomi-box,
+    #kanjiBoxSection #radical-box {
+        min-width: 0;
+        min-height: var(--dictionary-card-height);
+        height: var(--dictionary-card-height);
+        margin: 0 !important;
+        align-self: stretch;
+    }
+
+    #kanjiDisplay {
+        width: 112px;
+        justify-content: center !important;
+        align-items: center;
+        padding-right: 0;
+    }
+
+    #kanjiDisplay .kanji-box {
+        width: 112px;
+        height: 112px;
+        margin: 0;
+    }
+
+    #kanjiDisplay > #navButton.nav-button {
+        top: auto;
+        left: auto;
+        right: -8px;
+        bottom: -8px;
+        width: 34px;
+        height: 34px;
+        font-size: 1rem;
+        transform: none;
+    }
+
+    #kanjiBoxSection .reading-box-container {
+        display: flex;
+    }
+
+    #kanjiBoxSection .reading-box-container > #kunyomi-box {
+        flex: 1 1 auto;
+    }
+
+    #kanjiBoxSection .reading-box-container > #kunyomi-box,
+    #kanjiBoxSection #meaningradical-box,
+    #kanjiBoxSection #onyomi-box,
+    #kanjiBoxSection #radical-box {
+        position: relative;
+        width: 100% !important;
+        max-width: none;
+        min-width: 0;
+        height: 100%;
+        min-height: var(--dictionary-card-height);
+        max-height: none;
+        margin: 0;
+        padding: 38px 14px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.08rem !important;
+        line-height: 1.28;
+        overflow: visible;
+        text-overflow: unset;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        box-sizing: border-box;
+    }
+
+    #kanjiBoxSection .reading-box-container > #kunyomi-box::before,
+    #kanjiBoxSection #onyomi-box::before,
+    #kanjiBoxSection #meaningradical-box::before,
+    #kanjiBoxSection #radical-box::before {
+        position: absolute;
+        top: 11px;
+        left: 12px;
+        right: 12px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        text-align: center;
+    }
+
+    #kanjiBoxSection .reading-box-container > #kunyomi-box::before {
+        content: "Kun'yomi //";
+        color: #586977;
+    }
+
+    #kanjiBoxSection #onyomi-box::before {
+        content: "On'yomi //";
+        color: #586977;
+    }
+
+    #kanjiBoxSection #meaningradical-box::before {
+        content: "Meaning Radical";
+        color: rgba(255, 255, 255, 0.96);
+    }
+
+    #kanjiBoxSection #radical-box::before {
+        content: "Phonetic Radical";
+        color: rgba(255, 255, 255, 0.96);
+    }
+
+    #kanjiBoxSection .reading-box-container > #kunyomi-box p,
+    #kanjiBoxSection #onyomi-box p,
+    #kanjiBoxSection #meaningradical-box p,
+    #kanjiBoxSection #radical-box p {
+        width: 100%;
+        margin: 0;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+        text-align: center;
+        font-size: inherit;
+        line-height: inherit;
+    }
+
+    #english-box {
+        min-height: 92px;
+        font-size: clamp(1.45rem, 1.8vw, 1.95rem);
+        border-width: 3px;
+    }
+}
+
+/* Final Android-parity and responsive cleanup */
+.dictionary-hero {
+    overflow: hidden;
+}
+
+.hero-title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.hero-title-row .hero-tagline {
+    margin: 0;
+}
+
+.dictionary-hero .search-container {
+    width: 100%;
+    min-width: 0;
+}
+
+.dictionary-hero #kanjiInput {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.dictionary-hero #checkButton,
+.dictionary-hero #randomButton,
+.dictionary-hero #handwritingButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.button-label-desktop,
+.button-label-mobile {
+    pointer-events: none;
+}
+
+.button-label-mobile {
+    display: none;
+}
+
+html.compact-ui .dictionary-hero .button-label-desktop {
+    display: none;
+}
+
+html.compact-ui .dictionary-hero .button-label-mobile {
+    display: inline-flex;
+    font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+    font-size: 1.08rem;
+    line-height: 1;
+}
+
+.mobile-box-label {
+    display: inline-block;
+    font-size: 0.7em;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.mobile-box-value {
+    display: inline-block;
+}
+
+.meaning-radical-chip,
+.phonetic-radical-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 8px;
+    margin: 0 2px;
+    border-radius: 8px;
+    border: 1px solid #ffffff;
+    color: #ffffff;
+    font-weight: 700;
+    line-height: 1.2;
+    vertical-align: middle;
+}
+
+/* Radical colour code: meaning = blue, phonetic = red — the app's existing
+   radical colours (same as the meaning/phonetic box borders). */
+.meaning-radical-chip {
+    background-color: #4A90E2;
+}
+.phonetic-radical-chip {
+    background-color: #FF5722;
+}
+
+.kanji-box,
+#english-box,
+#kunyomi-box,
+#onyomi-box,
+#mobile-displayKanjiContainer,
+#mobile-english-box,
+#mobile-kunyomi-box,
+#mobile-onyomi-box {
+    border-width: 2px !important;
+}
+
+#meaningradical-box,
+#radical-box,
+#mobile-meaningradical-box,
+#mobile-radical-box {
+    border-width: 2px !important;
+}
+
+#english-box {
+    min-height: 96px;
+    font-size: clamp(1.55rem, 2.2vw, 2.15rem) !important;
+    font-weight: 700;
+}
+
+#english-box,
+#english-box p,
+#mobile-english-box {
+    text-align: center !important;
+    justify-content: center;
+    align-items: center;
+}
+
+#mobile-english-box {
+    display: flex;
+    padding: 10px;
+    line-height: 1.12;
+}
+
+.result-box {
+    padding: 10px 10px 12px;
+}
+
+.jlpt-header {
+    margin: 0 0 4px;
+    font-weight: 700;
+    color: #f5fdff;
+}
+
+.related-kanji-group {
+    margin-top: 6px;
+    padding: 6px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(144, 224, 239, 0.16);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.related-kanji-note {
+    line-height: 1.7;
+}
+
+.kanji-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 6px;
+    margin-top: 4px;
+}
+
+.related-kanji-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
+    padding: 2px 5px;
+    border-radius: 8px;
+    border: 1px solid rgba(144, 224, 239, 0.14);
+    background: rgba(0, 180, 216, 0.08);
+}
+
+.related-kanji-item .kanji-highlight {
+    margin: 0;
+    flex: 0 0 auto;
+}
+
+.related-kanji-detail {
+    color: var(--radical-text-soft);
+    font-size: 0.93rem;
+    line-height: 1.35;
+}
+
+@media (min-width: 781px) {
+    .container {
+        width: min(1100px, 92vw) !important;
+        padding: 20px 0 48px !important;
+    }
+
+    .mobile-boxes {
+        display: none !important;
+    }
+
+    #kanjiBoxSection {
+        --dictionary-card-height: 112px;
+        display: grid !important;
+        grid-template-columns: 112px repeat(4, minmax(0, 1fr));
+        align-items: stretch;
+        gap: 12px;
+        overflow: visible;
+        margin-bottom: 12px;
+    }
+
+    #english-box {
+        display: flex !important;
+    }
+
+    #kanjiBoxSection .kanji-box,
+    #kanjiBoxSection .light-blue-row,
+    #kanjiBoxSection .reading-box-container,
+    #kanjiBoxSection #meaningradical-box,
+    #kanjiBoxSection #onyomi-box,
+    #kanjiBoxSection #radical-box,
+    #kanjiBoxSection #kunyomi-box {
+        display: flex !important;
+    }
+
+    /* Level bubble is shown/hidden by JS — no !important so style.display works */
+    #kanjiBoxSection .level-bubble {
+        display: flex;
+    }
+
+    #kanjiBoxSection .light-blue-row {
+        display: contents !important;
+    }
+
+    #kanjiBoxSection .small-blue-box,
+    #kanjiBoxSection .small-white-box {
+        display: none !important;
+    }
+
+    #kanjiDisplay,
+    #kanjiBoxSection .reading-box-container,
+    #kanjiBoxSection #meaningradical-box,
+    #kanjiBoxSection #onyomi-box,
+    #kanjiBoxSection #radical-box {
+        min-width: 0;
+        min-height: var(--dictionary-card-height);
+        height: var(--dictionary-card-height);
+        margin: 0 !important;
+        align-self: stretch;
+    }
+
+    #kanjiDisplay {
+        width: 112px;
+        justify-content: center !important;
+        align-items: center;
+        padding-right: 0;
+    }
+
+    #kanjiDisplay .kanji-box {
+        width: 112px;
+        height: 112px;
+        margin: 0;
+    }
+
+    #kanjiBoxSection .reading-box-container > #kunyomi-box,
+    #kanjiBoxSection #meaningradical-box,
+    #kanjiBoxSection #onyomi-box,
+    #kanjiBoxSection #radical-box {
+        position: relative;
+        width: 100% !important;
+        max-width: none;
+        min-width: 0;
+        height: 100%;
+        min-height: var(--dictionary-card-height);
+        margin: 0;
+        padding: 50px 14px 14px;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.08rem !important;
+        line-height: 1.28;
+        overflow: visible;
+        text-overflow: unset;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        box-sizing: border-box;
+    }
+
+    #kanjiBoxSection .reading-box-container > #kunyomi-box::before,
+    #kanjiBoxSection #onyomi-box::before,
+    #kanjiBoxSection #meaningradical-box::before,
+    #kanjiBoxSection #radical-box::before {
+        position: absolute;
+        top: 10px;
+        left: 12px;
+        right: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 30px;
+        padding: 4px 10px;
+        border-radius: 10px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        text-align: center;
+        box-sizing: border-box;
+    }
+
+    #kanjiBoxSection .reading-box-container > #kunyomi-box::before,
+    #kanjiBoxSection #onyomi-box::before {
+        background: rgba(0, 180, 216, 0.08);
+        border: 1px solid rgba(0, 180, 216, 0.22);
+        color: #586977;
+    }
+
+    #kanjiBoxSection #meaningradical-box::before {
+        background: rgba(74, 144, 226, 0.22);
+        border: 1px solid rgba(74, 144, 226, 0.55);
+        color: rgba(255, 255, 255, 0.98);
+    }
+
+    #kanjiBoxSection #radical-box::before {
+        background: rgba(255, 87, 34, 0.22);
+        border: 1px solid rgba(255, 87, 34, 0.55);
+        color: rgba(255, 255, 255, 0.98);
+    }
+
+    .dictionary-hero .search-container {
+        grid-template-columns: minmax(0, 1fr) repeat(3, minmax(0, 132px));
+        gap: 12px;
+    }
+
+    .dictionary-hero #checkButton,
+    .dictionary-hero #randomButton,
+    .dictionary-hero #handwritingButton {
+        min-height: 54px;
+        padding: 0 14px;
+    }
+
+    .result-container {
+        display: flex;
+        flex-direction: row;
+        gap: 16px;
+        margin-top: 20px !important;
+        margin-bottom: 0 !important;
+    }
+
+    .result-box {
+        width: 50%;
+    }
+}
+
+@media (max-width: 780px) {
+    .dictionary-hero {
+        padding: 18px 14px;
+    }
+
+    .hero-title-row {
+        justify-content: center;
+        gap: 8px;
+        text-align: center;
+    }
+
+    .hero-title-row .hero-tagline {
+        width: 100%;
+        text-align: center;
+    }
+
+    .dictionary-hero .search-container {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .dictionary-hero #kanjiInput {
+        grid-column: 1 / -1;
+        margin-right: 0;
+    }
+
+    .dictionary-hero #checkButton,
+    .dictionary-hero #randomButton,
+    .dictionary-hero #handwritingButton {
+        min-height: 48px;
+        padding: 0;
+        border-radius: 12px;
+        font-size: 1rem;
+    }
+
+    .mobile-boxes {
+        width: 100%;
+        margin: 12px 0 0;
+        box-sizing: border-box;
+    }
+
+    .mobile-box,
+    .row-2,
+    .row-3 {
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    #mobile-english-box {
+        font-size: clamp(1.45rem, 6vw, 2rem) !important;
+    }
+
+    .result-container {
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 16px !important;
+    }
+
+    .result-box {
+        width: 100%;
+        padding: 8px 8px 10px;
+    }
+
+    .related-kanji-group,
+    .related-kanji-note {
+        padding: 0;
+        border: none;
+        background: none;
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    .kanji-list {
+        display: block;
+        margin-top: 8px;
+        margin-left: 20px !important;
+        text-align: left !important;
+    }
+
+    .related-kanji-item {
+        display: block;
+        width: auto;
+        padding: 0;
+        margin: 0 0 10px;
+        border: none;
+        background: none;
+        border-radius: 0;
+    }
+
+    .related-kanji-detail {
+        display: inline;
+        color: #ffffff;
+        font-size: 1rem;
+    }
+
+    .result-box .jlpt-header {
+        text-align: center !important;
+        margin-left: -20px !important;
+    }
+
+    .meaning-radical-chip,
+    .phonetic-radical-chip {
+        margin: 1px 2px;
+    }
+}
+
+/* =====================================================================
+   Radical — info-box cohesion pass (2026). Appended for final say.
+   One consistent card pattern for the four reading/radical boxes,
+   tidy labels (no inline "//"), a corner-anchored JLPT bubble, and
+   the two explanation columns kept side by side.
+   ===================================================================== */
+
+/* Labels: their own line, small caps, muted — consistent everywhere. */
+.mobile-box-label {
+    display: block !important;
+    font-size: 0.66rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin: 0 0 5px !important;
+    line-height: 1.2;
+}
+.mobile-box-value {
+    display: block !important;
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+/* The four cards share one pattern: subtle tint, 2px accent border,
+   light text, centred label-over-value. Only the accent colour differs. */
+#mobile-kunyomi-box,
+#mobile-onyomi-box,
+#mobile-meaningradical-box,
+#mobile-radical-box {
+    display: flex !important;
+    flex-direction: column;
+    justify-content: flex-start; /* top-align so titles line up across a row */
+    align-items: center;
+    text-align: center;
+    padding: 12px !important;
+    min-height: 82px;
+    box-sizing: border-box;
+    border-radius: 14px !important;
+    border-width: 2px !important;
+}
+
+/* Reading cards use the neutral cyan accent (matches the radical cards'
+   tint + border + light-text treatment, so all four read as one set). */
+#mobile-kunyomi-box,
+#mobile-onyomi-box {
+    background-color: rgba(0, 180, 216, 0.10) !important;
+    border-color: #00b4d8 !important;
+    color: #ffffff !important;
+}
+
+/* JLPT level bubble: centred on the kanji box's top-right corner. */
+#mobile-levelBubble {
+    top: -13px !important;
+    left: auto !important;
+    right: -13px !important;
+    width: 42px !important;
+    height: 42px !important;
+    font-size: 1rem !important;
+}
+
+/* Keep the meaning | phonetic explanation columns side by side. */
+.result-container {
+    flex-direction: row !important;
+    align-items: stretch;
+    gap: 12px;
+}
+.result-container > .result-box {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    overflow-wrap: anywhere;
+}
+
+/* Kanji square + English-meaning box: always side by side on mobile.
+   The English box shrinks (min-width:0) and its text auto-fits (JS) so it
+   never wraps onto its own line below the square. */
+#mobile-displayKanjiContainer {
+    flex-shrink: 0 !important;
+}
+#mobile-english-box {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    overflow: hidden;
+}
+
+/* --- Sleeker radical chips: drop the white outline, let the colour speak. --- */
+.meaning-radical-chip,
+.phonetic-radical-chip {
+    border: none !important;
+}
+
+/* --- (3) Kanji square + English box join the same card family:
+   subtle cyan tint, cyan border, light content — like the reading cards. --- */
+#mobile-displayKanjiContainer,
+#mobile-english-box {
+    background-color: rgba(0, 180, 216, 0.10) !important;
+    border-color: #00b4d8 !important;
+    color: #ffffff !important;
+    border-radius: 14px !important;
+}
+#mobile-displayKanji {
+    color: #ffffff !important;
+}
+#mobile-english-box {
+    font-weight: 700;
+}
+
+/* --- (1) Tie the search panel to the cards with the same cyan border. --- */
+.dictionary-hero {
+    border: 2px solid #00b4d8 !important;
+}
+
+/* --- (2) Tighten the gap between the download banner and the hero panel. --- */
+.dictionary-hero {
+    margin-top: 2px !important;
+}
+
+/* --- (5) Calmer line spacing in the explanation columns. --- */
+.result-box {
+    line-height: 1.4 !important;
+}
+
+/* =====================================================================
+   Radical — compact + vocab-card pass (2026).
+   ===================================================================== */
+
+/* Mobile search: emoji buttons sit beside the input (not stacked) and small. */
+@media (max-width: 768px) {
+    .dictionary-hero .search-container {
+        grid-template-columns: minmax(0, 1fr) auto auto auto !important;
+        gap: 8px !important;
+    }
+    /* Keep the input in its own column instead of spanning the whole row,
+       so the three emoji buttons sit beside it. */
+    .dictionary-hero #kanjiInput {
+        grid-column: auto !important;
+    }
+    .dictionary-hero #checkButton,
+    .dictionary-hero #randomButton,
+    .dictionary-hero #handwritingButton {
+        width: auto !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        padding: 10px 12px !important;
+        font-size: 1.15rem !important;
+    }
+}
+
+/* English-meaning box aligns with the right column (drop the extra margin
+   so it no longer overflows past the On'yomi / Phonetic cards). */
+#mobile-english-box {
+    margin-left: 0 !important;
+}
+
+/* --- More compact info block: smaller boxes, tighter gaps. --- */
+.mobile-boxes {
+    gap: 7px !important;
+    margin-top: 8px !important;
+    margin-bottom: 10px !important;
+}
+.mobile-boxes .row-1 {
+    display: flex;
+    width: 100%;
+    gap: 7px;
+    align-items: stretch;
+}
+.mobile-boxes .row-1,
+.mobile-boxes .row-2,
+.mobile-boxes .row-3 {
+    gap: 7px !important;
+}
+#mobile-displayKanjiContainer {
+    width: 84px !important;
+    height: 84px !important;
+    font-size: 40px !important;
+}
+#mobile-english-box {
+    height: 84px !important;
+}
+#mobile-kunyomi-box,
+#mobile-onyomi-box,
+#mobile-meaningradical-box,
+#mobile-radical-box {
+    min-height: 62px !important;
+    padding: 8px 10px !important;
+    /* Fill the row evenly so their right edges line up with the English box
+       above (the old calc(50% - 10px) width left a gap on the right). */
+    width: auto !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+}
+.mobile-box-label {
+    margin-bottom: 3px !important;
+}
+/* Trim the space before the vocabulary list. */
+#vocabSection {
+    margin-top: 6px !important;
+}
+
+/* --- (7) Vocabulary cards join the dark-card family.
+   Backgrounds/text go dark; the JLPT level borders and bubbles keep
+   their N5-blue / N4-green / N3-yellow / N2-orange / N1-red colours. --- */
+.vocab-entry {
+    background-color: rgba(255, 255, 255, 0.035) !important;
+    color: #eef7fa !important;
+    box-shadow: none !important;
+}
+/* Light default text for the meanings/sentences (plain text that inherits).
+   Word-form spans keep their OWN inline colour so the common (light) vs
+   uncommon (gray) distinction the JS applies is preserved — so no
+   !important here that would clobber those inline colours. */
+.vocab-entry .meaning,
+.vocab-entry .sentence-english,
+.vocab-entry p {
+    color: #eef7fa;
+}
+
+/* =====================================================================
+   Radical — uniform width + button + banner cohesion pass (2026).
+   ===================================================================== */
+
+/* All major sections share ONE width (fill the container, like the info
+   cards / kunyomi box), so the hero, vocabulary list and result columns
+   line up edge-to-edge with the reading/radical cards. */
+.dictionary-hero,
+#vocabSection,
+#vocabSection > #vocab-box,
+.result-container,
+.explanation {
+    width: auto !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box;
+}
+.vocab-entry {
+    width: auto !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* Hide the tagline on mobile to save vertical space. */
+@media (max-width: 768px) {
+    .hero-tagline {
+        display: none !important;
+    }
+}
+
+/* All three emoji buttons identical size (fixed square columns). */
+@media (max-width: 768px) {
+    .dictionary-hero .search-container {
+        grid-template-columns: minmax(0, 1fr) 48px 48px 48px !important;
+    }
+    .dictionary-hero #checkButton,
+    .dictionary-hero #randomButton,
+    .dictionary-hero #handwritingButton {
+        width: 48px !important;
+        height: 48px !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Vocabulary cards: raised, "buttony" 3D feel (kept dark; JLPT borders/
+   bubbles keep their colours). */
+.vocab-entry {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.085) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.vocab-entry:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+}
+.vocab-entry:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+/* =====================================================================
+   Radical — readability + spacing pass (2026).
+   ===================================================================== */
+
+/* Sample sentences: readable on the dark vocab card (was black text). */
+.vocab-entry .sentence-japanese {
+    color: #f2f8fb !important;
+}
+.vocab-entry .sentence-english {
+    color: #7fdcef !important;
+}
+.vocab-entry .sentences-container,
+.vocab-entry .sentence-item {
+    border-color: rgba(144, 224, 239, 0.22) !important;
+}
+
+/* Hide the "Radical." wordmark on mobile to reclaim vertical space. */
+@media (max-width: 768px) {
+    .dictionary-hero h1 {
+        display: none !important;
+    }
+    .dictionary-hero {
+        padding-top: 14px !important;
+    }
+}
+
+/* Smaller JLPT level bubble so it no longer touches the English box. */
+#mobile-levelBubble {
+    width: 30px !important;
+    height: 30px !important;
+    top: -8px !important;
+    right: -2px !important;
+    left: auto !important;
+    font-size: 0.8rem !important;
+}
+
+/* Tighter margins everywhere — especially radicals → vocabulary list. */
+.dictionary-hero {
+    margin-bottom: 8px !important;
+}
+.mobile-boxes {
+    margin-top: 6px !important;
+    margin-bottom: 3px !important;
+}
+#vocabSection {
+    margin-top: 2px !important;
+}
+.result-container {
+    margin-top: 8px !important;
+}
+
+/* =====================================================================
+   Radical — desktop polish pass (2026):
+   (a) unify the width of every major section so they line up edge-to-edge;
+   (b) give the kanji / english / kun'yomi / on'yomi boxes the same dark
+       translucent-cyan card look as the mobile layout.
+   The #displayKanji / #english-box / #kunyomi-box / #onyomi-box elements are
+   display:none on mobile, so these colour overrides only affect desktop.
+   ===================================================================== */
+
+/* (a) One shared width for all stacked sections (was: hero + vocab shrank
+   to content via width:auto). */
+.dictionary-hero,
+.mobile-boxes,
+#kanjiBoxSection,
+#english-box,
+#vocabSection,
+.result-container,
+.explanation {
+    width: min(940px, 94%) !important;
+    max-width: min(940px, 94%) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box;
+}
+#vocabSection > #vocab-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+}
+.vocab-entry {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box;
+}
+
+/* (b) Mobile-style dark cards for the four desktop info boxes. */
+#displayKanji,
+#english-box,
+#kunyomi-box,
+#onyomi-box {
+    background: rgba(0, 180, 216, 0.10) !important;
+    color: #ffffff !important;
+    border-radius: 14px !important;
+}
+/* Keep the cyan card border on the reading / english boxes (the kanji box
+   keeps its JLPT-coloured border from the .jlpt-nX rules). */
+#english-box,
+#kunyomi-box,
+#onyomi-box {
+    border: 2px solid #00b4d8 !important;
+}
+/* White values inside the cards. */
+#displayKanji,
+#english-box p,
+#kunyomi-box p,
+#onyomi-box p {
+    color: #ffffff !important;
+}
+/* Desktop box titles match the mobile labels EXACTLY: white, uppercase,
+   0.66rem / 700 weight / 0.06em tracking, centered plain text (no pill, no
+   " //" suffix). Applied from 781px up — the SAME breakpoint at which the
+   desktop grid replaces the mobile boxes — so the titles are always present.
+   (Previously the ::before content was only defined at >=1036px while the
+   grid started at 781px, so the titles vanished in the 781-1035px band.) */
+@media (min-width: 781px) {
+    /* Block layout: the title is a block "header" pinned at a FIXED top offset
+       (so all four titles line up and never move), and the value flows inline
+       just below it. Block flow (not flex column) keeps the meaning radical's
+       chip + "→ thread" on a single line. */
+    #kanjiBoxSection .reading-box-container > #kunyomi-box,
+    #kanjiBoxSection #onyomi-box,
+    #kanjiBoxSection #meaningradical-box,
+    #kanjiBoxSection #radical-box {
+        /* display is NOT !important so the JS can hide a box with an inline
+           display:none (e.g. kana-only English results). */
+        display: flex;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: center !important;
+        align-content: center !important;
+        position: relative !important;
+        /* top padding reserves the title zone; the value is then centred in
+           the REMAINING space below the title (not top-aligned). */
+        padding: 26px 10px 10px !important;
+        text-align: center !important;
+        white-space: normal !important;
+        font-weight: 400 !important;
+    }
+    /* let the value shrink/wrap instead of overflowing */
+    #kanjiBoxSection .reading-box-container > #kunyomi-box > *,
+    #kanjiBoxSection #onyomi-box > *,
+    #kanjiBoxSection #meaningradical-box > *,
+    #kanjiBoxSection #radical-box > * {
+        min-width: 0 !important;
+    }
+    /* Values (readings + radical text AND the radical chips) are NOT bold. */
+    #kanjiBoxSection .reading-box-container > #kunyomi-box,
+    #kanjiBoxSection .reading-box-container > #kunyomi-box *,
+    #kanjiBoxSection #onyomi-box,
+    #kanjiBoxSection #onyomi-box *,
+    #kanjiBoxSection #meaningradical-box,
+    #kanjiBoxSection #meaningradical-box *,
+    #kanjiBoxSection #radical-box,
+    #kanjiBoxSection #radical-box * {
+        font-weight: 400 !important;
+    }
+    #kanjiBoxSection .reading-box-container > #kunyomi-box::before,
+    #kanjiBoxSection #onyomi-box::before,
+    #kanjiBoxSection #meaningradical-box::before,
+    #kanjiBoxSection #radical-box::before {
+        /* Pin the title to the top of the box (out of the flex flow) so the
+           value below it is centred in the remaining space, regardless of how
+           short the value is. */
+        position: absolute !important;
+        top: 11px !important;
+        left: 10px !important;
+        right: 10px !important;
+        display: block !important;
+        margin: 0 !important;
+        line-height: 1.2 !important;
+        white-space: nowrap !important; /* titles never wrap → values line up */
+        /* mobile label = white at 0.7 opacity → reads as gray; match it */
+        color: rgba(255, 255, 255, 0.7) !important;
+        font-size: 0.66rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.06em !important;
+        text-transform: uppercase !important;
+        text-align: center !important;
+        /* strip the 781-1035px "pill" styling so it is plain text like mobile */
+        background: none !important;
+        border: none !important;
+        padding: 0 !important;
+        min-height: 0 !important;
+        border-radius: 0 !important;
+    }
+    #kanjiBoxSection .reading-box-container > #kunyomi-box::before {
+        content: "Kun'yomi" !important;
+    }
+    #kanjiBoxSection #onyomi-box::before {
+        content: "On'yomi" !important;
+    }
+    #kanjiBoxSection #meaningradical-box::before {
+        content: "Meaning Rad." !important;
+    }
+    #kanjiBoxSection #radical-box::before {
+        content: "Phonetic Rad." !important;
+    }
+}
+
+/* Mobile reading/radical VALUES should not be bold (match desktop weight).
+   Covers the <strong class="mobile-box-value"> wrapper and every descendant
+   (p, chip spans, "→ thread" text) for the four boxes. */
+#mobile-kunyomi-box .mobile-box-value,
+#mobile-onyomi-box .mobile-box-value,
+#mobile-meaningradical-box .mobile-box-value,
+#mobile-radical-box .mobile-box-value,
+#mobile-kunyomi-box .mobile-box-value *,
+#mobile-onyomi-box .mobile-box-value *,
+#mobile-meaningradical-box .mobile-box-value *,
+#mobile-radical-box .mobile-box-value * {
+    font-weight: 400 !important;
+}
+
+/* Search input: a touch darker than pure white so it is not too flashy
+   (both desktop and mobile). Keep dark text for contrast. */
+#kanjiInput {
+    background-color: #e7edf1 !important;
+    color: #12222c !important;
+}
+#kanjiInput::placeholder {
+    color: #5c6b76 !important;
+}
+
+/* (c) Consistent vertical rhythm between the stacked sections. The English
+   box previously sat only 2px above the vocabulary list; give it the same
+   ~24px breathing room used between the hero, kanji row and English box. */
+#english-box:not(.kana-mode) {
+    margin-top: 20px !important;
+    margin-bottom: 0 !important;
+}
+#vocabSection {
+    margin-top: 24px !important;
+}
+.result-container {
+    margin-top: 24px !important;
+}
+
+/* (d) Uniform corner rounding across every card (radical boxes were 5px,
+   vocab entries 8px, hero 22px — now all match the 14px info cards). */
+.dictionary-hero,
+#displayKanji,
+#english-box,
+#kunyomi-box,
+#onyomi-box,
+#meaningradical-box,
+#radical-box,
+.vocab-entry {
+    border-radius: 14px !important;
+}
+
+/* (e) JLPT level bubble pinned symmetrically to the kanji box's top-right
+   corner (leftover left/bottom offsets had shoved it down and to the left). */
+#levelBubble,
+#mobile-levelBubble {
+    right: 0 !important;
+    left: auto !important;
+    bottom: auto !important;
+    /* Anchor the bubble's corner to the box's top-right corner, then shift
+       it out so the bubble is centred on that corner (robust to bubble size). */
+    transform: translate(40%, -40%) !important;
+}
+#mobile-levelBubble {
+    top: 0 !important;
+}
+/* The desktop kanji box renders ~4px taller than its grid cell (border +
+   padding), so its offset parent's top sits below the box's visual top edge;
+   nudge the anchor up to sit on the true corner. */
+#levelBubble {
+    top: -4px !important;
+    /* Slightly smaller + less protrusion so it clears the search-bar and
+       kun'yomi-box borders while still hugging the corner. Flex-centre the
+       text (the base rule's 50px line-height left it small and off-centre). */
+    width: 38px !important;
+    height: 38px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    font-size: 0.9rem !important;
+    line-height: 1 !important;
+    transform: translate(30%, -30%) !important;
+}
+
+/* (f) ONE consistent gap between every stacked section, on both desktop and
+   mobile. Each section carries the gap on its top margin and zero on its
+   bottom, so adjacent (and collapsed-across-hidden) margins always equal 20px.
+   Desktop order: hero > kanji row > english > vocab > result > explanation.
+   Mobile order:  hero > mobile-boxes > vocab > result > explanation. */
+.dictionary-hero {
+    margin-bottom: 0 !important;
+}
+.mobile-boxes,
+#kanjiBoxSection,
+#english-box:not(.kana-mode),
+#vocabSection,
+.result-container,
+.explanation {
+    margin-top: 20px !important;
+    margin-bottom: 0 !important;
+}
+
+/* (g) Desktop kanji row: keep the ORIGINAL layout — a fixed square kanji box
+   plus four equal-width rectangular reading/radical boxes. The kanji box is
+   forced to a perfect square (it used to render a few px taller than wide). */
+@media (min-width: 781px) {
+    #kanjiDisplay .kanji-box,
+    #displayKanji {
+        box-sizing: border-box !important;
+        aspect-ratio: 1 / 1 !important;   /* always a perfect square */
+        height: var(--dictionary-card-height, 112px) !important;
+        width: var(--dictionary-card-height, 112px) !important;
+    }
+}
+
+/* (h) P3: once the columns are wide enough (>=1036px), the radical titles show
+   the FULL words; the abbreviations from the 781px block only apply when the
+   columns are too narrow to fit them on one line. */
+@media (min-width: 1036px) {
+    #kanjiBoxSection #meaningradical-box::before {
+        content: "Meaning Radical" !important;
+    }
+    #kanjiBoxSection #radical-box::before {
+        content: "Phonetic Radical" !important;
+    }
+}
+
+/* =====================================================================
+   P6 + P7: result explanation columns (meaning radical + phonetic radical).
+   P6 — nothing in them is bold (chips, kanji, headers, readings included).
+   P7 — the explanation text is centred, on both mobile and desktop.
+   ===================================================================== */
+#result-left, #result,
+#result-left *, #result * {
+    font-weight: 400 !important;
+}
+#result-left, #result {
+    text-align: center !important;
+}
+
+/* =====================================================================
+   P8: mobile — both radical kanji-lists are left-aligned (justified) with the
+   SAME, slightly larger left indent. (The explanation sentences above them
+   stay centred from P7.)
+   ===================================================================== */
+@media (max-width: 780px) {
+    #result-left .kanji-list,
+    #result .kanji-list {
+        text-align: left !important;
+        margin-left: 0 !important;
+        padding-left: 16px !important;
+    }
+}
+
+/* =====================================================================
+   N4 + N5: no-kanji searches (e.g. "stay") collapse the entire kanji area —
+   the kanji row (which contains the JLPT level bubble), the English box, and
+   the mobile boxes — so no empty space is left and the vocabulary sits right
+   under the search bar.
+   ===================================================================== */
+.container.no-kanji-result #kanjiBoxSection,
+.container.no-kanji-result #english-box,
+.container.no-kanji-result .mobile-boxes {
+    display: none !important;
+}
+
+/* N6 + N8: each reading stays on one line; breaks happen only after the
+   Japanese comma (、 + <wbr>), never inside a reading word. */
+.reading-token { white-space: nowrap; }
+#kunyomi-box, #onyomi-box,
+#mobile-kunyomi-box, #mobile-onyomi-box,
+#kunyomi-box p, #onyomi-box p,
+#mobile-kunyomi-box .mobile-box-value, #mobile-onyomi-box .mobile-box-value {
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
+}
+
+/* N9: on mobile, the gap between the radical boxes and the first vocab entry
+   matches the gap between the mobile box rows (7px). */
+@media (max-width: 780px) {
+    #vocabSection {
+        margin-top: 7px !important;
+    }
+}
+
+/* N1: the navigation arrow bubble mirrors the JLPT level bubble's positioning
+   (same corner-anchor technique) so their X-centers line up perfectly, and it
+   is the same size as the level bubble. */
+@media (min-width: 781px) {
+    #kanjiDisplay > #navButton.nav-button {
+        top: auto !important;
+        bottom: 0 !important;
+        right: 0 !important;
+        left: auto !important;
+        /* match the level bubble's translate(30%) so X-centers line up */
+        transform: translate(30%, 30%) !important;
+        box-sizing: border-box !important;
+        width: 38px !important;
+        height: 38px !important;
+    }
+}
+
+/* N13: on kana characters (べ, み …) the English box moves up beside the kanji,
+   filling the space the four reading/radical boxes left behind. On desktop it
+   is placed into #kanjiBoxSection; going back to a kanji restores it below. */
+@media (min-width: 781px) {
+    .container.kana-layout #kanjiBoxSection {
+        grid-template-columns: var(--dictionary-card-height, 112px) 1fr !important;
+    }
+    /* Remove the (empty) reading rows entirely so they don't reserve grid cells. */
+    .container.kana-layout #kanjiBoxSection .light-blue-row {
+        display: none !important;
+    }
+    .container.kana-layout #kanjiBoxSection > #kanjiDisplay {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+    }
+    .container.kana-layout #kanjiBoxSection > #english-box {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        margin: 0 !important;
+        width: auto !important;
+        max-width: none !important;
+        align-self: stretch !important;
+        min-height: var(--dictionary-card-height, 112px) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        bottom: auto !important;
+    }
+}
+
+/* N2: in the four desktop boxes, the gray title is vertically centered in the
+   UPPER THIRD, and the value is centered across the lower two-thirds. */
+@media (min-width: 781px) {
+    #kanjiBoxSection .reading-box-container > #kunyomi-box,
+    #kanjiBoxSection #onyomi-box,
+    #kanjiBoxSection #meaningradical-box,
+    #kanjiBoxSection #radical-box {
+        padding-top: calc(var(--dictionary-card-height, 112px) / 3) !important;
+        padding-bottom: 6px !important;
+    }
+    #kanjiBoxSection .reading-box-container > #kunyomi-box::before,
+    #kanjiBoxSection #onyomi-box::before,
+    #kanjiBoxSection #meaningradical-box::before,
+    #kanjiBoxSection #radical-box::before {
+        top: 0 !important;
+        bottom: auto !important;
+        height: calc(var(--dictionary-card-height, 112px) / 3) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+}
+
+/* N11: keep each kanji together with its （reading）/（meaning）so a parenthesis
+   is never left orphaned on its own line in the radical result columns. */
+#result-left .related-kanji-item,
+#result .related-kanji-item {
+    white-space: nowrap;
+    display: inline-block;
+}
+
+/* N10: the "→ meaning/reading" tail of a radical box stays together, so when
+   the box wraps to two lines the radical is on line 1 and the arrow + text
+   move together to line 2 (the arrow is never orphaned). */
+#meaningradical-box .radical-tail,
+#radical-box .radical-tail,
+#mobile-meaningradical-box .radical-tail,
+#mobile-radical-box .radical-tail {
+    white-space: nowrap;
+}
+
+/* N10 sync: when either radical box wraps, force BOTH to stack (radical on
+   line 1, arrow + meaning/reading on line 2). */
+#kanjiBoxSection.radicals-stacked #meaningradical-box .radical-tail,
+#kanjiBoxSection.radicals-stacked #radical-box .radical-tail {
+    display: block;
+}
+
+/* N15 + N1 (mobile): the mobile nav arrow mirrors the mobile JLPT bubble's
+   corner-anchor positioning and size (30px) so the two line up on the same
+   vertical axis (bubble top-right, arrow bottom-right). */
+#mobile-displayKanjiContainer > #mobile-navButton,
+#mobile-displayKanjiContainer > #mobile-prevButton {
+    top: auto !important;
+    bottom: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+    transform: translate(40%, 40%) !important;
+    box-sizing: border-box !important;
+    width: 30px !important;
+    height: 30px !important;
+}
+
+/* N10 sync (mobile): when either mobile radical box wraps, stack BOTH. */
+.mobile-boxes.radicals-stacked #mobile-meaningradical-box .radical-tail,
+.mobile-boxes.radicals-stacked #mobile-radical-box .radical-tail {
+    display: block;
+}
+
+/* Nudge the four desktop box titles down a few pixels. */
+@media (min-width: 781px) {
+    #kanjiBoxSection .reading-box-container > #kunyomi-box::before,
+    #kanjiBoxSection #onyomi-box::before,
+    #kanjiBoxSection #meaningradical-box::before,
+    #kanjiBoxSection #radical-box::before {
+        top: 6px !important;
+    }
+}
+
+/* Match the whitespace between the two lines of a stacked radical box to the
+   whitespace between wrapped lines in the kun'yomi / on'yomi boxes (~3px). */
+#kanjiBoxSection.radicals-stacked #meaningradical-box .radical-tail,
+#kanjiBoxSection.radicals-stacked #radical-box .radical-tail,
+.mobile-boxes.radicals-stacked #mobile-meaningradical-box .radical-tail,
+.mobile-boxes.radicals-stacked #mobile-radical-box .radical-tail {
+    margin-top: 3px;
 }
